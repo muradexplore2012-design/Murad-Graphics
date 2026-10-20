@@ -49,5 +49,6 @@ export const ADMIN_UID = import.meta.env.VITE_ADMIN_UID || "AFpFL3xlZTeWPtf89mke
 export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || "muradexplore2012@gmail.com";
 export const SUPER_ADMIN_UID = "AFpFL3xlZTeWPtf89mkeRHVU0sj1";
 export const SUPER_ADMIN_EMAIL = "muradexplore2012@gmail.com";
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "333295319911-au9i1nh8ncga07d7pcth6vld6bg6n52s.apps.googleusercontent.com";
 
 export default app;
