@@ -132,8 +132,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    // Use full page redirect to completely eliminate popup-blocker and cross-origin cookie loss
-    await signInWithRedirect(auth, provider);
+    const userCred = await signInWithPopup(auth, provider);
+    if (userCred?.user) {
+      setUser(userCred.user);
+    }
   };
 
   const resetPassword = async (email: string) => {
