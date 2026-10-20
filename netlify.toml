@@ -2,6 +2,13 @@
   command = "npm run build"
   publish = "dist"
 
+# Proxy Firebase Auth handler to prevent cross-origin cookie loss
+[[redirects]]
+  from = "/__/auth/*"
+  to = "https://muradgraphics-f6d59.firebaseapp.com/__/auth/:splat"
+  status = 200
+  force = true
+
 # Single Page App (SPA) redirect rule
 [[redirects]]
   from = "/*"

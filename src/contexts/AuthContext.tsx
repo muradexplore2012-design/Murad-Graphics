@@ -132,27 +132,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-
-    // On mobile devices, popups are frequently blocked or suppressed by mobile browsers
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      await signInWithRedirect(auth, provider);
-      return;
-    }
-
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (popupErr: any) {
-      if (
-        popupErr.code === 'auth/popup-blocked' || 
-        popupErr.code === 'auth/cancelled-popup-request'
-      ) {
-        // Fallback to redirect if popup was blocked
-        await signInWithRedirect(auth, provider);
-        return;
-      }
-      throw popupErr;
-    }
+    // Use full page redirect to completely eliminate popup-blocker and cross-origin cookie loss
+    await signInWithRedirect(auth, provider);
   };
 
   const resetPassword = async (email: string) => {

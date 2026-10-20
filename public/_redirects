@@ -1,1 +1,5 @@
+# Proxy Firebase Auth handler to prevent cross-origin cookie loss
+/__/auth/*  https://muradgraphics-f6d59.firebaseapp.com/__/auth/:splat  200!
+
+# SPA Routing
 /*    /index.html   200
