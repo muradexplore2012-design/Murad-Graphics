@@ -17,7 +17,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const isFavorited = isInWishlist(product.id);
   const inCart = isInCart(product.id);
 
-  const handleOrderNow = (e: React.MouseEvent) => {
+  const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     if (product.isFree) {
       navigate(`/product/${product.slug}`);
@@ -109,12 +109,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </div>
 
-      {/* 4. Action Buttons (Order Now Pill Button + Circular Cart Button) */}
+      {/* 4. Action Buttons (Buy Now Pill Button + Circular Cart Button) */}
       <div className="flex items-center gap-1.5 sm:gap-2 pt-1 mt-auto">
-        {/* Left: Order Now Button */}
+        {/* Left: Buy Now Button */}
         <button
           type="button"
-          onClick={handleOrderNow}
+          onClick={handleBuyNow}
           className="flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-1.5 transition-all shadow-xs active:scale-95 group/btn"
         >
           {product.isFree ? (
@@ -125,7 +125,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ) : (
             <>
               <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="whitespace-nowrap">Order Now</span>
+              <span className="whitespace-nowrap">Buy Now</span>
             </>
           )}
         </button>
