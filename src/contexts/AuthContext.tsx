@@ -7,6 +7,8 @@ import {
   signOut,
   updateProfile,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   sendPasswordResetEmail
 } from 'firebase/auth';
@@ -69,6 +71,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Process redirect sign-in if returning from Google redirect
+    getRedirectResult(auth).catch((err) => {
+      console.warn("Google redirect auth error:", err);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
@@ -124,7 +131,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // On mobile devices, popups are frequently blocked or suppressed by mobile browsers
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (popupErr: any) {
+      if (
+        popupErr.code === 'auth/popup-blocked' || 
+        popupErr.code === 'auth/cancelled-popup-request'
+      ) {
+        // Fallback to redirect if popup was blocked
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw popupErr;
+    }
   };
 
   const resetPassword = async (email: string) => {

@@ -24,12 +24,19 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const { login, register, loginWithGoogle, resetPassword } = useAuth();
+  const { user, login, register, loginWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
   const redirectPath = searchParams.get('redirect') || '/account';
+
+  // Automatically redirect if already logged in (or upon returning from Google redirect)
+  React.useEffect(() => {
+    if (user) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [user, navigate, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,9 +85,19 @@ export const LoginPage: React.FC = () => {
       navigate(redirectPath);
     } catch (err: any) {
       console.error("Google Auth error:", err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || 'Google authentication failed.');
+      let friendlyMsg = 'Google authentication failed.';
+      if (err.code === 'auth/operation-not-allowed') {
+        friendlyMsg = 'Firebase-এ Google Sign-in চালু (Enabled) করা নেই! Firebase Console > Authentication > Sign-in method থেকে Google চালু করুন।';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        friendlyMsg = 'Firebase-এ এই ডোমেন অনুমোদন করা নেই! Firebase Console > Authentication > Settings > Authorized domains-এ "muradgraphics.netlify.app" যোগ করুন।';
+      } else if (err.code === 'auth/popup-blocked') {
+        friendlyMsg = 'ব্রাউজারে পপআপ ব্লক করা হয়েছে। অনুগ্রহ করে ব্রাউজার সেটিংসে গিয়ে Popups allow করুন।';
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        friendlyMsg = 'গুগল সাইন-ইন উইন্ডো বন্ধ করা হয়েছে। দয়া করে আবার চেষ্টা করুন।';
+      } else if (err.message) {
+        friendlyMsg = err.message;
       }
+      setError(friendlyMsg);
     } finally {
       setGoogleLoading(false);
     }
