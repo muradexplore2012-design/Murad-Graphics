@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Murad Graphics | Digital Graphic Resources, Templates & Software</title>
+    <meta name="description" content="Download premium and free graphic design resources, editable templates, vector arts, mockups, fonts, software and tools at Murad Graphics." />
+    <!-- Inter Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-50 text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+    <div id="root"></div>
+    <script>
+      (function() {
+        const removeNetlifyBadge = function() {
+          const selectors = [
+            'netlify-drawer',
+            '#netlify-drawer',
+            '[data-netlify-drawer]',
+            'iframe[src*="netlify"]',
+            'iframe[title*="Netlify"]',
+            'iframe[id*="netlify"]',
+            '[id*="netlify-badge"]',
+            '[class*="netlify-badge"]',
+            '[data-netlify-badge]'
+          ];
+          selectors.forEach(function(sel) {
+            document.querySelectorAll(sel).forEach(function(el) {
+              try { el.remove(); } catch (e) {}
+            });
+          });
+        };
+        removeNetlifyBadge();
+        if (window.MutationObserver) {
+          const observer = new MutationObserver(removeNetlifyBadge);
+          observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

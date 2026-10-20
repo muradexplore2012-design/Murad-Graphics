@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // -----------------------------------------------------------------
+    // Helper Functions for Super Admin & Admin Authorization
+    // -----------------------------------------------------------------
+
+    // Super Admin: Root authority (AFpFL3xlZTeWPtf89mkeRHVU0sj1 / muradexplore2012@gmail.com)
+    function isSuperAdmin() {
+      return request.auth != null && 
+        (request.auth.uid == "AFpFL3xlZTeWPtf89mkeRHVU0sj1" || 
+         request.auth.token.email == "muradexplore2012@gmail.com");
+    }
+
+    // Admin: Either Super Admin, Firebase Custom Claim admin, or verified admin document
+    function isAdmin() {
+      return isSuperAdmin() || 
+        (request.auth != null && (
+          request.auth.token.admin == true ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        ));
+    }
+
+    // Authenticated user check
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the user is the owner of the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // -----------------------------------------------------------------
+    // Collection Rules
+    // -----------------------------------------------------------------
+
+    // Admin Management (Make Admin & Revoke Admin)
+    match /admins/{adminId} {
+      // Admins can view the administrator list
+      allow read: if isAdmin();
+      // ONLY Super Admin can add or remove admins
+      allow create, update: if isSuperAdmin() && adminId != "AFpFL3xlZTeWPtf89mkeRHVU0sj1";
+      // Super Admin document can NEVER be deleted
+      allow delete: if isSuperAdmin() && adminId != "AFpFL3xlZTeWPtf89mkeRHVU0sj1";
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      // Users can update their own profile, but CANNOT escalate privileges (cannot set isAdmin or role)
+      allow create: if isOwner(userId) && (!request.resource.data.keys().hasAny(['isAdmin', 'role']) || request.resource.data.role == 'customer');
+      allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'role'])) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Products (Public can read active products; only admins can write)
+    match /products/{productId} {
+      allow read: if resource.data.isActive == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Categories (Public readable; admin writable)
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Customer Orders (Strict Customer & Admin Isolation)
+    match /orders/{orderId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      // Authenticated customers can create orders under their own UID
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // Only admin can update order status, payment status or notes
+      allow update, delete: if isAdmin();
+    }
+
+    // Digital Download Entitlements
+    match /downloadEntitlements/{entitlementId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isAuthenticated() && (request.auth.uid == request.resource.data.userId || isAdmin());
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Download Audit Events (Append-only by customer; read-only by admin)
+    match /downloadEvents/{eventId} {
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Coupons (Read allowed for checkout validation; write only by admin)
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Homepage Banners & Sections
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Site Settings & Configuration
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Product Reviews (Public approved reviews; users review products; admin moderates)
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      // Authenticated users can create reviews for products they purchased
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.status == 'pending';
+      // Only admin can approve, edit, or delete reviews
+      allow update, delete: if isAdmin();
+    }
+
+    // Customer Wishlist
+    match /wishlists/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Customer Cart
+    match /carts/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Admin Action Audit Logs (Immutable, admin-only)
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

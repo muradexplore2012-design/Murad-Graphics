@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.uid == "AFpFL3xlZTeWPtf89mkeRHVU0sj1" || 
+         request.auth.token.email == "muradexplore2012@gmail.com" ||
+         request.auth.token.admin == true);
+    }
+
+    // Public preview assets and thumbnails
+    match /previews/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Homepage banners and posters
+    match /banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Digital downloadable source files (Direct upload)
+    match /digital_files/{allPaths=**} {
+      // Must be authenticated to read; write restricted to admin
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+  }
+}
