@@ -91,13 +91,14 @@ const SAMPLE_SIDE_BOTTOM_RIGHT: Banner = {
 };
 
 export const HomePage: React.FC = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(() => {
+  const [allProducts, setAllProducts] = useState<Product[]>(() => {
     try {
-      const saved = sessionStorage.getItem('mg_cache_home_featured') || localStorage.getItem('mg_cache_home_featured');
+      const saved = sessionStorage.getItem('mg_cache_home_products') || localStorage.getItem('mg_cache_home_products') || sessionStorage.getItem('mg_cache_home_featured');
       if (saved) return JSON.parse(saved);
     } catch {}
     return [];
   });
+  const [productFilter, setProductFilter] = useState<'all' | 'paid' | 'free'>('all');
   const [categories, setCategories] = useState<Category[]>(() => {
     try {
       const saved = sessionStorage.getItem('mg_client_categories_cache') || localStorage.getItem('mg_client_categories_cache');
@@ -135,7 +136,7 @@ export const HomePage: React.FC = () => {
   });
   const [loading, setLoading] = useState<boolean>(() => {
     try {
-      const saved = sessionStorage.getItem('mg_cache_home_featured') || localStorage.getItem('mg_cache_home_featured');
+      const saved = sessionStorage.getItem('mg_cache_home_products') || localStorage.getItem('mg_cache_home_products') || sessionStorage.getItem('mg_cache_home_featured');
       if (saved && JSON.parse(saved).length > 0) return false;
     } catch {}
     return true;
@@ -152,9 +153,8 @@ export const HomePage: React.FC = () => {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const [allActive, featured, cats, bannerList] = await Promise.all([
-          getProducts({ limitCount: 8 }),
-          getProducts({ isFeatured: true, limitCount: 8 }),
+        const [activeProducts, cats, bannerList] = await Promise.all([
+          getProducts({ onlyActive: true }),
           getCategories(true),
           getBanners(true)
         ]);
@@ -187,13 +187,19 @@ export const HomePage: React.FC = () => {
         if (!blPoster && generalPosters.length > 1) blPoster = generalPosters[1];
         if (!brPoster && generalPosters.length > 2) brPoster = generalPosters[2];
 
-        const finalProducts = featured.length > 0 ? featured : allActive;
+        // Sort all products: featured first, then newest
+        const sortedProducts = [...activeProducts].sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+
         const finalSliders = sliders.length > 0 ? sliders : SAMPLE_SLIDERS;
         const finalTop = topPoster || SAMPLE_SIDE_TOP;
         const finalBl = blPoster || SAMPLE_SIDE_BOTTOM_LEFT;
         const finalBr = brPoster || SAMPLE_SIDE_BOTTOM_RIGHT;
 
-        setFeaturedProducts(finalProducts);
+        setAllProducts(sortedProducts);
         setCategories(cats);
         setSliderBanners(finalSliders);
         setSideTopPoster(finalTop);
@@ -202,8 +208,8 @@ export const HomePage: React.FC = () => {
 
         // Cache for ultra-fast instant refresh
         try {
-          sessionStorage.setItem('mg_cache_home_featured', JSON.stringify(finalProducts));
-          localStorage.setItem('mg_cache_home_featured', JSON.stringify(finalProducts));
+          sessionStorage.setItem('mg_cache_home_products', JSON.stringify(sortedProducts));
+          localStorage.setItem('mg_cache_home_products', JSON.stringify(sortedProducts));
           sessionStorage.setItem('mg_client_categories_cache', JSON.stringify(cats));
           localStorage.setItem('mg_client_categories_cache', JSON.stringify(cats));
           sessionStorage.setItem('mg_cache_home_sliders', JSON.stringify(finalSliders));
@@ -591,38 +597,84 @@ export const HomePage: React.FC = () => {
       {/* ================= PRODUCT SECTIONS ================= */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
-        {/* Trending Products */}
+        {/* All Products (Free & Paid) */}
         <section>
-          <div className="flex items-end justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
             <div>
-              <span className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1">
-                <Flame className="w-3.5 h-3.5" /> Trending Now
+              <span className="text-xs font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> All Digital Resources
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Trending Products</h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+                Explore Products
+              </h2>
             </div>
-            <Link to="/shop" className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
-              Browse More <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+
+            {/* Quick Filter: All | Premium | Free */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {allProducts.length > 0 && (
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setProductFilter('all')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      productFilter === 'all'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    All ({allProducts.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProductFilter('paid')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      productFilter === 'paid'
+                        ? 'bg-white text-purple-700 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    💎 Premium ({allProducts.filter(p => !p.isFree).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProductFilter('free')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      productFilter === 'free'
+                        ? 'bg-white text-emerald-700 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    🎁 Free ({allProducts.filter(p => p.isFree).length})
+                  </button>
+                </div>
+              )}
+
+              <Link to="/shop" className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group ml-1">
+                Browse Shop <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {Array.from({ length: 4 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
             </div>
-          ) : featuredProducts.length === 0 ? (
+          ) : allProducts.filter(p => productFilter === 'all' ? true : productFilter === 'free' ? p.isFree : !p.isFree).length === 0 ? (
             <EmptyState
-              title="No trending products yet"
-              description="Trending digital assets and design files will be displayed here once published by the administrator."
+              title="No products found"
+              description="Digital assets and design files will be displayed here once published by the administrator."
               actionLabel="Explore All Products"
               actionHref="/shop"
             />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {featuredProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+              {allProducts
+                .filter(p => productFilter === 'all' ? true : productFilter === 'free' ? p.isFree : !p.isFree)
+                .map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
             </div>
           )}
         </section>
