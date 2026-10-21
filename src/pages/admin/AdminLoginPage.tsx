@@ -120,12 +120,12 @@ export const AdminLoginPage: React.FC = () => {
           <span>Continue with Google (Instant Login)</span>
         </button>
 
-        <div className="relative flex items-center justify-center">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[11px] text-slate-400 font-medium uppercase tracking-wider">
+        <div className="relative flex items-center justify-center my-1">
+          <div className="flex-1 border-t border-slate-200" />
+          <span className="shrink-0 px-3 text-[11px] text-slate-400 font-medium uppercase tracking-wider whitespace-nowrap bg-white">
             Or login with email
           </span>
-          <div className="border-t border-slate-200 w-full" />
+          <div className="flex-1 border-t border-slate-200" />
         </div>
 
         <form onSubmit={handleAdminLogin} className="space-y-4 text-xs">
