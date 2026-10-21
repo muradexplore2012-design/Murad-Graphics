@@ -20,7 +20,7 @@ import {
   getDownloadURL, 
   deleteObject 
 } from "firebase/storage";
-import { db, storage, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL } from "../lib/firebase";
+import { db, storage, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL, ADMIN_EMAIL } from "../lib/firebase";
 import { 
   Product, 
   Category, 
@@ -995,6 +995,72 @@ export const deleteStorageFile = async (storagePath: string): Promise<void> => {
   }
 };
 
+export const syncAdminWhitelist = async (adminEmails: string[]): Promise<void> => {
+  try {
+    const cleanList = Array.from(new Set(
+      [
+        SUPER_ADMIN_EMAIL.toLowerCase(),
+        ADMIN_EMAIL ? ADMIN_EMAIL.toLowerCase() : '',
+        ...adminEmails.map(e => e.trim().toLowerCase())
+      ].filter(Boolean)
+    ));
+
+    await setDoc(doc(db, "settings", "adminWhitelist"), {
+      emails: cleanList,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Could not sync admin whitelist:", err);
+  }
+};
+
+export const checkIsAdminEmail = async (rawEmail: string): Promise<boolean> => {
+  const cleanEmail = rawEmail.trim().toLowerCase();
+  if (!cleanEmail) return false;
+
+  // 1. Root Super Admin & Primary Admin
+  if (
+    cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() ||
+    (ADMIN_EMAIL && cleanEmail === ADMIN_EMAIL.toLowerCase())
+  ) {
+    return true;
+  }
+
+  // 2. Known default admin from configuration
+  if (cleanEmail === 'muradrahman2026@gmail.com') {
+    return true;
+  }
+
+  // 3. Check public settings adminWhitelist document (always accessible under /settings/*)
+  try {
+    const whitelistDoc = await getDoc(doc(db, "settings", "adminWhitelist"));
+    if (whitelistDoc.exists()) {
+      const emails: string[] = whitelistDoc.data()?.emails || [];
+      if (emails.map(e => e.toLowerCase()).includes(cleanEmail)) {
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not check settings/adminWhitelist:", err);
+  }
+
+  // 4. Check Firestore `admins` collection directly
+  try {
+    const q = query(collection(db, "admins"), where("email", "==", cleanEmail), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const data = snap.docs[0].data();
+      if (data.status === 'active') {
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not query admins collection directly:", err);
+  }
+
+  return false;
+};
+
 // ==================== ADMIN & SUPER ADMIN MANAGEMENT ====================
 export const getAdminList = async (): Promise<AdminMember[]> => {
   const admins: AdminMember[] = [];
@@ -1029,6 +1095,10 @@ export const getAdminList = async (): Promise<AdminMember[]> => {
         });
       }
     });
+
+    // Background sync active admins to public whitelist document
+    const activeEmails = admins.filter(a => a.status === 'active').map(a => a.email);
+    syncAdminWhitelist(activeEmails).catch(() => {});
   } catch (err) {
     console.warn("Could not fetch admins collection:", err);
   }
@@ -1090,6 +1160,9 @@ export const makeAdminByEmail = async (
   // Write to Firestore `admins/{targetUid}`
   await setDoc(doc(db, "admins", targetUid), newAdminData);
 
+  // Sync to whitelist
+  syncAdminWhitelist([cleanEmail]).catch(() => {});
+
   // Record immutable audit log
   await recordAuditLog({
     adminUid: caller.uid,
@@ -1123,6 +1196,9 @@ export const revokeAdmin = async (
 
   // Delete admin document from `admins/{targetAdminUid}`
   await deleteDoc(doc(db, "admins", targetAdminUid));
+
+  // Refresh admin list to update whitelist
+  getAdminList().catch(() => {});
 
   // Record immutable audit log
   await recordAuditLog({

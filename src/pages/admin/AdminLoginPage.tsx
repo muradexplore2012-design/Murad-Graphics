@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Lock, Mail, AlertCircle, ArrowRight, CheckCircle2, KeyRound } from 'lucide-react';
+import { checkIsAdminEmail } from '../../services/api';
+import { auth } from '../../lib/firebase';
+import { Lock, Mail, AlertCircle, ArrowRight, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('muradexplore2012@gmail.com');
@@ -11,7 +13,7 @@ export const AdminLoginPage: React.FC = () => {
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
-  const { user, isAdmin, login, loginWithGoogle, resetPassword } = useAuth();
+  const { user, isAdmin, login, loginWithGoogle, logout, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -26,12 +28,22 @@ export const AdminLoginPage: React.FC = () => {
     setResetSent(false);
     setLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
-      await login(email, password);
+      // 🔒 Pre-validate that email is an appointed administrator
+      const isAllowedAdmin = await checkIsAdminEmail(cleanEmail);
+      if (!isAllowedAdmin) {
+        setError('Access Denied: This email is not authorized as an administrator. / এই ইমেইলটি অ্যাডমিনিস্ট্রেটর হিসেবে অনুমোদিত নয়।');
+        setLoading(false);
+        return;
+      }
+
+      await login(cleanEmail, password);
       navigate('/admin');
     } catch (err: any) {
       console.error("Admin login failed:", err);
-      setError('Invalid administrator credentials. If you forgot your password, click "Reset Password" below.');
+      setError('Invalid administrator credentials. If you forgot your password, click "Forgot password?" above.');
     } finally {
       setLoading(false);
     }
@@ -44,6 +56,15 @@ export const AdminLoginPage: React.FC = () => {
 
     try {
       await loginWithGoogle();
+      const currentUser = auth.currentUser;
+      if (currentUser?.email) {
+        const isAllowedAdmin = await checkIsAdminEmail(currentUser.email.toLowerCase());
+        if (!isAllowedAdmin) {
+          await logout();
+          setError(`Access Denied: Google account (${currentUser.email}) is not registered in the Administrator List.`);
+          return;
+        }
+      }
       navigate('/admin');
     } catch (err: any) {
       console.error("Google Admin login failed:", err);
@@ -54,14 +75,24 @@ export const AdminLoginPage: React.FC = () => {
   };
 
   const handleResetPassword = async () => {
-    if (!email) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
       setError('Please enter your administrator email first.');
       return;
     }
     setError('');
+    setResetSent(false);
     setResetLoading(true);
+
     try {
-      await resetPassword(email.trim());
+      // 🔒 SECURITY CHECK: Only authorized administrator emails can reset admin password
+      const isAllowedAdmin = await checkIsAdminEmail(cleanEmail);
+      if (!isAllowedAdmin) {
+        setError('Access Denied: This email is not registered as an administrator. / এই ইমেইলটি অ্যাডমিনিস্ট্রেটর হিসেবে অনুমোদিত নয়।');
+        return;
+      }
+
+      await resetPassword(cleanEmail);
       setResetSent(true);
     } catch (err: any) {
       setError(err.message || 'Failed to send reset link.');
