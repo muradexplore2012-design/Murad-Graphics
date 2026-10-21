@@ -193,7 +193,7 @@ export const AdminProductsPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Bottom Row: Quick Toggles (Status & Offer) + Edit / Delete */}
+                {/* Bottom Row: Quick Toggle Status + Edit / Delete */}
                 <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100">
                   <div className="flex items-center gap-2">
                     {/* Status Toggle */}
@@ -207,20 +207,6 @@ export const AdminProductsPage: React.FC = () => {
                       title="Click to toggle Active status"
                     >
                       {prod.isActive ? 'Active' : 'Disabled'}
-                    </button>
-
-                    {/* Offer Badge Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleOfferBadge(prod)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                        prod.showDiscountBadge
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 shadow-xs'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
-                      }`}
-                      title="Click to toggle offer badge on product card"
-                    >
-                      {prod.showDiscountBadge ? '🏷️ ACTIVE' : 'HIDDEN'}
                     </button>
                   </div>
 
@@ -258,7 +244,6 @@ export const AdminProductsPage: React.FC = () => {
                     <th className="px-3 py-3 xl:px-3.5 xl:py-3.5 whitespace-nowrap">Delivery</th>
                     <th className="px-3 py-3 xl:px-3.5 xl:py-3.5 whitespace-nowrap">Sales / DL</th>
                     <th className="px-3 py-3 xl:px-3.5 xl:py-3.5 whitespace-nowrap">Status</th>
-                    <th className="px-3 py-3 xl:px-3.5 xl:py-3.5 whitespace-nowrap">Offer Badge</th>
                     <th className="px-3.5 py-3 xl:px-4 xl:py-3.5 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
@@ -347,22 +332,6 @@ export const AdminProductsPage: React.FC = () => {
                           title="Click to toggle Active status"
                         >
                           {prod.isActive ? 'Active' : 'Disabled'}
-                        </button>
-                      </td>
-
-                      {/* Offer Badge Toggle */}
-                      <td className="px-3 py-3 xl:px-3.5 xl:py-3.5 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleOfferBadge(prod)}
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                            prod.showDiscountBadge
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 shadow-xs'
-                              : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200 hover:text-slate-700'
-                          }`}
-                          title="Click to toggle Offer Badge on product card"
-                        >
-                          {prod.showDiscountBadge ? '🏷️ ACTIVE (% OFF)' : 'HIDDEN'}
                         </button>
                       </td>
 
