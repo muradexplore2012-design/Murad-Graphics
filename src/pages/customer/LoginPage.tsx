@@ -81,7 +81,7 @@ export const LoginPage: React.FC = () => {
           // Clear previous render to prevent duplicates on tab switch
           googleButtonRef.current.innerHTML = '';
 
-          // Render official GIS button with container width
+          // Render official GIS button with container width and forced English locale
           window.google.accounts.id.renderButton(googleButtonRef.current, {
             type: 'standard',
             theme: 'outline',
@@ -89,6 +89,7 @@ export const LoginPage: React.FC = () => {
             text: 'continue_with',
             shape: 'rectangular',
             logo_alignment: 'center',
+            locale: 'en',
             width: googleButtonRef.current.parentElement?.offsetWidth || 340,
           });
         } catch (e) {
