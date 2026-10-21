@@ -15,7 +15,10 @@ import {
   Sparkles,
   Layers,
   HardDrive,
-  ExternalLink
+  ExternalLink,
+  KeyRound,
+  Copy,
+  ArrowRight
 } from 'lucide-react';
 import { 
   getProductBySlug, 
@@ -49,6 +52,8 @@ export const ProductDetailPage: React.FC = () => {
   const [hasEntitlement, setHasEntitlement] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccessMessage, setDownloadSuccessMessage] = useState('');
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [copiedZipPass, setCopiedZipPass] = useState(false);
 
   // Interactive Product States (Matching user screenshot)
   const [selectedPlan, setSelectedPlan] = useState<string>('1 Month');
@@ -128,6 +133,7 @@ export const ProductDetailPage: React.FC = () => {
       }
 
       setDownloadSuccessMessage('Item claimed! It has also been saved to your Downloads Library.');
+      setShowDownloadModal(true);
     } catch (e: any) {
       alert("Error processing free download: " + e.message);
     } finally {
@@ -159,6 +165,8 @@ export const ProductDetailPage: React.FC = () => {
       } else {
         alert("The download link is currently being prepared by the administrator.");
       }
+
+      setShowDownloadModal(true);
     } catch (e: any) {
       alert("Failed to initiate file download: " + e.message);
     } finally {
@@ -732,6 +740,114 @@ export const ProductDetailPage: React.FC = () => {
               alt={product.name}
               className="w-full h-auto max-h-[82vh] object-contain rounded-2xl"
             />
+          </div>
+        </div>
+      )}
+
+      {/* ================= DOWNLOAD SUCCESS & ZIP PASSWORD MODAL ================= */}
+      {showDownloadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-5 animate-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowDownloadModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header Icon & Title */}
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-xs">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                ডাউনলোড শুরু হয়েছে! 🎉
+              </h3>
+              <p className="text-xs text-slate-500 font-medium">
+                {product.name}
+              </p>
+            </div>
+
+            {/* ZIP Password Notice (If Product has ZIP Password) */}
+            {product.zipPassword ? (
+              <div className="space-y-3 p-4 bg-purple-50/80 border border-purple-200/90 rounded-2xl">
+                <div className="flex items-start gap-2.5">
+                  <KeyRound className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    ফাইলটি <strong className="text-purple-950 font-black">ZIP</strong> আকারে রয়েছে। ফাইলটি ডাউনলোড করার পর আনজিপ (Unzip/Extract) করতে নিচের <strong className="text-purple-950 font-black">৪ সংখ্যার পাসওয়ার্ডটি</strong> প্রয়োজন হবে:
+                  </p>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-purple-200 flex items-center justify-between shadow-2xs">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Unzip Password</span>
+                    <span className="font-mono text-2xl font-black text-[#7a00ea] tracking-widest select-all">
+                      {product.zipPassword}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(product.zipPassword || '');
+                      setCopiedZipPass(true);
+                      setTimeout(() => setCopiedZipPass(false), 2000);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
+                  >
+                    {copiedZipPass ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>পাসওয়ার্ড কপি</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : product.deliveryMethod === 'subscription_access' ? (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-slate-700 space-y-2">
+                <p className="font-bold text-blue-900 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-blue-600" />
+                  <span>সাবস্ক্রিপশন এক্সেস</span>
+                </p>
+                <p className="leading-relaxed">
+                  {product.subscriptionInstructions || "আপনার সাবস্ক্রিপশন ইনভাইটেশন ও লগইন তথ্য প্রসেস করা হচ্ছে।"}
+                </p>
+              </div>
+            ) : (
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-600 text-center">
+                ফাইলটি আপনার ডিভাইসে ডাউনলোড হচ্ছে। এটি আপনার Downloads Library-তেও সংরক্ষণ করা হয়েছে।
+              </div>
+            )}
+
+            {/* Notification Badge */}
+            <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-[11px] text-emerald-800 flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>রিসোর্সটি আপনার <strong>Downloads Library</strong>-তে যুক্ত করা হয়েছে।</span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2.5 pt-1">
+              <Link
+                to="/downloads"
+                className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 text-center"
+              >
+                <span>Downloads Library দেখুন</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowDownloadModal(false)}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                ঠিক আছে, বন্ধ করুন
+              </button>
+            </div>
           </div>
         </div>
       )}

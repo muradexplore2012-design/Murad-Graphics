@@ -460,11 +460,11 @@ export const getUserOrders = async (userId: string): Promise<Order[]> => {
   try {
     const q = query(
       collection(db, "orders"),
-      where("userId", "==", userId),
-      orderBy("createdAt", "desc")
+      where("userId", "==", userId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+    return list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   } catch (err) {
     console.error("Error fetching user orders:", err);
     return [];
@@ -574,48 +574,59 @@ export const grantEntitlementsForOrder = async (order: Order) => {
 };
 
 export const grantFreeEntitlement = async (user: { uid: string; email: string }, product: Product): Promise<void> => {
-  // Check if entitlement already exists
-  const q = query(
-    collection(db, "downloadEntitlements"),
-    where("userId", "==", user.uid),
-    where("productId", "==", product.id),
-    limit(1)
-  );
-  const snap = await getDocs(q);
+  try {
+    // Check if entitlement already exists
+    const q = query(
+      collection(db, "downloadEntitlements"),
+      where("userId", "==", user.uid),
+      where("productId", "==", product.id),
+      limit(1)
+    );
+    const snap = await getDocs(q);
 
-  if (snap.empty) {
-    await addDoc(collection(db, "downloadEntitlements"), {
-      userId: user.uid,
-      userEmail: user.email,
-      productId: product.id,
-      productName: product.name,
-      productSlug: product.slug,
-      thumbnail: product.thumbnail,
-      isFree: true,
-      zipPassword: product.zipPassword || '',
-      accessGrantedAt: new Date().toISOString(),
-      downloadCount: 0,
-      status: 'active'
-    });
+    if (snap.empty) {
+      await addDoc(collection(db, "downloadEntitlements"), {
+        userId: user.uid,
+        userEmail: user.email,
+        productId: product.id,
+        productName: product.name,
+        productSlug: product.slug,
+        thumbnail: product.thumbnail || '',
+        isFree: true,
+        zipPassword: product.zipPassword || '',
+        accessGrantedAt: new Date().toISOString(),
+        downloadCount: 0,
+        status: 'active'
+      });
+    }
 
-    // Increment download/claim count
-    const productRef = doc(db, "products", product.id);
-    await updateDoc(productRef, {
-      downloadCount: increment(1)
-    });
+    // Increment download/claim count safely
+    try {
+      const productRef = doc(db, "products", product.id);
+      await updateDoc(productRef, {
+        downloadCount: increment(1)
+      });
+    } catch {
+      // Regular customer may not have write permission on product catalog document
+    }
+  } catch (err) {
+    console.error("Failed to grant free entitlement:", err);
+    throw err;
   }
 };
 
 export const getUserEntitlements = async (userId: string): Promise<DownloadEntitlement[]> => {
   try {
+    // Query by userId only - eliminates any need for Firestore composite indexes
     const q = query(
       collection(db, "downloadEntitlements"),
-      where("userId", "==", userId),
-      where("status", "==", "active"),
-      orderBy("accessGrantedAt", "desc")
+      where("userId", "==", userId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as DownloadEntitlement));
+    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as DownloadEntitlement));
+    return list
+      .filter((item) => !item.status || item.status === 'active')
+      .sort((a, b) => new Date(b.accessGrantedAt || 0).getTime() - new Date(a.accessGrantedAt || 0).getTime());
   } catch (err) {
     console.error("Error fetching user entitlements:", err);
     return [];
@@ -628,11 +639,14 @@ export const checkUserEntitlement = async (userId: string, productId: string): P
       collection(db, "downloadEntitlements"),
       where("userId", "==", userId),
       where("productId", "==", productId),
-      where("status", "==", "active"),
       limit(1)
     );
     const snap = await getDocs(q);
-    return !snap.empty;
+    if (!snap.empty) {
+      const data = snap.docs[0].data();
+      return !data.status || data.status === 'active';
+    }
+    return false;
   } catch {
     return false;
   }
@@ -640,24 +654,36 @@ export const checkUserEntitlement = async (userId: string, productId: string): P
 
 export const recordDownloadEvent = async (entitlementId: string, productId: string, userId: string): Promise<void> => {
   try {
-    const entRef = doc(db, "downloadEntitlements", entitlementId);
-    await updateDoc(entRef, {
-      downloadCount: increment(1),
-      lastDownloadedAt: new Date().toISOString()
-    });
+    if (entitlementId && entitlementId !== 'direct_entitlement') {
+      try {
+        const entRef = doc(db, "downloadEntitlements", entitlementId);
+        await updateDoc(entRef, {
+          downloadCount: increment(1),
+          lastDownloadedAt: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn("Could not update entitlement counter:", err);
+      }
+    }
 
-    const prodRef = doc(db, "products", productId);
-    await updateDoc(prodRef, {
-      downloadCount: increment(1)
-    });
+    try {
+      const prodRef = doc(db, "products", productId);
+      await updateDoc(prodRef, {
+        downloadCount: increment(1)
+      });
+    } catch {
+      // Non-admin may not have write permission on products catalog
+    }
 
     // Also record in downloadEvents for audit
-    await addDoc(collection(db, "downloadEvents"), {
-      entitlementId,
-      productId,
-      userId,
-      downloadedAt: new Date().toISOString()
-    });
+    try {
+      await addDoc(collection(db, "downloadEvents"), {
+        entitlementId: entitlementId || 'direct',
+        productId,
+        userId,
+        downloadedAt: new Date().toISOString()
+      });
+    } catch {}
   } catch (e) {
     console.error("Failed to record download event:", e);
   }
