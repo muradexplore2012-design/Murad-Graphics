@@ -72,16 +72,6 @@ export const AdminProductsPage: React.FC = () => {
     }
   };
 
-  const handleToggleOfferBadge = async (product: Product) => {
-    try {
-      const nextVal = !product.showDiscountBadge;
-      await updateProduct(product.id, { showDiscountBadge: nextVal });
-      setProducts(products.map(p => p.id === product.id ? { ...p, showDiscountBadge: nextVal } : p));
-    } catch (e: any) {
-      alert("Failed to update offer badge: " + e.message);
-    }
-  };
-
   const filtered = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || 
     p.categoryName?.toLowerCase().includes(search.toLowerCase())
@@ -225,12 +215,12 @@ export const AdminProductsPage: React.FC = () => {
                       onClick={() => handleToggleOfferBadge(prod)}
                       className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
                         prod.showDiscountBadge
-                          ? 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 shadow-xs'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 shadow-xs'
                           : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
                       }`}
                       title="Click to toggle offer badge on product card"
                     >
-                      {prod.showDiscountBadge ? '🏷️ Offer: ON' : 'Offer: OFF'}
+                      {prod.showDiscountBadge ? '🏷️ ACTIVE' : 'HIDDEN'}
                     </button>
                   </div>
 
@@ -367,12 +357,12 @@ export const AdminProductsPage: React.FC = () => {
                           onClick={() => handleToggleOfferBadge(prod)}
                           className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
                             prod.showDiscountBadge
-                              ? 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 shadow-xs'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 shadow-xs'
                               : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200 hover:text-slate-700'
                           }`}
                           title="Click to toggle Offer Badge on product card"
                         >
-                          {prod.showDiscountBadge ? '🏷️ Show (% OFF)' : 'Hidden (OFF)'}
+                          {prod.showDiscountBadge ? '🏷️ ACTIVE (% OFF)' : 'HIDDEN'}
                         </button>
                       </td>
 

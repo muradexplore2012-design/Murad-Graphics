@@ -518,39 +518,47 @@ export const AdminProductFormPage: React.FC = () => {
                 />
               </div>
 
-              {/* Show Offer / Discount Badge Toggle */}
+              {/* Show Offer / Discount Badge Toggle with Custom Green Stroke & Green Fill Checkbox */}
               <div className="sm:col-span-2 pt-2">
-                <label 
-                  className={`flex items-start sm:items-center gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                <div 
+                  onClick={() => setShowDiscountBadge(!showDiscountBadge)}
+                  className={`flex items-start sm:items-center gap-3.5 p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
                     showDiscountBadge 
-                      ? 'border-emerald-500 bg-emerald-50/80 shadow-xs ring-1 ring-emerald-500/20' 
-                      : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/60'
+                      ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-2 ring-emerald-500/20' 
+                      : 'border-slate-200 bg-slate-50/70 hover:bg-slate-100/70'
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={showDiscountBadge}
-                    onChange={(e) => setShowDiscountBadge(e.target.checked)}
-                    className="mt-0.5 sm:mt-0 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 w-4 h-4 cursor-pointer"
-                  />
-                  <div>
-                    <p className={`font-bold text-xs flex items-center gap-2 ${showDiscountBadge ? 'text-emerald-950' : 'text-slate-800'}`}>
-                      <span>Show Offer / Discount Badge (% OFF) on Product Card</span>
+                  {/* Custom Checkbox with Green Stroke and Green Fill */}
+                  <div
+                    className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
+                      showDiscountBadge
+                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                        : 'border-slate-300 bg-white hover:border-slate-400'
+                    }`}
+                  >
+                    {showDiscountBadge && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-bold text-xs sm:text-sm ${showDiscountBadge ? 'text-emerald-950' : 'text-slate-800'}`}>
+                        Show Offer / Discount Badge (% OFF) on Product Card
+                      </span>
                       {showDiscountBadge ? (
-                        <span className="px-2 py-0.5 rounded-md text-[9px] bg-emerald-600 text-white font-extrabold uppercase tracking-wide shadow-xs">
-                          Active
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-emerald-600 text-white font-extrabold uppercase tracking-wider shadow-xs border border-emerald-700">
+                          ACTIVE
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md text-[9px] bg-slate-200 text-slate-600 font-bold uppercase tracking-wide">
-                          Hidden
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-slate-200 text-slate-600 font-bold uppercase tracking-wider border border-slate-300">
+                          HIDDEN
                         </span>
                       )}
-                    </p>
-                    <p className={`text-[11px] font-normal mt-0.5 ${showDiscountBadge ? 'text-emerald-800' : 'text-slate-500'}`}>
+                    </div>
+                    <p className={`text-[11px] font-normal mt-1 leading-relaxed ${showDiscountBadge ? 'text-emerald-800' : 'text-slate-500'}`}>
                       টিক চিহ্ন দিলে কার্ডের উপর "50% OFF" স্টিকার শো করবে। আনচেক রাখলে প্রোডাক্ট কার্ডে কোনো অফার ব্যাজ দেখাবে না।
                     </p>
                   </div>
-                </label>
+                </div>
               </div>
             </div>
           )}
