@@ -251,17 +251,72 @@ export const getAllProductsAdmin = async (): Promise<Product[]> => {
   }
 };
 
-export const getProductBySlug = async (slug: string): Promise<Product | null> => {
+export const getProductBySlug = async (slugOrId: string): Promise<Product | null> => {
+  if (!slugOrId) return null;
+  const rawSlug = slugOrId.trim();
+  let decodedSlug = rawSlug;
   try {
-    const q = query(collection(db, "products"), where("slug", "==", slug), limit(1));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      const docData = snap.docs[0];
-      return { id: docData.id, ...docData.data() } as Product;
+    decodedSlug = decodeURIComponent(rawSlug).trim();
+  } catch {}
+
+  // 1. Instant Cache Lookup (0ms response if products are already cached in session/memory)
+  try {
+    const cachedProducts = fastCacheGet<Product[]>('active_products', 180_000);
+    if (cachedProducts && cachedProducts.length > 0) {
+      const found = cachedProducts.find(
+        p => (p.slug && (p.slug === rawSlug || p.slug === decodedSlug || p.slug.toLowerCase() === rawSlug.toLowerCase() || p.slug.toLowerCase() === decodedSlug.toLowerCase())) ||
+             p.id === rawSlug ||
+             p.id === decodedSlug
+      );
+      if (found) return found;
+    }
+  } catch {}
+
+  // 2. Direct Document ID lookup (in case slugOrId is the document ID)
+  try {
+    const docRef = doc(db, "products", rawSlug);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() } as Product;
     }
   } catch (err) {
-    console.error("Error fetching product by slug:", err);
+    console.warn("Direct product getDoc failed:", err);
   }
+
+  // 3. Firestore Query by slug (both raw and decoded)
+  try {
+    const q1 = query(collection(db, "products"), where("slug", "==", rawSlug), limit(1));
+    const snap1 = await getDocs(q1);
+    if (!snap1.empty) {
+      const docData = snap1.docs[0];
+      return { id: docData.id, ...docData.data() } as Product;
+    }
+
+    if (decodedSlug !== rawSlug) {
+      const q2 = query(collection(db, "products"), where("slug", "==", decodedSlug), limit(1));
+      const snap2 = await getDocs(q2);
+      if (!snap2.empty) {
+        const docData = snap2.docs[0];
+        return { id: docData.id, ...docData.data() } as Product;
+      }
+    }
+  } catch (err) {
+    console.warn("Firestore slug query failed:", err);
+  }
+
+  // 4. Fallback: Fetch all active products and match client-side (handles case-insensitivity & special chars)
+  try {
+    const all = await getProducts({ onlyActive: true });
+    const found = all.find(
+      p => (p.slug && (p.slug === rawSlug || p.slug === decodedSlug || p.slug.toLowerCase() === rawSlug.toLowerCase() || p.slug.toLowerCase() === decodedSlug.toLowerCase())) ||
+           p.id === rawSlug ||
+           p.id === decodedSlug
+    );
+    if (found) return found;
+  } catch (err) {
+    console.error("All products fallback search failed:", err);
+  }
+
   return null;
 };
 

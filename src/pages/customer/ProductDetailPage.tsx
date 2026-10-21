@@ -63,38 +63,49 @@ export const ProductDetailPage: React.FC = () => {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const loadProduct = async () => {
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        if (!slug) return;
         const prod = await getProductBySlug(slug);
+        if (!isMounted) return;
         setProduct(prod);
 
         if (prod) {
           setSelectedImage(prod.thumbnail || (prod.previews && prod.previews[0]) || '/logo.png');
 
-          // Check entitlement if user is logged in
+          // Check entitlement if user is logged in (non-blocking)
           if (user) {
-            const entitled = await checkUserEntitlement(user.uid, prod.id);
-            setHasEntitlement(entitled);
+            checkUserEntitlement(user.uid, prod.id).then((entitled) => {
+              if (isMounted) setHasEntitlement(entitled);
+            }).catch(() => {});
           }
 
-          // Fetch related products in same category
-          const related = await getProducts({ categoryId: prod.categoryId, limitCount: 4 });
-          setRelatedProducts(related.filter(r => r.id !== prod.id));
+          // Fetch related products in same category (non-blocking)
+          getProducts({ categoryId: prod.categoryId, limitCount: 4 }).then((related) => {
+            if (isMounted) setRelatedProducts(related.filter(r => r.id !== prod.id));
+          }).catch(() => {});
 
-          // Fetch reviews
-          const revs = await getProductReviews(prod.id);
-          setReviews(revs);
+          // Fetch reviews (non-blocking)
+          getProductReviews(prod.id).then((revs) => {
+            if (isMounted) setReviews(revs);
+          }).catch(() => {});
         }
       } catch (err) {
         console.error("Error loading product detail:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     loadProduct();
+    return () => {
+      isMounted = false;
+    };
   }, [slug, user]);
 
   const handleFreeDownload = async () => {

@@ -55,9 +55,9 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
-    // Products (Public can read active products; only admins can write)
+    // Products (Public readable catalog; only admins can write)
     match /products/{productId} {
-      allow read: if resource.data.isActive == true || isAdmin();
+      allow read: if true;
       allow write: if isAdmin();
     }
 

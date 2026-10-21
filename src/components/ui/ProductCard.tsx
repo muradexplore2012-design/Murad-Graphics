@@ -16,11 +16,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const isFavorited = isInWishlist(product.id);
   const inCart = isInCart(product.id);
+  const productLink = `/product/${product.slug || product.id}`;
 
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     if (product.isFree) {
-      navigate(`/product/${product.slug}`);
+      navigate(productLink);
       return;
     }
     if (!inCart) {
@@ -39,7 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       
       {/* 1. Thumbnail Container (Square 1:1, Rounded Corners) */}
       <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-900 mb-2 sm:mb-3">
-        <Link to={`/product/${product.slug}`} className="block w-full h-full">
+        <Link to={productLink} className="block w-full h-full">
           <img
             src={product.thumbnail || '/logo.png'}
             alt={product.name}
@@ -84,7 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* 2. Product Title (Centered, 2 Lines Max) */}
       <div className="px-0.5 sm:px-1 text-center mb-1">
-        <Link to={`/product/${product.slug}`} className="block">
+        <Link to={productLink} className="block">
           <h3 className="font-bold text-slate-900 text-xs sm:text-base leading-snug line-clamp-2 hover:text-purple-600 transition-colors">
             {product.name}
           </h3>
