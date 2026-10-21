@@ -62,23 +62,94 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   ]
 };
 
+// ==================== FAST CLIENT-SIDE CACHE & DEDUPLICATION ====================
+interface CacheItem<T> {
+  data: T;
+  time: number;
+}
+const cacheStore = new Map<string, CacheItem<any>>();
+const inFlightPromises = new Map<string, Promise<any>>();
+
+export const fastCacheGet = <T>(key: string, maxAgeMs = 120_000): T | null => {
+  const mem = cacheStore.get(key);
+  if (mem && (Date.now() - mem.time < maxAgeMs)) {
+    return mem.data as T;
+  }
+  try {
+    const raw = sessionStorage.getItem(`mg_cache_${key}`) || localStorage.getItem(`mg_cache_${key}`);
+    if (raw) {
+      const parsed: CacheItem<T> = JSON.parse(raw);
+      if (Date.now() - parsed.time < maxAgeMs) {
+        cacheStore.set(key, parsed);
+        return parsed.data;
+      }
+    }
+  } catch {}
+  return null;
+};
+
+export const fastCacheSet = <T>(key: string, data: T): void => {
+  const item: CacheItem<T> = { data, time: Date.now() };
+  cacheStore.set(key, item);
+  try {
+    const str = JSON.stringify(item);
+    sessionStorage.setItem(`mg_cache_${key}`, str);
+    localStorage.setItem(`mg_cache_${key}`, str);
+  } catch {}
+};
+
+export const fastCacheInvalidate = (prefix?: string): void => {
+  if (!prefix) {
+    cacheStore.clear();
+    try {
+      Object.keys(sessionStorage).forEach(k => { if (k.startsWith('mg_cache_')) sessionStorage.removeItem(k); });
+      Object.keys(localStorage).forEach(k => { if (k.startsWith('mg_cache_')) localStorage.removeItem(k); });
+    } catch {}
+    return;
+  }
+  for (const k of cacheStore.keys()) {
+    if (k.startsWith(prefix)) cacheStore.delete(k);
+  }
+  try {
+    Object.keys(sessionStorage).forEach(k => { if (k.startsWith(`mg_cache_${prefix}`)) sessionStorage.removeItem(k); });
+    Object.keys(localStorage).forEach(k => { if (k.startsWith(`mg_cache_${prefix}`)) localStorage.removeItem(k); });
+  } catch {}
+};
+
 // ==================== SITE SETTINGS ====================
 export const getSiteSettings = async (): Promise<SiteSettings> => {
-  try {
-    const docRef = doc(db, "settings", "general");
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return { ...DEFAULT_SITE_SETTINGS, ...snapshot.data() } as SiteSettings;
-    }
-  } catch (err) {
-    console.warn("Could not fetch settings from Firestore, fallback to defaults", err);
+  const cached = fastCacheGet<SiteSettings>('site_settings', 180_000);
+  if (cached) return cached;
+
+  if (inFlightPromises.has('site_settings')) {
+    return inFlightPromises.get('site_settings')!;
   }
-  return DEFAULT_SITE_SETTINGS;
+
+  const promise = (async () => {
+    try {
+      const docRef = doc(db, "settings", "general");
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        const data = { ...DEFAULT_SITE_SETTINGS, ...snapshot.data() } as SiteSettings;
+        fastCacheSet('site_settings', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn("Could not fetch settings from Firestore, fallback to defaults", err);
+    } finally {
+      inFlightPromises.delete('site_settings');
+    }
+    return DEFAULT_SITE_SETTINGS;
+  })();
+
+  inFlightPromises.set('site_settings', promise);
+  return promise;
 };
 
 export const updateSiteSettings = async (settings: Partial<SiteSettings>): Promise<void> => {
   const docRef = doc(db, "settings", "general");
   await setDoc(docRef, { ...settings, updatedAt: new Date().toISOString() }, { merge: true });
+  fastCacheInvalidate('site_settings');
 };
 
 // ==================== AUDIT LOGS ====================
@@ -113,14 +184,34 @@ export const getProducts = async (options?: {
   onlyActive?: boolean;
 }): Promise<Product[]> => {
   try {
-    let snap;
+    let allProducts: Product[];
+
     if (options?.onlyActive !== false) {
-      snap = await getDocs(query(collection(db, "products"), where("isActive", "==", true)));
+      // Check fast cache for active products
+      const cached = fastCacheGet<Product[]>('active_products', 60_000);
+      if (cached) {
+        allProducts = cached;
+      } else if (inFlightPromises.has('active_products')) {
+        allProducts = await inFlightPromises.get('active_products')!;
+      } else {
+        const fetchPromise = (async () => {
+          const snap = await getDocs(query(collection(db, "products"), where("isActive", "==", true)));
+          const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Product));
+          fastCacheSet('active_products', list);
+          return list;
+        })().finally(() => {
+          inFlightPromises.delete('active_products');
+        });
+
+        inFlightPromises.set('active_products', fetchPromise);
+        allProducts = await fetchPromise;
+      }
     } else {
-      snap = await getDocs(collection(db, "products"));
+      const snap = await getDocs(collection(db, "products"));
+      allProducts = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Product));
     }
 
-    let products = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Product));
+    let products = [...allProducts];
 
     if (options?.categoryId) {
       products = products.filter(p => p.categoryId === options.categoryId);
@@ -212,6 +303,7 @@ export const createProduct = async (productData: Omit<Product, "id" | "createdAt
     createdAt: now,
     updatedAt: now
   });
+  fastCacheInvalidate('active_products');
   return docRef.id;
 };
 
@@ -222,27 +314,45 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
     ...cleanedUpdates,
     updatedAt: new Date().toISOString()
   });
+  fastCacheInvalidate('active_products');
 };
 
 export const deleteProduct = async (id: string): Promise<void> => {
   const docRef = doc(db, "products", id);
   await deleteDoc(docRef);
+  fastCacheInvalidate('active_products');
 };
 
 // ==================== CATEGORIES ====================
 export const getCategories = async (onlyActive = true): Promise<Category[]> => {
-  try {
-    const snap = await getDocs(collection(db, "categories"));
-    let list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Category));
-    if (onlyActive) {
-      list = list.filter(c => c.isActive !== false);
-    }
-    list.sort((a, b) => (a.order || 0) - (b.order || 0));
-    return list;
-  } catch (err) {
-    console.error("Error fetching categories:", err);
-    return [];
+  const cacheKey = onlyActive ? 'categories_active' : 'categories_all';
+  const cached = fastCacheGet<Category[]>(cacheKey, 120_000);
+  if (cached) return cached;
+
+  if (inFlightPromises.has(cacheKey)) {
+    return inFlightPromises.get(cacheKey)!;
   }
+
+  const promise = (async () => {
+    try {
+      const snap = await getDocs(collection(db, "categories"));
+      let list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Category));
+      if (onlyActive) {
+        list = list.filter(c => c.isActive !== false);
+      }
+      list.sort((a, b) => (a.order || 0) - (b.order || 0));
+      fastCacheSet(cacheKey, list);
+      return list;
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+      return [];
+    } finally {
+      inFlightPromises.delete(cacheKey);
+    }
+  })();
+
+  inFlightPromises.set(cacheKey, promise);
+  return promise;
 };
 
 export const createCategory = async (catData: Omit<Category, "id" | "createdAt">): Promise<string> => {
@@ -250,6 +360,7 @@ export const createCategory = async (catData: Omit<Category, "id" | "createdAt">
     ...catData,
     createdAt: new Date().toISOString()
   });
+  fastCacheInvalidate('categories_');
   return docRef.id;
 };
 
@@ -259,10 +370,12 @@ export const updateCategory = async (id: string, updates: Partial<Category>): Pr
     ...updates,
     updatedAt: new Date().toISOString()
   });
+  fastCacheInvalidate('categories_');
 };
 
 export const deleteCategory = async (id: string): Promise<void> => {
   await deleteDoc(doc(db, "categories", id));
+  fastCacheInvalidate('categories_');
 };
 
 // ==================== ORDERS & CHECKOUT ====================
@@ -495,18 +608,34 @@ export const recordDownloadEvent = async (entitlementId: string, productId: stri
 
 // ==================== BANNERS ====================
 export const getBanners = async (onlyActive = true): Promise<Banner[]> => {
-  try {
-    const snap = await getDocs(collection(db, "banners"));
-    let banners = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Banner));
-    if (onlyActive) {
-      banners = banners.filter((b) => b.isActive !== false);
-    }
-    banners.sort((a, b) => (a.order || 0) - (b.order || 0));
-    return banners;
-  } catch (err) {
-    console.error("Error fetching banners:", err);
-    return [];
+  const cacheKey = onlyActive ? 'banners_active' : 'banners_all';
+  const cached = fastCacheGet<Banner[]>(cacheKey, 120_000);
+  if (cached) return cached;
+
+  if (inFlightPromises.has(cacheKey)) {
+    return inFlightPromises.get(cacheKey)!;
   }
+
+  const promise = (async () => {
+    try {
+      const snap = await getDocs(collection(db, "banners"));
+      let banners = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Banner));
+      if (onlyActive) {
+        banners = banners.filter((b) => b.isActive !== false);
+      }
+      banners.sort((a, b) => (a.order || 0) - (b.order || 0));
+      fastCacheSet(cacheKey, banners);
+      return banners;
+    } catch (err) {
+      console.error("Error fetching banners:", err);
+      return [];
+    } finally {
+      inFlightPromises.delete(cacheKey);
+    }
+  })();
+
+  inFlightPromises.set(cacheKey, promise);
+  return promise;
 };
 
 export const createBanner = async (banner: Omit<Banner, "id" | "createdAt">): Promise<string> => {
@@ -514,15 +643,18 @@ export const createBanner = async (banner: Omit<Banner, "id" | "createdAt">): Pr
     ...banner,
     createdAt: new Date().toISOString()
   });
+  fastCacheInvalidate('banners_');
   return docRef.id;
 };
 
 export const updateBanner = async (id: string, updates: Partial<Banner>): Promise<void> => {
   await updateDoc(doc(db, "banners", id), updates);
+  fastCacheInvalidate('banners_');
 };
 
 export const deleteBanner = async (id: string): Promise<void> => {
   await deleteDoc(doc(db, "banners", id));
+  fastCacheInvalidate('banners_');
 };
 
 // ==================== COUPONS ====================

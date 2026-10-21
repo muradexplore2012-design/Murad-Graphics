@@ -23,20 +23,123 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 import { CategoryIcon } from '../../components/ui/CategoryIcon';
 
+// Demo sample banners if admin has not uploaded any banners yet
+const SAMPLE_SLIDERS: Banner[] = [
+  {
+    id: 'demo-slider-1',
+    title: 'Murad Graphics Premium Digital Marketplace',
+    imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80',
+    ctaLink: '/shop',
+    placement: 'slider',
+    isActive: true,
+    order: 1,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'demo-slider-2',
+    title: 'Website Themes & Graphic Assets',
+    imageUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1600&q=80',
+    ctaLink: '/shop',
+    placement: 'slider',
+    isActive: true,
+    order: 2,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'demo-slider-3',
+    title: 'Professional Graphic Design Templates & Mockups',
+    imageUrl: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1600&q=80',
+    ctaLink: '/shop',
+    placement: 'slider',
+    isActive: true,
+    order: 3,
+    createdAt: new Date().toISOString()
+  }
+];
+
+const SAMPLE_SIDE_TOP: Banner = {
+  id: 'demo-side-top',
+  title: 'LinkedIn Premium Up To 90% Discount',
+  imageUrl: 'https://images.unsplash.com/photo-1611944212129-29977ae1398c?auto=format&fit=crop&w=1000&q=80',
+  ctaLink: '/shop',
+  placement: 'side_top',
+  isActive: true,
+  order: 1,
+  createdAt: new Date().toISOString()
+};
+
+const SAMPLE_SIDE_BOTTOM_LEFT: Banner = {
+  id: 'demo-side-bl',
+  title: 'Windows 11 Professional',
+  imageUrl: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=600&q=80',
+  ctaLink: '/shop',
+  placement: 'side_bottom_left',
+  isActive: true,
+  order: 2,
+  createdAt: new Date().toISOString()
+};
+
+const SAMPLE_SIDE_BOTTOM_RIGHT: Banner = {
+  id: 'demo-side-br',
+  title: 'ChatGPT Plus Be Faster',
+  imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80',
+  ctaLink: '/shop',
+  placement: 'side_bottom_right',
+  isActive: true,
+  order: 3,
+  createdAt: new Date().toISOString()
+};
+
 export const HomePage: React.FC = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>(() => {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(() => {
     try {
-      const saved = localStorage.getItem('mg_client_categories_cache');
+      const saved = sessionStorage.getItem('mg_cache_home_featured') || localStorage.getItem('mg_cache_home_featured');
       if (saved) return JSON.parse(saved);
     } catch {}
     return [];
   });
-  const [sliderBanners, setSliderBanners] = useState<Banner[]>([]);
-  const [sideTopPoster, setSideTopPoster] = useState<Banner | null>(null);
-  const [sideBottomLeftPoster, setSideBottomLeftPoster] = useState<Banner | null>(null);
-  const [sideBottomRightPoster, setSideBottomRightPoster] = useState<Banner | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('mg_client_categories_cache') || localStorage.getItem('mg_client_categories_cache');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+  const [sliderBanners, setSliderBanners] = useState<Banner[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('mg_cache_home_sliders');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return SAMPLE_SLIDERS;
+  });
+  const [sideTopPoster, setSideTopPoster] = useState<Banner | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('mg_cache_home_top_poster');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return SAMPLE_SIDE_TOP;
+  });
+  const [sideBottomLeftPoster, setSideBottomLeftPoster] = useState<Banner | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('mg_cache_home_bl_poster');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return SAMPLE_SIDE_BOTTOM_LEFT;
+  });
+  const [sideBottomRightPoster, setSideBottomRightPoster] = useState<Banner | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('mg_cache_home_br_poster');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return SAMPLE_SIDE_BOTTOM_RIGHT;
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      const saved = sessionStorage.getItem('mg_cache_home_featured') || localStorage.getItem('mg_cache_home_featured');
+      if (saved && JSON.parse(saved).length > 0) return false;
+    } catch {}
+    return true;
+  });
 
   // Hero Slider State (smooth fade & slide)
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -46,8 +149,8 @@ export const HomePage: React.FC = () => {
   const [hasCategoriesOverflow, setHasCategoriesOverflow] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
-      setLoading(true);
       try {
         const [allActive, featured, cats, bannerList] = await Promise.all([
           getProducts({ limitCount: 8 }),
@@ -56,72 +159,7 @@ export const HomePage: React.FC = () => {
           getBanners(true)
         ]);
 
-        // Demo sample banners if admin has not uploaded any banners yet
-        const sampleSliders: Banner[] = [
-          {
-            id: 'demo-slider-1',
-            title: 'Murad Graphics Premium Digital Marketplace',
-            imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80',
-            ctaLink: '/shop',
-            placement: 'slider',
-            isActive: true,
-            order: 1,
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: 'demo-slider-2',
-            title: 'Website Themes & Graphic Assets',
-            imageUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1600&q=80',
-            ctaLink: '/shop',
-            placement: 'slider',
-            isActive: true,
-            order: 2,
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: 'demo-slider-3',
-            title: 'Professional Graphic Design Templates & Mockups',
-            imageUrl: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1600&q=80',
-            ctaLink: '/shop',
-            placement: 'slider',
-            isActive: true,
-            order: 3,
-            createdAt: new Date().toISOString()
-          }
-        ];
-
-        const sampleSideTop: Banner = {
-          id: 'demo-side-top',
-          title: 'LinkedIn Premium Up To 90% Discount',
-          imageUrl: 'https://images.unsplash.com/photo-1611944212129-29977ae1398c?auto=format&fit=crop&w=1000&q=80',
-          ctaLink: '/shop',
-          placement: 'side_top',
-          isActive: true,
-          order: 1,
-          createdAt: new Date().toISOString()
-        };
-
-        const sampleSideBottomLeft: Banner = {
-          id: 'demo-side-bl',
-          title: 'Windows 11 Professional',
-          imageUrl: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=600&q=80',
-          ctaLink: '/shop',
-          placement: 'side_bottom_left',
-          isActive: true,
-          order: 2,
-          createdAt: new Date().toISOString()
-        };
-
-        const sampleSideBottomRight: Banner = {
-          id: 'demo-side-br',
-          title: 'ChatGPT Plus Be Faster',
-          imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80',
-          ctaLink: '/shop',
-          placement: 'side_bottom_right',
-          isActive: true,
-          order: 3,
-          createdAt: new Date().toISOString()
-        };
+        if (!isMounted) return;
 
         const sliders: Banner[] = [];
         let topPoster: Banner | null = null;
@@ -149,21 +187,39 @@ export const HomePage: React.FC = () => {
         if (!blPoster && generalPosters.length > 1) blPoster = generalPosters[1];
         if (!brPoster && generalPosters.length > 2) brPoster = generalPosters[2];
 
-        setFeaturedProducts(featured.length > 0 ? featured : allActive);
+        const finalProducts = featured.length > 0 ? featured : allActive;
+        const finalSliders = sliders.length > 0 ? sliders : SAMPLE_SLIDERS;
+        const finalTop = topPoster || SAMPLE_SIDE_TOP;
+        const finalBl = blPoster || SAMPLE_SIDE_BOTTOM_LEFT;
+        const finalBr = brPoster || SAMPLE_SIDE_BOTTOM_RIGHT;
+
+        setFeaturedProducts(finalProducts);
         setCategories(cats);
-        try { localStorage.setItem('mg_client_categories_cache', JSON.stringify(cats)); } catch {}
-        setSliderBanners(sliders.length > 0 ? sliders : sampleSliders);
-        setSideTopPoster(topPoster || sampleSideTop);
-        setSideBottomLeftPoster(blPoster || sampleSideBottomLeft);
-        setSideBottomRightPoster(brPoster || sampleSideBottomRight);
+        setSliderBanners(finalSliders);
+        setSideTopPoster(finalTop);
+        setSideBottomLeftPoster(finalBl);
+        setSideBottomRightPoster(finalBr);
+
+        // Cache for ultra-fast instant refresh
+        try {
+          sessionStorage.setItem('mg_cache_home_featured', JSON.stringify(finalProducts));
+          localStorage.setItem('mg_cache_home_featured', JSON.stringify(finalProducts));
+          sessionStorage.setItem('mg_client_categories_cache', JSON.stringify(cats));
+          localStorage.setItem('mg_client_categories_cache', JSON.stringify(cats));
+          sessionStorage.setItem('mg_cache_home_sliders', JSON.stringify(finalSliders));
+          sessionStorage.setItem('mg_cache_home_top_poster', JSON.stringify(finalTop));
+          sessionStorage.setItem('mg_cache_home_bl_poster', JSON.stringify(finalBl));
+          sessionStorage.setItem('mg_cache_home_br_poster', JSON.stringify(finalBr));
+        } catch {}
       } catch (e) {
         console.error("Error loading homepage data:", e);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchData();
+    return () => { isMounted = false; };
   }, []);
 
   // Automatic hero slide interval if multiple sliders exist (ONLY left hero slider slides!)
@@ -248,6 +304,8 @@ export const HomePage: React.FC = () => {
                         <img
                           src={slide.imageUrl}
                           alt={slide.title || 'Murad Graphics Banner'}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          decoding="async"
                           className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                         />
                       </a>
@@ -256,6 +314,8 @@ export const HomePage: React.FC = () => {
                         <img
                           src={slide.imageUrl}
                           alt={slide.title || 'Murad Graphics Banner'}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          decoding="async"
                           className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                         />
                       </Link>
@@ -355,6 +415,8 @@ export const HomePage: React.FC = () => {
                     <img
                       src={sideTopPoster.imageUrl}
                       alt={sideTopPoster.title || 'Special Promotion'}
+                      loading="eager"
+                      decoding="async"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
                   </a>
@@ -363,6 +425,8 @@ export const HomePage: React.FC = () => {
                     <img
                       src={sideTopPoster.imageUrl}
                       alt={sideTopPoster.title || 'Special Promotion'}
+                      loading="eager"
+                      decoding="async"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
                   </Link>
@@ -381,6 +445,8 @@ export const HomePage: React.FC = () => {
                       <img
                         src={sideBottomLeftPoster.imageUrl}
                         alt={sideBottomLeftPoster.title || 'Deal'}
+                        loading="eager"
+                        decoding="async"
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                     </a>
@@ -389,6 +455,8 @@ export const HomePage: React.FC = () => {
                       <img
                         src={sideBottomLeftPoster.imageUrl}
                         alt={sideBottomLeftPoster.title || 'Deal'}
+                        loading="eager"
+                        decoding="async"
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                     </Link>
@@ -404,6 +472,8 @@ export const HomePage: React.FC = () => {
                       <img
                         src={sideBottomRightPoster.imageUrl}
                         alt={sideBottomRightPoster.title || 'Deal'}
+                        loading="eager"
+                        decoding="async"
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                     </a>
@@ -412,6 +482,8 @@ export const HomePage: React.FC = () => {
                       <img
                         src={sideBottomRightPoster.imageUrl}
                         alt={sideBottomRightPoster.title || 'Deal'}
+                        loading="eager"
+                        decoding="async"
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                     </Link>

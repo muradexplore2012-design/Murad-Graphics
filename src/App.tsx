@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -8,44 +8,51 @@ import { WishlistProvider } from './contexts/WishlistContext';
 import { Layout } from './components/layout/Layout';
 import { AdminLayout } from './components/layout/AdminLayout';
 
-// Customer Pages
+// Direct critical home page for immediate first paint
 import { HomePage } from './pages/customer/HomePage';
-import { ShopPage } from './pages/customer/ShopPage';
-import { CategoryPage } from './pages/customer/CategoryPage';
-import { ProductDetailPage } from './pages/customer/ProductDetailPage';
-import { CartPage } from './pages/customer/CartPage';
-import { CheckoutPage } from './pages/customer/CheckoutPage';
-import { OrderDetailPage } from './pages/customer/OrderDetailPage';
-import { AccountPage } from './pages/customer/AccountPage';
-import { DownloadsPage } from './pages/customer/DownloadsPage';
-import { WishlistPage } from './pages/customer/WishlistPage';
-import { LoginPage } from './pages/customer/LoginPage';
-import { NotFoundPage } from './pages/customer/NotFoundPage';
 
-// Static info pages
-import { 
-  AboutPage, 
-  ContactPage, 
-  LicensePolicyPage, 
-  RefundPolicyPage, 
-  TermsPage, 
-  PrivacyPage, 
-  FaqPage 
-} from './pages/customer/StaticPages';
+// Lazy Customer Pages
+const ShopPage = React.lazy(() => import('./pages/customer/ShopPage').then(m => ({ default: m.ShopPage })));
+const CategoryPage = React.lazy(() => import('./pages/customer/CategoryPage').then(m => ({ default: m.CategoryPage })));
+const ProductDetailPage = React.lazy(() => import('./pages/customer/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
+const CartPage = React.lazy(() => import('./pages/customer/CartPage').then(m => ({ default: m.CartPage })));
+const CheckoutPage = React.lazy(() => import('./pages/customer/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const OrderDetailPage = React.lazy(() => import('./pages/customer/OrderDetailPage').then(m => ({ default: m.OrderDetailPage })));
+const AccountPage = React.lazy(() => import('./pages/customer/AccountPage').then(m => ({ default: m.AccountPage })));
+const DownloadsPage = React.lazy(() => import('./pages/customer/DownloadsPage').then(m => ({ default: m.DownloadsPage })));
+const WishlistPage = React.lazy(() => import('./pages/customer/WishlistPage').then(m => ({ default: m.WishlistPage })));
+const LoginPage = React.lazy(() => import('./pages/customer/LoginPage').then(m => ({ default: m.LoginPage })));
+const NotFoundPage = React.lazy(() => import('./pages/customer/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
-// Admin Pages
-import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminProductsPage } from './pages/admin/AdminProductsPage';
-import { AdminProductFormPage } from './pages/admin/AdminProductFormPage';
-import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
-import { AdminOrdersPage } from './pages/admin/AdminOrdersPage';
-import { AdminCouponsPage } from './pages/admin/AdminCouponsPage';
-import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
-import { AdminBannersPage } from './pages/admin/AdminBannersPage';
-import { AdminFooterSocialPage } from './pages/admin/AdminFooterSocialPage';
-import { AdminReviewsPage, AdminDownloadAuditPage } from './pages/admin/AdminExtrasPages';
-import { AccessDeniedPage } from './pages/admin/AccessDeniedPage';
+// Lazy Static Pages
+const AboutPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.AboutPage })));
+const ContactPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.ContactPage })));
+const LicensePolicyPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.LicensePolicyPage })));
+const RefundPolicyPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.RefundPolicyPage })));
+const TermsPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.TermsPage })));
+const PrivacyPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.PrivacyPage })));
+const FaqPage = React.lazy(() => import('./pages/customer/StaticPages').then(m => ({ default: m.FaqPage })));
+
+// Lazy Admin Pages
+const AdminLoginPage = React.lazy(() => import('./pages/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
+const AccessDeniedPage = React.lazy(() => import('./pages/admin/AccessDeniedPage').then(m => ({ default: m.AccessDeniedPage })));
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminProductsPage = React.lazy(() => import('./pages/admin/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
+const AdminProductFormPage = React.lazy(() => import('./pages/admin/AdminProductFormPage').then(m => ({ default: m.AdminProductFormPage })));
+const AdminCategoriesPage = React.lazy(() => import('./pages/admin/AdminCategoriesPage').then(m => ({ default: m.AdminCategoriesPage })));
+const AdminOrdersPage = React.lazy(() => import('./pages/admin/AdminOrdersPage').then(m => ({ default: m.AdminOrdersPage })));
+const AdminCouponsPage = React.lazy(() => import('./pages/admin/AdminCouponsPage').then(m => ({ default: m.AdminCouponsPage })));
+const AdminSettingsPage = React.lazy(() => import('./pages/admin/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
+const AdminBannersPage = React.lazy(() => import('./pages/admin/AdminBannersPage').then(m => ({ default: m.AdminBannersPage })));
+const AdminFooterSocialPage = React.lazy(() => import('./pages/admin/AdminFooterSocialPage').then(m => ({ default: m.AdminFooterSocialPage })));
+const AdminReviewsPage = React.lazy(() => import('./pages/admin/AdminExtrasPages').then(m => ({ default: m.AdminReviewsPage })));
+const AdminDownloadAuditPage = React.lazy(() => import('./pages/admin/AdminExtrasPages').then(m => ({ default: m.AdminDownloadAuditPage })));
+
+const PageLoader: React.FC = () => (
+  <div className="min-h-[50vh] flex items-center justify-center py-16">
+    <div className="w-8 h-8 rounded-full border-2 border-purple-600 border-t-transparent animate-spin" />
+  </div>
+);
 
 export function App() {
   return (
@@ -53,56 +60,58 @@ export function App() {
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <Routes>
-              
-              {/* Customer Website Routes */}
-              <Route path="/" element={<Layout />}>
-                <Route index element={<HomePage />} />
-                <Route path="shop" element={<ShopPage />} />
-                <Route path="category/:slug" element={<CategoryPage />} />
-                <Route path="product/:slug" element={<ProductDetailPage />} />
-                <Route path="cart" element={<CartPage />} />
-                <Route path="checkout" element={<CheckoutPage />} />
-                <Route path="account" element={<AccountPage />} />
-                <Route path="account/orders/:id" element={<OrderDetailPage />} />
-                <Route path="account/downloads" element={<DownloadsPage />} />
-                <Route path="wishlist" element={<WishlistPage />} />
-                <Route path="login" element={<LoginPage />} />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
                 
-                {/* Information pages */}
-                <Route path="about" element={<AboutPage />} />
-                <Route path="contact" element={<ContactPage />} />
-                <Route path="license-policy" element={<LicensePolicyPage />} />
-                <Route path="refund-policy" element={<RefundPolicyPage />} />
-                <Route path="terms" element={<TermsPage />} />
-                <Route path="privacy-policy" element={<PrivacyPage />} />
-                <Route path="faq" element={<FaqPage />} />
+                {/* Customer Website Routes */}
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="shop" element={<ShopPage />} />
+                  <Route path="category/:slug" element={<CategoryPage />} />
+                  <Route path="product/:slug" element={<ProductDetailPage />} />
+                  <Route path="cart" element={<CartPage />} />
+                  <Route path="checkout" element={<CheckoutPage />} />
+                  <Route path="account" element={<AccountPage />} />
+                  <Route path="account/orders/:id" element={<OrderDetailPage />} />
+                  <Route path="account/downloads" element={<DownloadsPage />} />
+                  <Route path="wishlist" element={<WishlistPage />} />
+                  <Route path="login" element={<LoginPage />} />
+                  
+                  {/* Information pages */}
+                  <Route path="about" element={<AboutPage />} />
+                  <Route path="contact" element={<ContactPage />} />
+                  <Route path="license-policy" element={<LicensePolicyPage />} />
+                  <Route path="refund-policy" element={<RefundPolicyPage />} />
+                  <Route path="terms" element={<TermsPage />} />
+                  <Route path="privacy-policy" element={<PrivacyPage />} />
+                  <Route path="faq" element={<FaqPage />} />
 
-                {/* 404 handler inside layout */}
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
+                  {/* 404 handler inside layout */}
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
 
-              {/* Admin Portal Authentication */}
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="/admin/access-denied" element={<AccessDeniedPage />} />
+                {/* Admin Portal Authentication */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route path="/admin/access-denied" element={<AccessDeniedPage />} />
 
-              {/* Protected Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="products" element={<AdminProductsPage />} />
-                <Route path="products/new" element={<AdminProductFormPage />} />
-                <Route path="products/:id" element={<AdminProductFormPage />} />
-                <Route path="categories" element={<AdminCategoriesPage />} />
-                <Route path="orders" element={<AdminOrdersPage />} />
-                <Route path="coupons" element={<AdminCouponsPage />} />
-                <Route path="reviews" element={<AdminReviewsPage />} />
-                <Route path="downloads" element={<AdminDownloadAuditPage />} />
-                <Route path="banners" element={<AdminBannersPage />} />
-                <Route path="footer" element={<AdminFooterSocialPage />} />
-                <Route path="settings" element={<AdminSettingsPage />} />
-              </Route>
+                {/* Protected Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="products" element={<AdminProductsPage />} />
+                  <Route path="products/new" element={<AdminProductFormPage />} />
+                  <Route path="products/:id" element={<AdminProductFormPage />} />
+                  <Route path="categories" element={<AdminCategoriesPage />} />
+                  <Route path="orders" element={<AdminOrdersPage />} />
+                  <Route path="coupons" element={<AdminCouponsPage />} />
+                  <Route path="reviews" element={<AdminReviewsPage />} />
+                  <Route path="downloads" element={<AdminDownloadAuditPage />} />
+                  <Route path="banners" element={<AdminBannersPage />} />
+                  <Route path="footer" element={<AdminFooterSocialPage />} />
+                  <Route path="settings" element={<AdminSettingsPage />} />
+                </Route>
 
-            </Routes>
+              </Routes>
+            </Suspense>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
