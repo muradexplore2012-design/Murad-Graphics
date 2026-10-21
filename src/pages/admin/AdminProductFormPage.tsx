@@ -81,6 +81,7 @@ export const AdminProductFormPage: React.FC = () => {
   const [subscriptionDuration, setSubscriptionDuration] = useState('1 Year');
   const [subscriptionInstructions, setSubscriptionInstructions] = useState('');
   const [subscriptionInviteUrl, setSubscriptionInviteUrl] = useState('');
+  const [zipPassword, setZipPassword] = useState('');
 
   // Metadata
   const [availableFormats, setAvailableFormats] = useState<string[]>(DEFAULT_FORMATS);
@@ -118,6 +119,7 @@ export const AdminProductFormPage: React.FC = () => {
           setGoogleDriveUrl(prod.googleDriveUrl || '');
           setSubscriptionDuration(prod.subscriptionDuration || '1 Year');
           setSubscriptionInstructions(prod.subscriptionInstructions || '');
+          setZipPassword(prod.zipPassword || '');
           if (prod.deliveryMethod === 'subscription_access' && prod.googleDriveUrl) {
             setSubscriptionInviteUrl(prod.googleDriveUrl);
           }
@@ -286,6 +288,7 @@ export const AdminProductFormPage: React.FC = () => {
         googleDriveUrl: deliveryMethod === 'google_drive' 
           ? googleDriveUrl 
           : (deliveryMethod === 'subscription_access' ? subscriptionInviteUrl : ''),
+        zipPassword: zipPassword.trim() || '',
         subscriptionDuration: subscriptionDuration.trim() || '1 Year',
         subscriptionInstructions: subscriptionInstructions.trim() || 'অর্ডার সফল হলে আপনার ইমেইল বা হোয়াটসঅ্যাপে সাবস্ক্রিপশন ইনভাইটেশন লিংক / লগইন অ্যাক্সেস পাঠানো হবে।',
         ...(directDownloadUrl ? {
@@ -517,19 +520,25 @@ export const AdminProductFormPage: React.FC = () => {
 
               {/* Show Offer / Discount Badge Toggle */}
               <div className="sm:col-span-2 pt-2">
-                <label className="flex items-start sm:items-center gap-3 p-3.5 rounded-2xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 cursor-pointer transition-all">
+                <label 
+                  className={`flex items-start sm:items-center gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                    showDiscountBadge 
+                      ? 'border-emerald-500 bg-emerald-50/80 shadow-xs ring-1 ring-emerald-500/20' 
+                      : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/60'
+                  }`}
+                >
                   <input
                     type="checkbox"
                     checked={showDiscountBadge}
                     onChange={(e) => setShowDiscountBadge(e.target.checked)}
-                    className="mt-0.5 sm:mt-0 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
+                    className="mt-0.5 sm:mt-0 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 w-4 h-4 cursor-pointer"
                   />
                   <div>
-                    <p className="font-bold text-xs text-rose-950 flex items-center gap-2">
+                    <p className={`font-bold text-xs flex items-center gap-2 ${showDiscountBadge ? 'text-emerald-950' : 'text-slate-800'}`}>
                       <span>Show Offer / Discount Badge (% OFF) on Product Card</span>
                       {showDiscountBadge ? (
-                        <span className="px-2 py-0.5 rounded-md text-[9px] bg-rose-500 text-white font-extrabold uppercase tracking-wide">
-                          Active (Visible)
+                        <span className="px-2 py-0.5 rounded-md text-[9px] bg-emerald-600 text-white font-extrabold uppercase tracking-wide shadow-xs">
+                          Active
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded-md text-[9px] bg-slate-200 text-slate-600 font-bold uppercase tracking-wide">
@@ -537,7 +546,7 @@ export const AdminProductFormPage: React.FC = () => {
                         </span>
                       )}
                     </p>
-                    <p className="text-[11px] text-slate-600 font-normal mt-0.5">
+                    <p className={`text-[11px] font-normal mt-0.5 ${showDiscountBadge ? 'text-emerald-800' : 'text-slate-500'}`}>
                       টিক চিহ্ন দিলে কার্ডের উপর "50% OFF" স্টিকার শো করবে। আনচেক রাখলে প্রোডাক্ট কার্ডে কোনো অফার ব্যাজ দেখাবে না।
                     </p>
                   </div>
@@ -690,6 +699,31 @@ export const AdminProductFormPage: React.FC = () => {
               />
               <p className="text-[11px] text-slate-500">
                 Note: Ensure the file permission in Google Drive is set to "Anyone with the link can view". This link remains protected until purchase confirmation.
+              </p>
+            </div>
+          )}
+
+          {/* ZIP / Extraction Password (Optional for drive / file deliveries) */}
+          {deliveryMethod !== 'subscription_access' && (
+            <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                  <KeyRound className="w-4 h-4 text-[#7a00ea]" />
+                  <span>ZIP / ফাইল আনজিপ করার পাসওয়ার্ড (ঐচ্ছিক / Optional)</span>
+                </label>
+                <span className="text-[10px] font-semibold text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md">
+                  পাসওয়ার্ড না থাকলে ফাঁকা রাখুন
+                </span>
+              </div>
+              <input
+                type="text"
+                placeholder="যেমন: 1234 বা MG2026 (না থাকলে খালি রাখুন)"
+                value={zipPassword}
+                onChange={(e) => setZipPassword(e.target.value)}
+                className="w-full bg-white border border-purple-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#7a00ea] font-mono text-xs tracking-wider"
+              />
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                💡 <strong>কখন দিবেন?</strong> ফাইলটিতে যদি আনজিপ করার কোনো পাসওয়ার্ড থাকে (যেমন ৪ সংখ্যার পাসওয়ার্ড), তবে সেটি এখানে দিন। কাস্টমার অর্ডার সফল হওয়ার পর স্বয়ংক্রিয়ভাবে একটি সুন্দর নোটিশে পাসওয়ার্ড ও কপি বাটন দেখতে পাবে। পাসওয়ার্ড না থাকলে এটি ফাঁকা রাখুন।
               </p>
             </div>
           )}
@@ -858,104 +892,21 @@ export const AdminProductFormPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Specifications & Formats */}
+        {/* Search Tags & Visibility */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">
-            5. File Formats & Package Specifications
+            5. Search Tags & Visibility
           </h2>
 
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="font-semibold block text-slate-800">
-                Included Formats, Licenses & Badges
-              </label>
-              <span className="text-[11px] text-slate-400">Click pills to select / deselect</span>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {availableFormats.map((fmt) => (
-                <button
-                  type="button"
-                  key={fmt}
-                  onClick={() => toggleFormat(fmt)}
-                  className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    selectedFormats.includes(fmt)
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
-                  }`}
-                >
-                  {fmt}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom Format / Badge Input */}
-            <div className="flex items-center gap-2 pt-1 max-w-md">
-              <input
-                type="text"
-                placeholder="Type custom format (e.g. Canva Pro, Windows 11 Key)..."
-                value={customFormatInput}
-                onChange={(e) => setCustomFormatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddCustomFormat();
-                  }
-                }}
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddCustomFormat}
-                className="px-3.5 py-2 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
-              >
-                + Add Badge
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="space-y-4">
             <div>
-              <label className="font-semibold block mb-1 text-slate-800">File Size Label</label>
-              <input
-                type="text"
-                placeholder="e.g. 125 MB"
-                value={fileSizeText}
-                onChange={(e) => setFileSizeText(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="font-semibold block mb-1 text-slate-800">Software Compatibility</label>
-              <input
-                type="text"
-                placeholder="e.g. Photoshop CC 2022+, Illustrator"
-                value={compatibility}
-                onChange={(e) => setCompatibility(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="font-semibold block mb-1 text-slate-800">Package Contents (What's in the ZIP)</label>
-              <textarea
-                rows={3}
-                placeholder="e.g. 10x PSD Mockups, 1x Documentation PDF, Readme.txt..."
-                value={bundleContents}
-                onChange={(e) => setBundleContents(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="font-semibold block mb-1 text-slate-800">Search Tags (comma separated)</label>
+              <label className="font-semibold block mb-1 text-slate-800 text-xs">Search Tags (comma separated)</label>
               <input
                 type="text"
                 placeholder="flyer, ramadan, editable, mockup, psd"
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs"
               />
             </div>
           </div>
