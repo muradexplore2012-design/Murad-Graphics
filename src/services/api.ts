@@ -558,6 +558,7 @@ export const grantEntitlementsForOrder = async (order: Order) => {
       orderId: order.id,
       isFree: item.isFree,
       zipPassword: item.zipPassword || '',
+      deliveryMethod: item.deliveryMethod || 'direct_upload',
       accessGrantedAt: now,
       downloadCount: 0,
       status: 'active'
@@ -594,6 +595,7 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string },
         thumbnail: product.thumbnail || '',
         isFree: true,
         zipPassword: product.zipPassword || '',
+        deliveryMethod: product.deliveryMethod || 'direct_upload',
         accessGrantedAt: new Date().toISOString(),
         downloadCount: 0,
         status: 'active'

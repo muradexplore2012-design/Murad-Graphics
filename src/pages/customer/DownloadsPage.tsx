@@ -3,22 +3,31 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUserEntitlements, recordDownloadEvent, getProductById, getUserOrders } from '../../services/api';
 import { DownloadEntitlement, Product } from '../../types';
-import { Download, FileText, CheckCircle2, AlertCircle, KeyRound, Copy, Check, X, ExternalLink, Sparkles } from 'lucide-react';
+import { Download, FileText, CheckCircle2, AlertCircle, KeyRound, Copy, Check, X, ExternalLink, Sparkles, MessageSquare, FolderDown } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 
 export const DownloadsPage: React.FC = () => {
   const { user } = useAuth();
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>([]);
+  const [productCache, setProductCache] = useState<Record<string, Product>>({});
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'files' | 'subscriptions'>('all');
+
+  // Modal for downloadable file ZIP Password
   const [activeDownloadModal, setActiveDownloadModal] = useState<{
     productName: string;
     zipPassword?: string;
     downloadUrl?: string;
-    isSubscription?: boolean;
-    subscriptionInstructions?: string;
+  } | null>(null);
+
+  // Modal for subscription activation details (Zero mention of "Download")
+  const [activeSubscriptionModal, setActiveSubscriptionModal] = useState<{
+    productName: string;
+    instructions?: string;
+    inviteUrl?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -51,6 +60,7 @@ export const DownloadsPage: React.FC = () => {
                   orderId: order.id,
                   isFree: item.isFree,
                   zipPassword: item.zipPassword || '',
+                  deliveryMethod: item.deliveryMethod,
                   accessGrantedAt: order.createdAt,
                   downloadCount: 0,
                   status: 'active'
@@ -61,6 +71,17 @@ export const DownloadsPage: React.FC = () => {
         });
 
         setEntitlements(combined);
+
+        // Fetch products in background to accurately resolve delivery method & instructions
+        const uniqueProductIds = Array.from(new Set(combined.map(e => e.productId)));
+        const productsList = await Promise.all(
+          uniqueProductIds.map(id => getProductById(id).catch(() => null))
+        );
+        const pMap: Record<string, Product> = {};
+        productsList.forEach(p => {
+          if (p) pMap[p.id] = p;
+        });
+        setProductCache(pMap);
       } catch (err) {
         console.error("Error loading entitlements:", err);
       } finally {
@@ -70,13 +91,35 @@ export const DownloadsPage: React.FC = () => {
     fetchEntitlements();
   }, [user]);
 
+  const isSubscriptionItem = (ent: DownloadEntitlement): boolean => {
+    if (ent.deliveryMethod === 'subscription_access') return true;
+    const prod = productCache[ent.productId];
+    if (prod && prod.deliveryMethod === 'subscription_access') return true;
+    return ent.productName.toLowerCase().includes('subscription');
+  };
+
+  const handleOpenSubscription = async (entitlement: DownloadEntitlement) => {
+    const prod = productCache[entitlement.productId] || await getProductById(entitlement.productId);
+    setActiveSubscriptionModal({
+      productName: entitlement.productName,
+      instructions: prod?.subscriptionInstructions || "আপনার সাবস্ক্রিপশন ইনভাইটেশন লিংক / লগইন অ্যাক্সেস আপনার ইমেইল বা হোয়াটসঅ্যাপে পাঠানো হয়েছে। কোনো সাহায্যের জন্য আমাদের সাথে হোয়াটসঅ্যাপে যোগাযোগ করুন।",
+      inviteUrl: prod?.googleDriveUrl || ''
+    });
+  };
+
   const handleDownloadFile = async (entitlement: DownloadEntitlement) => {
     setDownloadingId(entitlement.id);
     try {
       // 1. Fetch real product to get the download file / google drive link
-      const product = await getProductById(entitlement.productId);
+      const product = productCache[entitlement.productId] || await getProductById(entitlement.productId);
       if (!product) {
         alert("Product record could not be found.");
+        return;
+      }
+
+      // If it is a subscription, redirect to subscription modal
+      if (product.deliveryMethod === 'subscription_access' || entitlement.productName.toLowerCase().includes('subscription')) {
+        handleOpenSubscription(entitlement);
         return;
       }
 
@@ -86,20 +129,7 @@ export const DownloadsPage: React.FC = () => {
       const zipPass = entitlement.zipPassword || product.zipPassword || '';
       let targetUrl = '';
 
-      // 3. Open appropriate link
-      if (product.deliveryMethod === 'subscription_access') {
-        if (product.googleDriveUrl) {
-          targetUrl = product.googleDriveUrl;
-          window.open(product.googleDriveUrl, '_blank');
-        }
-        setActiveDownloadModal({
-          productName: product.name,
-          zipPassword: '',
-          downloadUrl: product.googleDriveUrl || '',
-          isSubscription: true,
-          subscriptionInstructions: product.subscriptionInstructions
-        });
-      } else if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
+      if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
         targetUrl = product.googleDriveUrl;
         window.open(product.googleDriveUrl, '_blank');
         setActiveDownloadModal({
@@ -137,13 +167,62 @@ export const DownloadsPage: React.FC = () => {
     );
   }
 
+  const subscriptionsCount = entitlements.filter(isSubscriptionItem).length;
+  const filesCount = entitlements.length - subscriptionsCount;
+
+  const filteredEntitlements = entitlements.filter((ent) => {
+    const isSub = isSubscriptionItem(ent);
+    if (activeTab === 'files') return !isSub;
+    if (activeTab === 'subscriptions') return isSub;
+    return true;
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <div className="pb-6 border-b border-slate-200">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Digital Downloads Library</h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Access and re-download your purchased assets and claimed freebies at any time
-        </p>
+      {/* Header */}
+      <div className="pb-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Digital Library</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Access and re-download your purchased assets, files, and subscription access
+          </p>
+        </div>
+
+        {/* Filter Tabs */}
+        {entitlements.length > 0 && (
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl self-start md:self-auto border border-slate-200/80">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'all'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              All Items ({entitlements.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('files')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'files'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Files ({filesCount})
+            </button>
+            <button
+              onClick={() => setActiveTab('subscriptions')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'subscriptions'
+                  ? 'bg-white text-purple-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Subscriptions ({subscriptionsCount})
+            </button>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -152,104 +231,209 @@ export const DownloadsPage: React.FC = () => {
             <div key={i} className="h-44 bg-slate-200 rounded-2xl animate-pulse" />
           ))}
         </div>
-      ) : entitlements.length === 0 ? (
+      ) : filteredEntitlements.length === 0 ? (
         <EmptyState
-          icon={<Download className="w-8 h-8 text-blue-600" />}
-          title="No digital downloads yet"
-          description="You haven't claimed any freebies or completed any purchases yet."
+          icon={<FolderDown className="w-8 h-8 text-blue-600" />}
+          title={activeTab === 'subscriptions' ? "No subscriptions found" : "No digital items found"}
+          description={activeTab === 'subscriptions' ? "You don't have any active subscriptions yet." : "You haven't claimed any freebies or completed any purchases yet."}
           actionLabel="Explore Marketplace"
           actionHref="/shop"
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {entitlements.map((ent) => (
-            <div 
-              key={ent.id} 
-              className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-            >
-              <div className="flex gap-4">
-                <img
-                  src={ent.thumbnail || '/logo.png'}
-                  alt={ent.productName}
-                  className="w-16 h-16 rounded-xl object-cover bg-slate-100 shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 ${
-                    ent.isFree ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'
-                  }`}>
-                    {ent.isFree ? 'Free Claim' : 'Verified Purchase'}
-                  </span>
-                  <Link to={`/product/${ent.productSlug}`}>
-                    <h3 className="font-bold text-slate-900 text-sm hover:text-blue-600 line-clamp-2">
-                      {ent.productName}
-                    </h3>
-                  </Link>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Added: {new Date(ent.accessGrantedAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
+          {filteredEntitlements.map((ent) => {
+            const isSub = isSubscriptionItem(ent);
 
-              {/* ZIP Extraction Password chip if applicable */}
-              {ent.zipPassword && (
-                <div className="mt-3 p-2.5 bg-purple-50 border border-purple-200/80 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 text-purple-900 font-semibold text-[11px]">
-                    <KeyRound className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                    <span>ZIP Pass:</span>
-                    <span className="font-mono font-black bg-white px-2 py-0.5 rounded border border-purple-200 text-[#7a00ea] tracking-wider">
-                      {ent.zipPassword}
-                    </span>
+            return (
+              <div 
+                key={ent.id} 
+                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                <div className="flex gap-4">
+                  <img
+                    src={ent.thumbnail || '/logo.png'}
+                    alt={ent.productName}
+                    className="w-16 h-16 rounded-xl object-cover bg-slate-100 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    {/* Badge: Subscriptions NEVER say 'Free Claim' or 'Verified Purchase', they say 'Subscription Access' */}
+                    <div className="mb-1">
+                      {isSub ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                          <Sparkles className="w-3 h-3 text-purple-600" /> Subscription Access
+                        </span>
+                      ) : (
+                        <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          ent.isFree ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'
+                        }`}>
+                          {ent.isFree ? 'Free Claim' : 'Verified Purchase'}
+                        </span>
+                      )}
+                    </div>
+
+                    <Link to={`/product/${ent.productSlug}`}>
+                      <h3 className="font-bold text-slate-900 text-sm hover:text-blue-600 line-clamp-2">
+                        {ent.productName}
+                      </h3>
+                    </Link>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Added: {new Date(ent.accessGrantedAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(ent.zipPassword || '');
-                      setCopiedId(ent.id);
-                      setTimeout(() => setCopiedId(null), 2000);
-                    }}
-                    className="text-[11px] font-bold text-purple-700 hover:text-purple-950 flex items-center gap-1 cursor-pointer bg-white px-2 py-1 rounded-md border border-purple-200 shadow-2xs active:scale-95 transition-all"
-                  >
-                    {copiedId === ent.id ? (
-                      <>
-                        <Check className="w-3 h-3 text-emerald-600" />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3 text-purple-600" />
-                        <span>Copy</span>
-                      </>
-                    )}
-                  </button>
                 </div>
-              )}
 
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Downloaded: {ent.downloadCount || 0} times
-                </span>
-                <button
-                  onClick={() => handleDownloadFile(ent)}
-                  disabled={downloadingId === ent.id}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>{downloadingId === ent.id ? "Opening..." : "Download File"}</span>
-                </button>
+                {/* ZIP Extraction Password chip (ONLY for files, NEVER for subscriptions) */}
+                {!isSub && ent.zipPassword && (
+                  <div className="mt-3 p-2.5 bg-purple-50 border border-purple-200/80 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 text-purple-900 font-semibold text-[11px]">
+                      <KeyRound className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                      <span>ZIP Pass:</span>
+                      <span className="font-mono font-black bg-white px-2 py-0.5 rounded border border-purple-200 text-[#7a00ea] tracking-wider">
+                        {ent.zipPassword}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(ent.zipPassword || '');
+                        setCopiedId(ent.id);
+                        setTimeout(() => setCopiedId(null), 2000);
+                      }}
+                      className="text-[11px] font-bold text-purple-700 hover:text-purple-950 flex items-center gap-1 cursor-pointer bg-white px-2 py-1 rounded-md border border-purple-200 shadow-2xs active:scale-95 transition-all"
+                    >
+                      {copiedId === ent.id ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span>Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Bottom Action Area: Subscriptions NEVER show "Download" */}
+                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                  {isSub ? (
+                    <>
+                      <span className="text-[11px] text-purple-700 font-semibold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Active Subscription</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSubscription(ent)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Access Info</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        Downloaded: {ent.downloadCount || 0} times
+                      </span>
+                      <button
+                        onClick={() => handleDownloadFile(ent)}
+                        disabled={downloadingId === ent.id}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{downloadingId === ent.id ? "Opening..." : "Download File"}</span>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* ================= ZIP / DOWNLOAD POPUP MODAL ================= */}
+      {/* ================= 1. SUBSCRIPTION ACCESS MODAL (NEVER SAYS DOWNLOAD) ================= */}
+      {activeSubscriptionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-5 animate-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setActiveSubscriptionModal(null)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header Icon & Title */}
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-xs">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                সাবস্ক্রিপশন এক্সেস তথ্য ✨
+              </h3>
+              <p className="text-xs text-purple-700 font-bold">
+                {activeSubscriptionModal.productName}
+              </p>
+            </div>
+
+            {/* Subscription Instructions Box */}
+            <div className="space-y-2.5 p-4 bg-purple-50/70 border border-purple-200/80 rounded-2xl">
+              <span className="text-[10px] uppercase font-bold text-purple-700 block tracking-wider">
+                অ্যাক্টিভেশন নির্দেশাবলী
+              </span>
+              <p className="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-line">
+                {activeSubscriptionModal.instructions}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-2.5 pt-2">
+              {activeSubscriptionModal.inviteUrl && (
+                <a
+                  href={activeSubscriptionModal.inviteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 text-center cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>ইনভাইটেশন লিংকে প্রবেশ করুন</span>
+                </a>
+              )}
+
+              <a
+                href={`https://wa.me/8801566088159?text=Hello%20Murad%20Graphics,%20I%20need%20assistance%20with%20my%20subscription%20(${encodeURIComponent(activeSubscriptionModal.productName)})`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-colors text-center cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4 text-emerald-600" />
+                <span>হোয়াটসঅ্যাপে হেল্প নিন (01566088159)</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setActiveSubscriptionModal(null)}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                ঠিক আছে, বন্ধ করুন
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 2. FILE DOWNLOAD / ZIP PASSWORD POPUP MODAL ================= */}
       {activeDownloadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-5 animate-in zoom-in-95 duration-200">
             {/* Close Button */}
             <button
               onClick={() => setActiveDownloadModal(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -306,16 +490,6 @@ export const DownloadsPage: React.FC = () => {
                     )}
                   </button>
                 </div>
-              </div>
-            ) : activeDownloadModal.isSubscription ? (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-slate-700 space-y-2">
-                <p className="font-bold text-blue-900 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-blue-600" />
-                  <span>সাবস্ক্রিপশন এক্সেস</span>
-                </p>
-                <p className="leading-relaxed">
-                  {activeDownloadModal.subscriptionInstructions || "আপনার সাবস্ক্রিপশন ইনভাইটেশন ও লগইন তথ্য প্রসেস করা হচ্ছে।"}
-                </p>
               </div>
             ) : (
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-600 text-center">

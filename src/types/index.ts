@@ -136,6 +136,7 @@ export interface DownloadEntitlement {
   orderId?: string;
   isFree: boolean;
   zipPassword?: string;
+  deliveryMethod?: DeliveryMethod;
   accessGrantedAt: string;
   downloadCount: number;
   lastDownloadedAt?: string;
