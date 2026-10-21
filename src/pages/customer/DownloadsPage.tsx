@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUserEntitlements, recordDownloadEvent, getProductById } from '../../services/api';
 import { DownloadEntitlement, Product } from '../../types';
-import { Download, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Download, FileText, CheckCircle2, AlertCircle, KeyRound, Copy, Check } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 
@@ -12,6 +12,7 @@ export const DownloadsPage: React.FC = () => {
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEntitlements = async () => {
@@ -127,6 +128,40 @@ export const DownloadsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              {/* ZIP Extraction Password chip if applicable */}
+              {ent.zipPassword && (
+                <div className="mt-3 p-2.5 bg-purple-50 border border-purple-200/80 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-purple-900 font-semibold text-[11px]">
+                    <KeyRound className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <span>ZIP Pass:</span>
+                    <span className="font-mono font-black bg-white px-2 py-0.5 rounded border border-purple-200 text-[#7a00ea] tracking-wider">
+                      {ent.zipPassword}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(ent.zipPassword || '');
+                      setCopiedId(ent.id);
+                      setTimeout(() => setCopiedId(null), 2000);
+                    }}
+                    className="text-[11px] font-bold text-purple-700 hover:text-purple-950 flex items-center gap-1 cursor-pointer bg-white px-2 py-1 rounded-md border border-purple-200 shadow-2xs active:scale-95 transition-all"
+                  >
+                    {copiedId === ent.id ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-purple-600" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
               <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-[11px] text-slate-500 font-medium">

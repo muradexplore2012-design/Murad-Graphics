@@ -63,7 +63,8 @@ export const CheckoutPage: React.FC = () => {
         price: p.price,
         isFree: p.isFree,
         formats: p.formats || [],
-        deliveryMethod: p.deliveryMethod
+        deliveryMethod: p.deliveryMethod,
+        zipPassword: p.zipPassword || ''
       }));
 
       const newOrder = await createOrder({

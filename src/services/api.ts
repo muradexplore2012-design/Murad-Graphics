@@ -557,6 +557,7 @@ export const grantEntitlementsForOrder = async (order: Order) => {
       thumbnail: item.thumbnail,
       orderId: order.id,
       isFree: item.isFree,
+      zipPassword: item.zipPassword || '',
       accessGrantedAt: now,
       downloadCount: 0,
       status: 'active'
@@ -591,6 +592,7 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string },
       productSlug: product.slug,
       thumbnail: product.thumbnail,
       isFree: true,
+      zipPassword: product.zipPassword || '',
       accessGrantedAt: new Date().toISOString(),
       downloadCount: 0,
       status: 'active'

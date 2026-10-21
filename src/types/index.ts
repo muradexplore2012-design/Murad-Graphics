@@ -47,6 +47,7 @@ export interface Product {
   deliveryMethod: DeliveryMethod;
   fileMetadata?: ProductFileMetadata;
   googleDriveUrl?: string; // only if deliveryMethod is google_drive
+  zipPassword?: string; // Optional password to extract/unzip the file (e.g. 4-digit code)
   subscriptionDuration?: string; // e.g. "1 Month", "6 Months", "1 Year", "Lifetime"
   subscriptionInstructions?: string; // Delivery note or credentials instructions for customer
   
@@ -98,6 +99,7 @@ export interface OrderItem {
   isFree: boolean;
   formats: string[];
   deliveryMethod: DeliveryMethod;
+  zipPassword?: string;
 }
 
 export type OrderPaymentStatus = 'pending' | 'verified' | 'failed' | 'cancelled' | 'refunded';
@@ -133,6 +135,7 @@ export interface DownloadEntitlement {
   thumbnail: string;
   orderId?: string;
   isFree: boolean;
+  zipPassword?: string;
   accessGrantedAt: string;
   downloadCount: number;
   lastDownloadedAt?: string;
