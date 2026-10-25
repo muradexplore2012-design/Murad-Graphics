@@ -185,14 +185,17 @@ export const Footer: React.FC = () => {
           {/* Bottom copyright line */}
           <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
-            <a 
-              href="https://www.facebook.com/profile.php?id=100085471628384"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-slate-500 hover:text-blue-600 transition-colors font-medium group"
-            >
-              Design by <span className="text-slate-800 group-hover:text-blue-600 font-semibold underline underline-offset-4 decoration-slate-300 group-hover:decoration-blue-600 transition-all">Murad Rahman</span>
-            </a>
+            <p className="text-xs text-slate-500 font-medium">
+              <span>Design by </span>
+              <a 
+                href="https://www.facebook.com/profile.php?id=100085471628384"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-slate-700 hover:text-blue-600 hover:underline underline-offset-4 decoration-blue-600 transition-colors"
+              >
+                Murad Rahman
+              </a>
+            </p>
           </div>
 
         </div>
@@ -297,13 +300,14 @@ export const Footer: React.FC = () => {
           <div className="text-[11px] text-slate-400 space-y-0.5">
             <div>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</div>
             <div>
+              <span>Design by </span>
               <a 
                 href="https://www.facebook.com/profile.php?id=100085471628384"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-blue-600 transition-colors text-slate-500 font-medium"
+                className="font-semibold text-slate-600 hover:text-blue-600 hover:underline underline-offset-2 transition-colors"
               >
-                Design by <span className="font-semibold text-slate-700 hover:underline">Murad Rahman</span>
+                Murad Rahman
               </a>
             </div>
           </div>
