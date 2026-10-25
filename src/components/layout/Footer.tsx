@@ -185,12 +185,14 @@ export const Footer: React.FC = () => {
           {/* Bottom copyright line */}
           <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <Link to="/license-policy" className="hover:text-slate-400">License</Link>
-              <Link to="/privacy-policy" className="hover:text-slate-400">Privacy</Link>
-              <Link to="/terms" className="hover:text-slate-400">Terms</Link>
-              <Link to="/admin" className="text-slate-600 hover:text-slate-400">Admin</Link>
-            </div>
+            <a 
+              href="https://www.facebook.com/profile.php?id=100085471628384"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-slate-400 hover:text-blue-400 transition-colors font-medium group"
+            >
+              Design by <span className="text-slate-300 group-hover:text-blue-400 font-semibold underline underline-offset-4 decoration-slate-700 group-hover:decoration-blue-400 transition-all">Murad Rahman</span>
+            </a>
           </div>
 
         </div>
@@ -292,8 +294,18 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* 5. Copyright */}
-          <div className="text-[11px] text-slate-400">
-            © {new Date().getFullYear()} {settings.siteName}. All rights reserved.
+          <div className="text-[11px] text-slate-400 space-y-0.5">
+            <div>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</div>
+            <div>
+              <a 
+                href="https://www.facebook.com/profile.php?id=100085471628384"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-blue-600 transition-colors text-slate-500 font-medium"
+              >
+                Design by <span className="font-semibold text-slate-700 hover:underline">Murad Rahman</span>
+              </a>
+            </div>
           </div>
 
         </div>
