@@ -144,7 +144,7 @@ export const Header: React.FC = () => {
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="h-12 sm:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              className="h-12 sm:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105 drop-shadow-[0_2px_10px_rgba(59,130,246,0.18)]"
             />
             <div className="flex flex-col">
               <span className="font-black text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
@@ -226,7 +226,7 @@ export const Header: React.FC = () => {
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="h-9 w-auto object-contain"
+              className="h-9 w-auto object-contain drop-shadow-[0_2px_8px_rgba(59,130,246,0.18)]"
             />
             <div className="flex flex-col">
               <span className="font-black text-lg tracking-tight text-slate-900 leading-none">
