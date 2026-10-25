@@ -411,24 +411,24 @@ export const ProductDetailPage: React.FC = () => {
                 <span>{downloading ? "Processing..." : "Download Free Resource"}</span>
               </button>
             ) : (
-              <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
+              <div className="flex items-center gap-2 sm:gap-3 w-full">
                 {/* Quantity Stepper: [-] 1 [+] */}
-                <div className="flex items-center border border-slate-200 rounded-xl bg-white shadow-xs overflow-hidden h-12 shrink-0">
+                <div className="flex items-center border border-slate-200 rounded-xl bg-white shadow-xs overflow-hidden h-11 sm:h-12 shrink-0">
                   <button
                     type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-base transition-colors"
+                    className="w-8 sm:w-10 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-sm sm:text-base transition-colors"
                     aria-label="Decrease quantity"
                   >
                     -
                   </button>
-                  <span className="w-10 text-center font-bold text-sm text-slate-900 select-none">
+                  <span className="w-7 sm:w-10 text-center font-bold text-xs sm:text-sm text-slate-900 select-none">
                     {quantity}
                   </span>
                   <button
                     type="button"
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-base transition-colors"
+                    className="w-8 sm:w-10 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-sm sm:text-base transition-colors"
                     aria-label="Increase quantity"
                   >
                     +
@@ -439,14 +439,14 @@ export const ProductDetailPage: React.FC = () => {
                 <button
                   onClick={() => addToCart(product)}
                   disabled={inCart}
-                  className={`flex-1 h-12 px-6 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer ${
+                  className={`flex-1 h-11 sm:h-12 px-2.5 sm:px-6 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95 cursor-pointer whitespace-nowrap min-w-0 ${
                     inCart 
                       ? 'bg-slate-200 text-slate-500 cursor-not-allowed' 
                       : 'bg-[#7a00ea] hover:bg-[#6c00d4] text-white shadow-purple-600/20'
                   }`}
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>{inCart ? 'Item in Cart' : 'Add to Cart'}</span>
+                  <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                  <span className="truncate">{inCart ? 'Item in Cart' : 'Add to Cart'}</span>
                 </button>
 
                 {/* Buy Now Button (Black) */}
@@ -455,9 +455,9 @@ export const ProductDetailPage: React.FC = () => {
                     addToCart(product);
                     navigate('/checkout');
                   }}
-                  className="flex-1 h-12 px-6 rounded-xl bg-black hover:bg-slate-900 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center active:scale-95 cursor-pointer"
+                  className="flex-1 h-11 sm:h-12 px-3 sm:px-6 rounded-xl bg-black hover:bg-slate-900 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center active:scale-95 cursor-pointer whitespace-nowrap min-w-0"
                 >
-                  <span>Buy Now</span>
+                  <span className="truncate">Buy Now</span>
                 </button>
               </div>
             )}
