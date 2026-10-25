@@ -27,7 +27,7 @@ import { CategoryIcon } from '../../components/ui/CategoryIcon';
 const SAMPLE_SLIDERS: Banner[] = [
   {
     id: 'demo-slider-1',
-    title: 'Murad Graphics Premium Digital Marketplace',
+    title: 'Vyrqonix Premium Digital Marketplace',
     imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80',
     ctaLink: '/shop',
     placement: 'slider',
@@ -98,7 +98,6 @@ export const HomePage: React.FC = () => {
     } catch {}
     return [];
   });
-  const [productFilter, setProductFilter] = useState<'all' | 'paid' | 'free'>('all');
   const [categories, setCategories] = useState<Category[]>(() => {
     try {
       const saved = sessionStorage.getItem('mg_client_categories_cache') || localStorage.getItem('mg_client_categories_cache');
@@ -309,7 +308,7 @@ export const HomePage: React.FC = () => {
                       <a href={slide.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full overflow-hidden">
                         <img
                           src={slide.imageUrl}
-                          alt={slide.title || 'Murad Graphics Banner'}
+                          alt={slide.title || 'Vyrqonix Banner'}
                           loading={index === 0 ? "eager" : "lazy"}
                           decoding="async"
                           className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
@@ -319,7 +318,7 @@ export const HomePage: React.FC = () => {
                       <Link to={slide.ctaLink || '/shop'} className="block w-full h-full overflow-hidden">
                         <img
                           src={slide.imageUrl}
-                          alt={slide.title || 'Murad Graphics Banner'}
+                          alt={slide.title || 'Vyrqonix Banner'}
                           loading={index === 0 ? "eager" : "lazy"}
                           decoding="async"
                           className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
@@ -597,62 +596,18 @@ export const HomePage: React.FC = () => {
       {/* ================= PRODUCT SECTIONS ================= */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
-        {/* All Products (Free & Paid) */}
+        {/* Trending Products (Free & Paid All Assets) */}
         <section>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-end justify-between mb-8">
             <div>
-              <span className="text-xs font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> All Digital Resources
+              <span className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5" /> Trending Now
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
-                Explore Products
-              </h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Trending Products</h2>
             </div>
-
-            {/* Quick Filter: All | Premium | Free */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {allProducts.length > 0 && (
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/80">
-                  <button
-                    type="button"
-                    onClick={() => setProductFilter('all')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      productFilter === 'all'
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    All ({allProducts.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProductFilter('paid')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      productFilter === 'paid'
-                        ? 'bg-white text-purple-700 shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    💎 Premium ({allProducts.filter(p => !p.isFree).length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProductFilter('free')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      productFilter === 'free'
-                        ? 'bg-white text-emerald-700 shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    🎁 Free ({allProducts.filter(p => p.isFree).length})
-                  </button>
-                </div>
-              )}
-
-              <Link to="/shop" className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group ml-1">
-                Browse Shop <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
+            <Link to="/shop" className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+              Browse More <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
 
           {loading ? (
@@ -661,20 +616,18 @@ export const HomePage: React.FC = () => {
                 <ProductCardSkeleton key={i} />
               ))}
             </div>
-          ) : allProducts.filter(p => productFilter === 'all' ? true : productFilter === 'free' ? p.isFree : !p.isFree).length === 0 ? (
+          ) : allProducts.length === 0 ? (
             <EmptyState
-              title="No products found"
-              description="Digital assets and design files will be displayed here once published by the administrator."
+              title="No trending products yet"
+              description="Trending digital assets and design files will be displayed here once published by the administrator."
               actionLabel="Explore All Products"
               actionHref="/shop"
             />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {allProducts
-                .filter(p => productFilter === 'all' ? true : productFilter === 'free' ? p.isFree : !p.isFree)
-                .map((p) => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
+              {allProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
             </div>
           )}
         </section>

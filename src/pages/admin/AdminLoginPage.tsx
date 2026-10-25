@@ -108,14 +108,14 @@ export const AdminLoginPage: React.FC = () => {
         <div className="text-center space-y-2">
           <img
             src="/logo.png"
-            alt="Murad Graphics Admin"
+            alt="Vyrqonix Admin"
             className="w-16 h-16 mx-auto object-contain"
           />
           <h1 className="text-2xl font-black tracking-tight text-slate-900">
             Admin Portal Authentication
           </h1>
           <p className="text-xs text-slate-500">
-            Protected management workspace for Murad Graphics
+            Protected management workspace for Vyrqonix
           </p>
         </div>
 

@@ -80,7 +80,7 @@ export const AdminReviewsPage: React.FC = () => {
     try {
       await createAdminReview({
         productId: selectedProductId || 'general-review',
-        productName: selectedProduct?.name || 'Murad Graphics Asset',
+        productName: selectedProduct?.name || 'Vyrqonix Asset',
         userId: 'admin-created-review',
         userName: reviewerName.trim(),
         userEmail: reviewerEmail.trim() || 'customer@example.com',

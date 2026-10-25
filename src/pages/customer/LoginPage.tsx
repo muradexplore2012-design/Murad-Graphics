@@ -172,10 +172,10 @@ export const LoginPage: React.FC = () => {
         
         {/* Brand Logo */}
         <div className="flex justify-center -mb-2">
-          <Link to="/" className="inline-block transition-transform hover:scale-105" title="Murad Graphics">
+          <Link to="/" className="inline-block transition-transform hover:scale-105" title="Vyrqonix">
             <img
               src="/logo.png"
-              alt="Murad Graphics"
+              alt="Vyrqonix"
               className="w-14 h-14 object-contain"
             />
           </Link>

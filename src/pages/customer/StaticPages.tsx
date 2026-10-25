@@ -9,7 +9,7 @@ export const AboutPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-6">
-      <h1 className="text-3xl font-extrabold text-slate-900">About Murad Graphics</h1>
+      <h1 className="text-3xl font-extrabold text-slate-900">About Vyrqonix</h1>
       <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed whitespace-pre-line">
         {settings.aboutText}
       </div>

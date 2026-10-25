@@ -8,7 +8,7 @@ export const NotFoundPage: React.FC = () => {
       <div className="max-w-md space-y-6">
         <img
           src="/logo.png"
-          alt="Murad Graphics"
+          alt="Vyrqonix"
           className="w-16 h-16 mx-auto object-contain rounded-2xl shadow-sm"
         />
         <div className="space-y-2">

@@ -70,11 +70,11 @@ export const Footer: React.FC = () => {
               <Link to="/" className="flex items-center gap-3 group">
                 <img 
                   src="/logo.png" 
-                  alt="Murad Graphics Logo" 
+                  alt="Vyrqonix Logo" 
                   className="w-10 h-10 object-contain rounded-xl"
                 />
                 <span className="text-xl font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors">
-                  MURAD <span className="text-blue-500">GRAPHICS</span>
+                  VYR <span className="text-blue-500">QONIX</span>
                 </span>
               </Link>
               <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
@@ -209,7 +209,7 @@ export const Footer: React.FC = () => {
                 className="w-9 h-9 object-contain rounded-xl"
               />
               <span className="font-black text-2xl tracking-tight text-slate-900 leading-none">
-                MURAD<span className="text-[#7a00ea]">GRAPHICS</span>
+                VYR<span className="text-[#7a00ea]">QONIX</span>
               </span>
             </Link>
 
@@ -347,7 +347,7 @@ export const Footer: React.FC = () => {
 
               {/* Facebook */}
               <a
-                href={settings.socialLinks?.find(s => s.name.toLowerCase().includes('facebook'))?.url || "https://facebook.com/MuradGraphics"}
+                href={settings.socialLinks?.find(s => s.name.toLowerCase().includes('facebook'))?.url || "https://facebook.com/Vyrqonix"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform"

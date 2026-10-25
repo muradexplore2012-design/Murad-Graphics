@@ -106,11 +106,11 @@ export const AdminFooterSocialPage: React.FC = () => {
   const existingNames = (settings.socialLinks || []).map(s => s.name.toLowerCase());
 
   const presets = [
-    { name: 'YouTube', url: 'https://youtube.com/@muradgraphics' },
-    { name: 'Facebook', url: 'https://facebook.com/muradgraphics' },
+    { name: 'YouTube', url: 'https://youtube.com/@vyrqonix' },
+    { name: 'Facebook', url: 'https://facebook.com/vyrqonix' },
     { name: 'WhatsApp', url: 'https://wa.me/8801566088159' },
-    { name: 'Telegram', url: 'https://t.me/muradgraphics' },
-    { name: 'Behance', url: 'https://behance.net/muradgraphics' },
+    { name: 'Telegram', url: 'https://t.me/vyrqonix' },
+    { name: 'Behance', url: 'https://behance.net/vyrqonix' },
   ];
 
   return (

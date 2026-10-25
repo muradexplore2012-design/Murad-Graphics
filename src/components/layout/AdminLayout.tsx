@@ -97,7 +97,7 @@ export const AdminLayout: React.FC = () => {
             <div className="flex items-center gap-3">
               <img src="/logo.png" alt="Admin Logo" className="w-10 h-10 rounded-xl shrink-0 border border-slate-100 shadow-xs" />
               <div>
-                <span className="font-black text-sm text-slate-900 block tracking-tight">MURAD GRAPHICS</span>
+                <span className="font-black text-sm text-slate-900 block tracking-tight">VYRQONIX</span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full inline-block mt-0.5">
                   ADMIN CONSOLE
                 </span>

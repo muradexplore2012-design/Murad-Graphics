@@ -36,7 +36,7 @@ import {
 
 // ==================== DEFAULT SETTINGS ====================
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  siteName: "Murad Graphics",
+  siteName: "Vyrqonix",
   siteDescription: "A digital marketplace for graphic design resources, editable design files, software and apps.",
   phone: "01566088159",
   email: "muradrahman2026@gmail.com",
@@ -44,11 +44,11 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   whatsapp: "01566088159",
   currency: "BDT",
   timezone: "Asia/Dhaka",
-  defaultLicensePolicy: "All digital items purchased or downloaded from Murad Graphics are licensed for personal and commercial client projects. Resale, sub-licensing, or redistribution of original editable source files is strictly prohibited.",
+  defaultLicensePolicy: "All digital items purchased or downloaded from Vyrqonix are licensed for personal and commercial client projects. Resale, sub-licensing, or redistribution of original editable source files is strictly prohibited.",
   defaultRefundPolicy: "Due to the irreversible nature of digital downloads, sales of downloadable graphics and software are generally final once the download entitlement is activated. However, if a file is demonstrably corrupt or broken and our support team cannot provide a working version, a refund or credit will be evaluated.",
-  termsAndConditions: "By using Murad Graphics and downloading digital assets, you agree to comply with our licensing terms, copyright guidelines, and acceptable use policy.",
-  privacyPolicy: "We respect your privacy. Murad Graphics collects only the minimum information required for account authentication and digital purchase order verification.",
-  aboutText: "Murad Graphics is a premier Bangladeshi digital assets marketplace dedicated to empowering creators, agencies, freelancers, and businesses with high-quality graphic resources, templates, and software solutions.",
+  termsAndConditions: "By using Vyrqonix and downloading digital assets, you agree to comply with our licensing terms, copyright guidelines, and acceptable use policy.",
+  privacyPolicy: "We respect your privacy. Vyrqonix collects only the minimum information required for account authentication and digital purchase order verification.",
+  aboutText: "Vyrqonix is a premier digital assets marketplace dedicated to empowering creators, agencies, freelancers, and businesses with high-quality graphic resources, templates, and software solutions.",
   faqList: [
     { question: "How do I download my purchased items?", answer: "Once your payment is verified or you click claim on a free item, navigate to your Account > Downloads to access your files at any time." },
     { question: "Can I use these designs for client projects?", answer: "Yes! Standard commercial use for client work is included. You may not re-distribute the raw editable files for sale." },
@@ -57,7 +57,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   ],
   socialLinks: [
     { id: "1", name: "YouTube", url: "https://www.youtube.com/channel/UCDP9PD8OEpJkq63hMVNCYSg", icon: "youtube", isVisible: true, order: 1 },
-    { id: "2", name: "Facebook", url: "https://www.facebook.com/MuradGraphics", icon: "facebook", isVisible: true, order: 2 },
+    { id: "2", name: "Facebook", url: "https://www.facebook.com/vyrqonix", icon: "facebook", isVisible: true, order: 2 },
     { id: "3", name: "WhatsApp", url: "https://wa.me/8801566088159", icon: "whatsapp", isVisible: true, order: 3 }
   ]
 };
@@ -1100,7 +1100,7 @@ export const getAdminList = async (): Promise<AdminMember[]> => {
     id: SUPER_ADMIN_UID,
     uid: SUPER_ADMIN_UID,
     email: SUPER_ADMIN_EMAIL,
-    displayName: "Murad Graphics Super Admin",
+    displayName: "Vyrqonix Super Admin",
     role: "super_admin",
     addedAt: "2026-01-01T00:00:00.000Z",
     status: "active"
@@ -1162,7 +1162,7 @@ export const makeAdminByEmail = async (
   const userQuerySnap = await getDocs(q);
 
   if (userQuerySnap.empty) {
-    throw new Error("This email has not signed in to the website yet. The user must sign up or log in to Murad Graphics at least once before they can be promoted to an administrator.");
+    throw new Error("This email has not signed in to the website yet. The user must sign up or log in to Vyrqonix at least once before they can be promoted to an administrator.");
   }
 
   const userDoc = userQuerySnap.docs[0];

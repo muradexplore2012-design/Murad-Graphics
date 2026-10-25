@@ -13,7 +13,7 @@ export const AccessDeniedPage: React.FC = () => {
         <div className="space-y-2">
           <h1 className="text-2xl font-black tracking-tight text-slate-900">Access Denied</h1>
           <p className="text-xs text-slate-500 leading-relaxed">
-            You do not possess administrative permissions to access the Murad Graphics management portal.
+            You do not possess administrative permissions to access the Vyrqonix management portal.
           </p>
         </div>
 

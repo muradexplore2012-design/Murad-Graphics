@@ -391,7 +391,7 @@ export const AdminSettingsPage: React.FC = () => {
                   />
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                  Important: The user must already have created an account on Murad Graphics and signed in at least once.
+                  Important: The user must already have created an account on Vyrqonix and signed in at least once.
                 </p>
               </div>
 
@@ -586,7 +586,7 @@ export const AdminSettingsPage: React.FC = () => {
                 {adminToRemove.email}
               </p>
               <p className="text-[11px] text-rose-700 bg-rose-50 p-2.5 rounded-xl border border-rose-200 leading-normal">
-                This account will immediately lose all administrative rights and access to the Murad Graphics admin console.
+                This account will immediately lose all administrative rights and access to the Vyrqonix admin console.
               </p>
             </div>
 

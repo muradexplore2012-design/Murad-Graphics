@@ -139,12 +139,12 @@ export const Header: React.FC = () => {
           <Link to="/" className="flex items-center gap-3 shrink-0 group">
             <img 
               src="/logo.png" 
-              alt="Murad Graphics" 
+              alt="Vyrqonix" 
               className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
             />
             <div className="flex flex-col">
               <span className="font-black text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
-                MURAD<span className="text-blue-600">GRAPHICS</span>
+                VYR<span className="text-blue-600">QONIX</span>
               </span>
               <span className="text-[10px] tracking-wider uppercase font-bold text-slate-400 mt-1">
                 Digital Marketplace
@@ -221,12 +221,12 @@ export const Header: React.FC = () => {
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <img 
               src="/logo.png" 
-              alt="Murad Graphics" 
+              alt="Vyrqonix" 
               className="w-8 h-8 object-contain rounded-lg"
             />
             <div className="flex flex-col">
               <span className="font-black text-lg tracking-tight text-slate-900 leading-none">
-                MURAD<span className="text-[#7a00ea]">GRAPHICS</span>
+                VYR<span className="text-[#7a00ea]">QONIX</span>
               </span>
             </div>
           </Link>
@@ -585,7 +585,7 @@ export const Header: React.FC = () => {
               onClick={() => setCategoriesDrawerOpen(false)}
               className="block px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
             >
-              About Murad Graphics
+              About Vyrqonix
             </Link>
             <Link
               to="/contact"
@@ -610,7 +610,7 @@ export const Header: React.FC = () => {
           )}
 
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-medium">Murad Graphics Catalog</span>
+            <span className="font-medium">Vyrqonix Catalog</span>
             <Link 
               to="/shop"
               onClick={() => setCategoriesDrawerOpen(false)} 

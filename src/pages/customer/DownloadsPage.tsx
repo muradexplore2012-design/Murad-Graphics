@@ -405,7 +405,7 @@ export const DownloadsPage: React.FC = () => {
               )}
 
               <a
-                href={`https://wa.me/8801566088159?text=Hello%20Murad%20Graphics,%20I%20need%20assistance%20with%20my%20subscription%20(${encodeURIComponent(activeSubscriptionModal.productName)})`}
+                href={`https://wa.me/8801566088159?text=Hello%20Vyrqonix,%20I%20need%20assistance%20with%20my%20subscription%20(${encodeURIComponent(activeSubscriptionModal.productName)})`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-colors text-center cursor-pointer"
