@@ -60,9 +60,18 @@ export const AccountPage: React.FC = () => {
       {/* Account Profile Header */}
       <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
         <div className="flex items-center gap-4 text-center sm:text-left">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md">
-            {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
-          </div>
+          {user.photoURL ? (
+            <img 
+              src={user.photoURL} 
+              alt={user.displayName || "User"} 
+              referrerPolicy="no-referrer"
+              className="w-16 h-16 rounded-2xl object-cover shadow-md border-2 border-slate-100 shrink-0"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0">
+              {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
               {user.displayName || "Customer Account"}

@@ -105,6 +105,11 @@ export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const { cart } = useCart();
   const { user } = useAuth();
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.photoURL]);
 
   const pathname = location.pathname;
 
@@ -187,7 +192,21 @@ export const BottomNavigation: React.FC = () => {
           }`}
         >
           <div className="relative flex items-center justify-center w-6 h-6">
-            <AccountIcon active={isAccountActive} className="w-5 h-5 transition-transform" />
+            {user?.photoURL && !avatarError ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || "Account"}
+                onError={() => setAvatarError(true)}
+                referrerPolicy="no-referrer"
+                className={`w-6 h-6 rounded-full object-cover transition-all ${
+                  isAccountActive
+                    ? 'ring-2 ring-[#7a00ea] ring-offset-1'
+                    : 'border border-slate-300'
+                }`}
+              />
+            ) : (
+              <AccountIcon active={isAccountActive} className="w-5 h-5 transition-transform" />
+            )}
           </div>
           <span className={`text-[11px] mt-1 leading-tight transition-colors ${
             isAccountActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
