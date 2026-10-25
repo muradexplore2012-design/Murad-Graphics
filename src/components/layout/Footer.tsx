@@ -67,11 +67,11 @@ export const Footer: React.FC = () => {
             
             {/* Brand Col */}
             <div className="lg:col-span-2 space-y-4">
-              <Link to="/" className="flex items-center gap-3 group">
+              <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
                 <img 
                   src="/logo.png" 
                   alt="Vyrqonix Logo" 
-                  className="h-10 w-auto object-contain"
+                  className="h-8 sm:h-9 w-auto object-contain"
                 />
                 <span className="text-xl font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors">
                   VYR <span className="text-blue-500">QONIX</span>
@@ -206,7 +206,7 @@ export const Footer: React.FC = () => {
               <img 
                 src="/logo.png" 
                 alt={settings.siteName} 
-                className="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(59,130,246,0.18)]"
+                className="h-8 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
               />
               <span className="font-black text-2xl tracking-tight text-slate-900 leading-none">
                 VYR<span className="text-[#7a00ea]">QONIX</span>

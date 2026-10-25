@@ -140,17 +140,17 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between gap-4 md:gap-8">
           
           {/* Logo Brand */}
-          <Link to="/" className="flex items-center gap-3 shrink-0 group">
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="h-12 sm:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105 drop-shadow-[0_2px_10px_rgba(59,130,246,0.18)]"
+              className="h-8 sm:h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105 drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
             />
             <div className="flex flex-col">
               <span className="font-black text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
                 VYR<span className="text-blue-600">QONIX</span>
               </span>
-              <span className="text-[10px] tracking-wider uppercase font-bold text-slate-400 mt-1">
+              <span className="text-[10px] tracking-wider uppercase font-bold text-slate-400 mt-0.5 sm:mt-1">
                 Digital Marketplace
               </span>
             </div>
@@ -226,7 +226,7 @@ export const Header: React.FC = () => {
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="h-9 w-auto object-contain drop-shadow-[0_2px_8px_rgba(59,130,246,0.18)]"
+              className="h-7 w-auto object-contain drop-shadow-[0_1px_3px_rgba(59,130,246,0.12)]"
             />
             <div className="flex flex-col">
               <span className="font-black text-lg tracking-tight text-slate-900 leading-none">

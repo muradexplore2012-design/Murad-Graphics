@@ -98,11 +98,11 @@ export const AdminLayout: React.FC = () => {
         <div className="p-5 space-y-5 flex-1 overflow-y-auto">
           {/* Logo & Console Badge + Close Button on Mobile */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
-            <Link to="/admin" className="flex items-center gap-3 group">
+            <Link to="/admin" className="flex items-center gap-2.5 sm:gap-3 group">
               <img 
                 src="/logo.png" 
                 alt="Vyrqonix Admin Logo" 
-                className="h-10 sm:h-11 w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(59,130,246,0.18)] transition-transform group-hover:scale-105" 
+                className="h-8 sm:h-9 w-auto object-contain shrink-0 drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)] transition-transform group-hover:scale-105" 
               />
               <div>
                 <span className="font-black text-sm text-slate-900 block tracking-tight leading-tight">
