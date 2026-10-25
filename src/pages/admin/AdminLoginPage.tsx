@@ -157,7 +157,7 @@ export const AdminLoginPage: React.FC = () => {
           <img
             src="/logo.png"
             alt="Vyrqonix Admin"
-            className="w-16 h-16 mx-auto object-contain"
+            className="h-16 w-auto mx-auto object-contain"
           />
           <h1 className="text-2xl font-black tracking-tight text-slate-900">
             Admin Portal Authentication

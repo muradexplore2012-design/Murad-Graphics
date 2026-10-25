@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
                 <img 
                   src="/logo.png" 
                   alt="Vyrqonix Logo" 
-                  className="w-10 h-10 object-contain rounded-xl"
+                  className="h-10 w-auto object-contain"
                 />
                 <span className="text-xl font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors">
                   VYR <span className="text-blue-500">QONIX</span>

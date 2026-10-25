@@ -172,7 +172,7 @@ export const LoginPage: React.FC = () => {
             <img
               src="/logo.png"
               alt="Vyrqonix"
-              className="w-14 h-14 object-contain"
+              className="h-16 w-auto object-contain"
             />
           </Link>
         </div>

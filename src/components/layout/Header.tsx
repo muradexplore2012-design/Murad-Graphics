@@ -144,7 +144,7 @@ export const Header: React.FC = () => {
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
+              className="h-12 sm:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
             />
             <div className="flex flex-col">
               <span className="font-black text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
@@ -226,7 +226,7 @@ export const Header: React.FC = () => {
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="w-8 h-8 object-contain rounded-lg"
+              className="h-9 w-auto object-contain"
             />
             <div className="flex flex-col">
               <span className="font-black text-lg tracking-tight text-slate-900 leading-none">
