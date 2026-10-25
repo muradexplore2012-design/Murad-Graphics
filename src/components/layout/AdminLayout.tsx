@@ -70,7 +70,7 @@ export const AdminLayout: React.FC = () => {
               alt="Admin" 
               className="h-8 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.18)]" 
             />
-            <span className="font-black text-sm text-slate-900 tracking-wider">VYRQONIX ADMIN</span>
+            <span className="font-black text-sm text-slate-900 tracking-wider">Vyrqonix Admin</span>
           </div>
         </div>
         <Link
@@ -106,7 +106,7 @@ export const AdminLayout: React.FC = () => {
               />
               <div>
                 <span className="font-black text-sm text-slate-900 block tracking-tight leading-tight">
-                  VYR<span className="text-blue-600">QONIX</span>
+                  Vyr<span className="text-blue-600">qonix</span>
                 </span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full inline-block mt-0.5">
                   ADMIN CONSOLE

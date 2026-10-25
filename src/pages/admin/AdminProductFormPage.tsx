@@ -353,7 +353,7 @@ export const AdminProductFormPage: React.FC = () => {
         </Link>
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            {isEditing ? `Edit Product: ${name}` : 'Create New Digital Product'}
+            {isEditing ? `Edit Product: ${name}` : 'Create New Product'}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Set pricing, upload previews, and configure digital delivery

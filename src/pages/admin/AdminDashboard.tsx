@@ -145,7 +145,7 @@ export const AdminDashboard: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Digital Product</span>
+            <span>Add Product</span>
           </Link>
           <Link
             to="/admin/categories"

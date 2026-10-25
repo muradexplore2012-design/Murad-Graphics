@@ -82,7 +82,7 @@ export const AdminProductsPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Digital Products ({products.length})</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Products ({products.length})</h1>
           <p className="text-xs text-slate-500 mt-1">Manage files, formats, pricing, and Google Drive links</p>
         </div>
 
@@ -91,7 +91,7 @@ export const AdminProductsPage: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
+          <span>Add Product</span>
         </Link>
       </div>
 
@@ -112,7 +112,7 @@ export const AdminProductsPage: React.FC = () => {
         <TableSkeleton rows={5} />
       ) : filtered.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-xs text-slate-500 shadow-xs">
-          No products found. Click "Add New Product" to create your first digital asset.
+          No products found. Click "Add Product" to create your first digital asset.
         </div>
       ) : (
         <div className="space-y-4">

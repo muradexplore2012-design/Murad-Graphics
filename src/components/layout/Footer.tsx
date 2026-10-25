@@ -74,7 +74,7 @@ export const Footer: React.FC = () => {
                   className="h-8 sm:h-9 w-auto object-contain"
                 />
                 <span className="text-xl font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors">
-                  VYR <span className="text-blue-500">QONIX</span>
+                  Vyr<span className="text-blue-400">qonix</span>
                 </span>
               </Link>
               <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
@@ -209,7 +209,7 @@ export const Footer: React.FC = () => {
                 className="h-8 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
               />
               <span className="font-black text-2xl tracking-tight text-slate-900 leading-none">
-                VYR<span className="text-[#7a00ea]">QONIX</span>
+                Vyr<span className="text-[#7a00ea]">qonix</span>
               </span>
             </Link>
 

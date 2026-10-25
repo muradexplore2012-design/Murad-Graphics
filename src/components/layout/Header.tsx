@@ -148,7 +148,7 @@ export const Header: React.FC = () => {
             />
             <div className="flex flex-col">
               <span className="font-black text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
-                VYR<span className="text-blue-600">QONIX</span>
+                Vyr<span className="text-blue-600">qonix</span>
               </span>
               <span className="text-[10px] tracking-wider uppercase font-bold text-slate-400 mt-0.5 sm:mt-1">
                 Digital Marketplace
@@ -230,7 +230,7 @@ export const Header: React.FC = () => {
             />
             <div className="flex flex-col">
               <span className="font-black text-lg tracking-tight text-slate-900 leading-none">
-                VYR<span className="text-[#7a00ea]">QONIX</span>
+                Vyr<span className="text-[#7a00ea]">qonix</span>
               </span>
             </div>
           </Link>
