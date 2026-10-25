@@ -64,9 +64,13 @@ export const AdminLayout: React.FC = () => {
           >
             <Menu className="w-5 h-5 stroke-[2.2]" />
           </button>
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Admin" className="w-7 h-7 rounded-lg" />
-            <span className="font-black text-sm text-slate-900 tracking-wider">MG ADMIN</span>
+          <div className="flex items-center gap-2.5">
+            <img 
+              src="/logo.png" 
+              alt="Admin" 
+              className="h-8 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.18)]" 
+            />
+            <span className="font-black text-sm text-slate-900 tracking-wider">VYRQONIX ADMIN</span>
           </div>
         </div>
         <Link
@@ -94,15 +98,21 @@ export const AdminLayout: React.FC = () => {
         <div className="p-5 space-y-5 flex-1 overflow-y-auto">
           {/* Logo & Console Badge + Close Button on Mobile */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
-            <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Admin Logo" className="w-10 h-10 rounded-xl shrink-0 border border-slate-100 shadow-xs" />
+            <Link to="/admin" className="flex items-center gap-3 group">
+              <img 
+                src="/logo.png" 
+                alt="Vyrqonix Admin Logo" 
+                className="h-10 sm:h-11 w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(59,130,246,0.18)] transition-transform group-hover:scale-105" 
+              />
               <div>
-                <span className="font-black text-sm text-slate-900 block tracking-tight">VYRQONIX</span>
+                <span className="font-black text-sm text-slate-900 block tracking-tight leading-tight">
+                  VYR<span className="text-blue-600">QONIX</span>
+                </span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full inline-block mt-0.5">
                   ADMIN CONSOLE
                 </span>
               </div>
-            </div>
+            </Link>
             <button
               type="button"
               onClick={() => setSidebarOpen(false)}

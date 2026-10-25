@@ -206,7 +206,7 @@ export const Footer: React.FC = () => {
               <img 
                 src="/logo.png" 
                 alt={settings.siteName} 
-                className="w-9 h-9 object-contain rounded-xl"
+                className="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(59,130,246,0.18)]"
               />
               <span className="font-black text-2xl tracking-tight text-slate-900 leading-none">
                 VYR<span className="text-[#7a00ea]">QONIX</span>
