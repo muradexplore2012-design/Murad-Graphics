@@ -26,38 +26,38 @@ export const Footer: React.FC = () => {
   return (
     <>
       {/* ================= DESKTOP FOOTER (hidden md:block) ================= */}
-      <footer className="hidden md:block bg-slate-900 text-slate-300 pt-16 pb-8 border-t border-slate-800">
+      <footer className="hidden md:block bg-white text-slate-700 pt-16 pb-8 border-t border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Value Proposition Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12 mb-12 border-b border-slate-800/80">
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                <DownloadCloud className="w-6 h-6" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12 mb-12 border-b border-slate-100">
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                <DownloadCloud className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">Instant Digital Delivery</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Download source files right after order confirmation</p>
+                <h4 className="text-slate-900 font-bold text-sm">Instant Digital Delivery</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Download source files right after order confirmation</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6" />
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">Commercial License</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Safe to use in your client graphics and digital projects</p>
+                <h4 className="text-slate-900 font-bold text-sm">Commercial License</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Safe to use in your client graphics and digital projects</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6" />
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0 border border-purple-100">
+                <Sparkles className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">100% Editable Source Files</h4>
-                <p className="text-xs text-slate-400 mt-0.5">AI, PSD, EPS, SVG, fonts, software & apps</p>
+                <h4 className="text-slate-900 font-bold text-sm">100% Editable Source Files</h4>
+                <p className="text-xs text-slate-500 mt-0.5">AI, PSD, EPS, SVG, fonts, software & apps</p>
               </div>
             </div>
           </div>
@@ -71,13 +71,13 @@ export const Footer: React.FC = () => {
                 <img 
                   src="/logo.png" 
                   alt="Vyrqonix Logo" 
-                  className="h-8 sm:h-9 w-auto object-contain"
+                  className="h-8 sm:h-9 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
                 />
-                <span className="text-xl font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors">
-                  Vyr<span className="text-blue-400">qonix</span>
+                <span className="text-2xl font-black tracking-tight text-slate-900 leading-none">
+                  Vyr<span className="text-blue-600">qonix</span>
                 </span>
               </Link>
-              <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
+              <p className="text-sm text-slate-500 leading-relaxed max-w-sm">
                 {settings.siteDescription}
               </p>
               
@@ -95,14 +95,14 @@ export const Footer: React.FC = () => {
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center transition-all duration-200 shadow-sm ${
+                      className={`w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-xs text-slate-600 ${
                         isYouTube 
-                          ? 'hover:bg-red-600 text-slate-300 hover:text-white' 
+                          ? 'hover:bg-red-600 hover:text-white hover:border-red-600' 
                           : isFacebook 
-                          ? 'hover:bg-[#1877F2] text-slate-300 hover:text-white' 
+                          ? 'hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]' 
                           : isWhatsApp 
-                          ? 'hover:bg-emerald-600 text-slate-300 hover:text-white' 
-                          : 'hover:bg-blue-600 text-slate-300 hover:text-white'
+                          ? 'hover:bg-emerald-600 hover:text-white hover:border-emerald-600' 
+                          : 'hover:bg-blue-600 hover:text-white hover:border-blue-600'
                       }`}
                       title={s.name}
                     >
@@ -127,55 +127,55 @@ export const Footer: React.FC = () => {
 
             {/* Quick Links */}
             <div className="space-y-3">
-              <h4 className="text-white font-semibold text-sm tracking-wider uppercase">Marketplace</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/shop" className="hover:text-white transition-colors">All Products</Link></li>
-                <li><Link to="/shop?type=free" className="hover:text-emerald-400 transition-colors">Free Resources</Link></li>
-                <li><Link to="/shop?type=paid" className="hover:text-blue-400 transition-colors">Premium Assets</Link></li>
-                <li><Link to="/cart" className="hover:text-white transition-colors">Cart</Link></li>
-                <li><Link to="/wishlist" className="hover:text-white transition-colors">Wishlist</Link></li>
+              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Marketplace</h4>
+              <ul className="space-y-2.5 text-sm font-medium text-slate-600">
+                <li><Link to="/shop" className="hover:text-blue-600 transition-colors">All Products</Link></li>
+                <li><Link to="/shop?type=free" className="hover:text-emerald-600 transition-colors">Free Resources</Link></li>
+                <li><Link to="/shop?type=paid" className="hover:text-blue-600 transition-colors">Premium Assets</Link></li>
+                <li><Link to="/cart" className="hover:text-blue-600 transition-colors">Cart</Link></li>
+                <li><Link to="/wishlist" className="hover:text-blue-600 transition-colors">Wishlist</Link></li>
               </ul>
             </div>
 
             {/* Customer Support */}
             <div className="space-y-3">
-              <h4 className="text-white font-semibold text-sm tracking-wider uppercase">Support & Info</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link to="/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
-                <li><Link to="/faq" className="hover:text-white transition-colors">FAQs & Help</Link></li>
-                <li><Link to="/license-policy" className="hover:text-white transition-colors">License Policy</Link></li>
-                <li><Link to="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
-                <li><Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Support & Info</h4>
+              <ul className="space-y-2.5 text-sm font-medium text-slate-600">
+                <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact Support</Link></li>
+                <li><Link to="/faq" className="hover:text-blue-600 transition-colors">FAQs & Help</Link></li>
+                <li><Link to="/license-policy" className="hover:text-blue-600 transition-colors">License Policy</Link></li>
+                <li><Link to="/refund-policy" className="hover:text-blue-600 transition-colors">Refund Policy</Link></li>
+                <li><Link to="/privacy-policy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
 
             {/* Contact Details */}
             <div className="space-y-3">
-              <h4 className="text-white font-semibold text-sm tracking-wider uppercase">Direct Contact</h4>
-              <div className="space-y-2.5 text-xs text-slate-400">
+              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Direct Contact</h4>
+              <div className="space-y-2.5 text-xs text-slate-600 font-medium">
                 <div className="flex items-start gap-2.5">
-                  <MapPin className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                  <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <span>{settings.address}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Phone className="w-4 h-4 text-blue-500 shrink-0" />
-                  <a href={`tel:${settings.phone}`} className="hover:text-white">{settings.phone}</a>
+                  <Phone className="w-4 h-4 text-blue-600 shrink-0" />
+                  <a href={`tel:${settings.phone}`} className="hover:text-blue-600 transition-colors">{settings.phone}</a>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Mail className="w-4 h-4 text-blue-500 shrink-0" />
-                  <a href={`mailto:${settings.email}`} className="hover:text-white">{settings.email}</a>
+                  <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                  <a href={`mailto:${settings.email}`} className="hover:text-blue-600 transition-colors">{settings.email}</a>
                 </div>
                 <div className="pt-2">
                   <a 
                     href={`https://wa.me/88${settings.whatsapp.replace(/[^0-9]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold hover:bg-emerald-600 hover:text-white transition-all group"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-xs group"
                   >
                     <img src="/whatsapp.webp" alt="WhatsApp" className="w-4 h-4 rounded object-contain" />
-                    WhatsApp Support
+                    <span>WhatsApp Support</span>
                   </a>
                 </div>
               </div>
@@ -183,15 +183,15 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Bottom copyright line */}
-          <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
             <a 
               href="https://www.facebook.com/profile.php?id=100085471628384"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-slate-400 hover:text-blue-400 transition-colors font-medium group"
+              className="text-xs text-slate-500 hover:text-blue-600 transition-colors font-medium group"
             >
-              Design by <span className="text-slate-300 group-hover:text-blue-400 font-semibold underline underline-offset-4 decoration-slate-700 group-hover:decoration-blue-400 transition-all">Murad Rahman</span>
+              Design by <span className="text-slate-800 group-hover:text-blue-600 font-semibold underline underline-offset-4 decoration-slate-300 group-hover:decoration-blue-600 transition-all">Murad Rahman</span>
             </a>
           </div>
 
