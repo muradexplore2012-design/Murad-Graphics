@@ -235,18 +235,8 @@ export const Header: React.FC = () => {
             </div>
           </Link>
 
-          {/* Right: Account Icon + Circular Purple Cart Button */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Account Icon */}
-            <Link
-              to={user ? "/account" : "/login"}
-              className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-all cursor-pointer"
-              title={user ? "My Account" : "Login"}
-              aria-label="User Account"
-            >
-              <UserIcon className="w-5 h-5 text-slate-800 stroke-[2]" />
-            </Link>
-
+          {/* Right: Circular Purple Cart Button */}
+          <div className="flex items-center shrink-0">
             {/* Purple Circular Cart Button with Badge */}
             <Link
               to="/cart"

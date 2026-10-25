@@ -105,56 +105,38 @@ export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const { cart } = useCart();
   const { user } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const pathname = location.pathname;
 
   // Active status checks based on current route
-  const isHomeActive = pathname === '/' && !isMenuOpen;
-  const isShopActive = (pathname.startsWith('/shop') || pathname.startsWith('/category') || pathname.startsWith('/product')) && !isMenuOpen;
-  const isCartActive = (pathname.startsWith('/cart') || pathname.startsWith('/checkout')) && !isMenuOpen;
-  const isAccountActive = (pathname.startsWith('/account') || pathname === '/login') && !isMenuOpen;
-
-  // Sync menu open state with Header categories drawer
-  useEffect(() => {
-    const handleDrawerChange = (e: any) => {
-      if (typeof e.detail === 'boolean') {
-        setIsMenuOpen(e.detail);
-      }
-    };
-    window.addEventListener('mobile-categories-state', handleDrawerChange);
-    return () => window.removeEventListener('mobile-categories-state', handleDrawerChange);
-  }, []);
-
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.dispatchEvent(new CustomEvent('toggle-mobile-categories'));
-  };
+  const isHomeActive = pathname === '/';
+  const isShopActive = pathname.startsWith('/shop') || pathname.startsWith('/category') || pathname.startsWith('/product');
+  const isCartActive = pathname.startsWith('/cart') || pathname.startsWith('/checkout');
+  const isAccountActive = pathname.startsWith('/account') || pathname === '/login';
 
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
       className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] rounded-t-3xl pb-[max(0.4rem,env(safe-area-inset-bottom))]"
     >
-      <div className="grid grid-cols-5 items-end max-w-md mx-auto px-1 h-16">
+      <div className="grid grid-cols-4 items-center max-w-md mx-auto px-2 h-16">
         
-        {/* 1. Menu */}
-        <button
-          type="button"
-          onClick={handleMenuClick}
+        {/* 1. Home */}
+        <Link
+          to="/"
           className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
-            isMenuOpen ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
+            isHomeActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           <div className="relative flex items-center justify-center w-6 h-6">
-            <MenuIcon active={isMenuOpen} className="w-5 h-5 transition-transform" />
+            <HomeIcon active={isHomeActive} className="w-5 h-5 transition-transform" />
           </div>
           <span className={`text-[11px] mt-1 leading-tight transition-colors ${
-            isMenuOpen ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
+            isHomeActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
           }`}>
-            Menu
+            Home
           </span>
-        </button>
+        </Link>
 
         {/* 2. Shop */}
         <Link
@@ -173,37 +155,7 @@ export const BottomNavigation: React.FC = () => {
           </span>
         </Link>
 
-        {/* 3. Center Home Button */}
-        <Link
-          to="/"
-          className={`flex flex-col items-center justify-center select-none group cursor-pointer transition-all ${
-            isHomeActive ? 'relative -top-3.5' : 'pb-1'
-          }`}
-        >
-          {isHomeActive ? (
-            /* Active: Elevated Floating Solid Purple Button */
-            <>
-              <div className="w-12 h-12 rounded-full bg-[#7a00ea] border-[3.5px] border-white shadow-lg shadow-purple-600/35 flex items-center justify-center transition-all duration-200 group-active:scale-90 scale-105">
-                <HomeIcon active={true} className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-[11px] mt-1 leading-tight font-bold text-[#7a00ea]">
-                Home
-              </span>
-            </>
-          ) : (
-            /* Inactive: Normal outline icon & gray text matching Menu, Shop, Cart, Account (No solid circle!) */
-            <>
-              <div className="relative flex items-center justify-center w-6 h-6">
-                <HomeIcon active={false} className="w-5 h-5 text-slate-500 group-hover:text-slate-900 transition-colors" />
-              </div>
-              <span className="text-[11px] mt-1 leading-tight font-medium text-slate-500 group-hover:text-slate-900 transition-colors">
-                Home
-              </span>
-            </>
-          )}
-        </Link>
-
-        {/* 4. Cart */}
+        {/* 3. Cart */}
         <Link
           to="/cart"
           className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative ${
@@ -227,7 +179,7 @@ export const BottomNavigation: React.FC = () => {
           </span>
         </Link>
 
-        {/* 5. Account */}
+        {/* 4. Account */}
         <Link
           to={user ? "/account" : "/login"}
           className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
