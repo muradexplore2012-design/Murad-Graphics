@@ -215,7 +215,7 @@ export const Footer: React.FC = () => {
 
             {/* Short Description matching user image */}
             <p className="text-xs text-slate-600 leading-relaxed mt-3 max-w-xs">
-              {settings.siteName} is a trusted marketplace for premium software, subscriptions, templates, courses, and creative resources—offering fast delivery, secure access, and reliable support.
+              {(!settings.siteName || settings.siteName === 'Murad Graphics') ? 'Vyrqonix' : settings.siteName} is a trusted marketplace for premium software, subscriptions, templates, courses, and creative resources—offering fast delivery, secure access, and reliable support.
             </p>
 
             {/* Direct Contact: Phone & Hours */}

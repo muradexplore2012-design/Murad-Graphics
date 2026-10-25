@@ -119,7 +119,10 @@ export const fastCacheInvalidate = (prefix?: string): void => {
 // ==================== SITE SETTINGS ====================
 export const getSiteSettings = async (): Promise<SiteSettings> => {
   const cached = fastCacheGet<SiteSettings>('site_settings', 180_000);
-  if (cached) return cached;
+  if (cached) {
+    if (cached.siteName === 'Murad Graphics' || !cached.siteName) cached.siteName = 'Vyrqonix';
+    return cached;
+  }
 
   if (inFlightPromises.has('site_settings')) {
     return inFlightPromises.get('site_settings')!;
@@ -130,7 +133,11 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
       const docRef = doc(db, "settings", "general");
       const snapshot = await getDoc(docRef);
       if (snapshot.exists()) {
-        const data = { ...DEFAULT_SITE_SETTINGS, ...snapshot.data() } as SiteSettings;
+        const raw = snapshot.data();
+        const data = { ...DEFAULT_SITE_SETTINGS, ...raw } as SiteSettings;
+        if (data.siteName === 'Murad Graphics' || !data.siteName) {
+          data.siteName = 'Vyrqonix';
+        }
         fastCacheSet('site_settings', data);
         return data;
       }

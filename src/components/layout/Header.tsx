@@ -50,7 +50,11 @@ export const Header: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(() => {
     try {
       const saved = localStorage.getItem('mg_site_settings_cache');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.siteName === 'Murad Graphics' || !parsed.siteName) parsed.siteName = 'Vyrqonix';
+        return parsed;
+      }
     } catch {}
     return DEFAULT_SITE_SETTINGS;
   });
