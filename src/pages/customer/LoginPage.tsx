@@ -1,13 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { GOOGLE_CLIENT_ID } from '../../lib/firebase';
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
-
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
 
 export const LoginPage: React.FC = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -47,8 +42,6 @@ export const LoginPage: React.FC = () => {
 
   // Google Identity Services (GIS) integration
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "333295319911-au9i1nh8ncga07d7pcth6vld6bg6n52s.apps.googleusercontent.com";
-
     const handleCredentialResponse = async (response: any) => {
       if (!response.credential) return;
       setError('');
@@ -72,7 +65,7 @@ export const LoginPage: React.FC = () => {
       if (window.google?.accounts?.id && googleButtonRef.current) {
         try {
           window.google.accounts.id.initialize({
-            client_id: clientId,
+            client_id: GOOGLE_CLIENT_ID,
             callback: handleCredentialResponse,
             auto_select: false,
             cancel_on_tap_outside: true,
@@ -80,6 +73,9 @@ export const LoginPage: React.FC = () => {
 
           // Clear previous render to prevent duplicates on tab switch
           googleButtonRef.current.innerHTML = '';
+
+          const containerWidth = googleButtonRef.current.parentElement?.offsetWidth || googleButtonRef.current.offsetWidth || 340;
+          const targetWidth = Math.min(Math.max(Math.floor(containerWidth), 220), 400);
 
           // Render official GIS button with container width and forced English locale
           window.google.accounts.id.renderButton(googleButtonRef.current, {
@@ -90,7 +86,7 @@ export const LoginPage: React.FC = () => {
             shape: 'rectangular',
             logo_alignment: 'center',
             locale: 'en',
-            width: googleButtonRef.current.parentElement?.offsetWidth || 340,
+            width: targetWidth,
           });
         } catch (e) {
           console.error("GIS render error:", e);

@@ -237,3 +237,10 @@ export interface AdminMember {
   addedAt: string;
   status: 'active';
 }
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
