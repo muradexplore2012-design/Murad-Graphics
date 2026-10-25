@@ -37,6 +37,7 @@ import {
 // ==================== DEFAULT SETTINGS ====================
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   siteName: "Vyrqonix",
+  siteTitle: "Vyrqonix | Digital Graphic Resources, Templates & Software",
   siteDescription: "A digital marketplace for graphic design resources, editable design files, software and apps.",
   phone: "01566088159",
   email: "muradrahman2026@gmail.com",

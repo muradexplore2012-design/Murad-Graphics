@@ -77,6 +77,12 @@ export const AdminSettingsPage: React.FC = () => {
     setSaveSuccess(false);
     try {
       await updateSiteSettings(settings);
+      if (settings.siteTitle) {
+        document.title = settings.siteTitle;
+      }
+      try {
+        localStorage.setItem('mg_site_settings_cache', JSON.stringify(settings));
+      } catch {}
       await recordAuditLog({
         adminUid: user?.uid || '',
         adminEmail: user?.email || '',
@@ -222,6 +228,22 @@ export const AdminSettingsPage: React.FC = () => {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="font-semibold block mb-1 text-slate-800">
+                  Browser Tab Title (ওয়েবসাইটের ব্রাউজার ট্যাব টাইটেল)
+                </label>
+                <input
+                  type="text"
+                  value={settings.siteTitle || ''}
+                  placeholder="Vyrqonix | Digital Graphic Resources, Templates & Software"
+                  onChange={(e) => setSettings({ ...settings, siteTitle: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  ব্রাউজারের ওপরে ট্যাবে যে নাম ও স্লোগান দেখায় তা এখান থেকে পরিবর্তন করতে পারবেন।
+                </p>
+              </div>
+
               <div>
                 <label className="font-semibold block mb-1 text-slate-800">Marketplace Name</label>
                 <input

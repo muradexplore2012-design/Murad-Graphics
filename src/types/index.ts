@@ -198,6 +198,7 @@ export interface SocialLink {
 
 export interface SiteSettings {
   siteName: string;
+  siteTitle?: string;
   siteDescription: string;
   phone: string;
   email: string;

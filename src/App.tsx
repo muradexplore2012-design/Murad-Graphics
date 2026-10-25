@@ -1,8 +1,9 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
+import { getSiteSettings } from './services/api';
 
 // Layouts
 import { Layout } from './components/layout/Layout';
@@ -54,9 +55,42 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
+// Dynamic Site Title Synchronizer (Controlled from Admin Settings Panel)
+const SiteTitleSync: React.FC = () => {
+  useEffect(() => {
+    const applyTitle = (title?: string, name?: string) => {
+      if (title && title.trim()) {
+        document.title = title.trim();
+      } else if (name && name.trim()) {
+        document.title = `${name.trim()} | Digital Marketplace`;
+      }
+    };
+
+    // 1. Instant sync from local cache to prevent title flicker
+    try {
+      const cached = localStorage.getItem('mg_site_settings_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        applyTitle(parsed.siteTitle, parsed.siteName);
+      }
+    } catch {}
+
+    // 2. Fetch latest settings from Firestore and apply
+    getSiteSettings().then((s) => {
+      applyTitle(s.siteTitle, s.siteName);
+      try {
+        localStorage.setItem('mg_site_settings_cache', JSON.stringify(s));
+      } catch {}
+    });
+  }, []);
+
+  return null;
+};
+
 export function App() {
   return (
     <BrowserRouter>
+      <SiteTitleSync />
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
