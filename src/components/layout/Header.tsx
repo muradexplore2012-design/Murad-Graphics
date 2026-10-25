@@ -347,14 +347,14 @@ export const Header: React.FC = () => {
                 </Link>
 
                 <Link
-                  to="/shop?search=theme"
+                  to="/shop?search=game"
                   className={`px-3.5 py-1.5 rounded-full transition-all ${
-                    location.search.toLowerCase().includes('theme')
+                    location.search.toLowerCase().includes('game')
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                   }`}
                 >
-                  Theme
+                  Game
                 </Link>
 
                 <Link
