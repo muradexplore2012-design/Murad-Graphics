@@ -45,8 +45,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   whatsapp: "01566088159",
   currency: "BDT",
   timezone: "Asia/Dhaka",
-  defaultLicensePolicy: "All digital items purchased or downloaded from Vyrqonix are for personal and client projects. Resale, redistribution, or unauthorized sharing of original editable source files is strictly prohibited.",
-  defaultRefundPolicy: "Due to the irreversible nature of digital downloads, sales of downloadable graphics and software are generally final once the download entitlement is activated. However, if a file is demonstrably corrupt or broken and our support team cannot provide a working version, a refund or credit will be evaluated.",
+  defaultLicensePolicy: "Vyrqonix থেকে ক্রয়কৃত বা ডাউনলোড করা সকল ডিজিটাল আইটেম আপনার ব্যক্তিগত এবং ক্লায়েন্ট প্রজেক্টের কাজের জন্য ব্যবহারযোগ্য। মূল এডিটেবল সোর্স ফাইল বা অ্যাক্সেস সরাসরি পুনরায় বিক্রি, অননুমোদিত শেয়ারিং বা অন্য কোথাও বিতরণ করা সম্পূর্ণ নিষিদ্ধ।",
+  defaultRefundPolicy: "ডিজিটাল প্রোডাক্টের তাৎক্ষণিক ডেলিভারি প্রকৃতির কারণে একবার ফাইল বা অ্যাক্সেস সক্রিয় হয়ে গেলে সাধারণত রিফান্ড প্রযোজ্য হয় না। তবে কোনো ফাইলে কোনো ত্রুটি থাকলে বা ব্যবহারে সমস্যা হলে এবং আমাদের সাপোর্ট টিম তা সমাধান করতে ব্যর্থ হলে রিফান্ড বা বিকল্প সমাধান বিবেচনা করা হবে।",
   termsAndConditions: "By using Vyrqonix and downloading digital assets, you agree to comply with our terms of service, copyright guidelines, and acceptable use policy.",
   privacyPolicy: "We respect your privacy. Vyrqonix collects only the minimum information required for account authentication and digital purchase order verification.",
   aboutText: "Vyrqonix is a premier digital assets marketplace dedicated to empowering creators, agencies, freelancers, and businesses with high-quality graphic resources, templates, and software solutions.",
@@ -138,6 +138,12 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
         const data = { ...DEFAULT_SITE_SETTINGS, ...raw } as SiteSettings;
         if (data.siteName === 'Murad Graphics' || !data.siteName) {
           data.siteName = 'Vyrqonix';
+        }
+        if (!data.defaultLicensePolicy || data.defaultLicensePolicy.includes('All digital items') || data.defaultLicensePolicy.includes('licensed for personal')) {
+          data.defaultLicensePolicy = DEFAULT_SITE_SETTINGS.defaultLicensePolicy;
+        }
+        if (!data.defaultRefundPolicy || data.defaultRefundPolicy.includes('Due to the irreversible nature')) {
+          data.defaultRefundPolicy = DEFAULT_SITE_SETTINGS.defaultRefundPolicy;
         }
         fastCacheSet('site_settings', data);
         return data;

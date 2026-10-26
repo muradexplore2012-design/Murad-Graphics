@@ -49,7 +49,15 @@ export const AdminSettingsPage: React.FC = () => {
   const [revoking, setRevoking] = useState(false);
 
   useEffect(() => {
-    getSiteSettings().then(setSettings);
+    getSiteSettings().then((s) => {
+      setSettings(s);
+      if (s.defaultLicensePolicy?.includes('Vyrqonix থেকে') || s.defaultRefundPolicy?.includes('ডিজিটাল প্রোডাক্টের')) {
+        updateSiteSettings({
+          defaultLicensePolicy: s.defaultLicensePolicy,
+          defaultRefundPolicy: s.defaultRefundPolicy
+        }).catch(() => {});
+      }
+    });
   }, []);
 
   useEffect(() => {
