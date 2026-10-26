@@ -680,6 +680,36 @@ export const checkUserEntitlement = async (userId: string, productId: string): P
   }
 };
 
+export const deleteUserEntitlement = async (entitlementId: string, userId: string, productId?: string): Promise<void> => {
+  try {
+    if (entitlementId && !entitlementId.startsWith('order_')) {
+      const entRef = doc(db, "downloadEntitlements", entitlementId);
+      await deleteDoc(entRef).catch(async () => {
+        await updateDoc(entRef, { status: 'deleted' });
+      });
+    }
+
+    if (productId && userId) {
+      try {
+        const q = query(
+          collection(db, "downloadEntitlements"),
+          where("userId", "==", userId),
+          where("productId", "==", productId)
+        );
+        const snap = await getDocs(q);
+        for (const d of snap.docs) {
+          await deleteDoc(d.ref).catch(() => updateDoc(d.ref, { status: 'deleted' }));
+        }
+      } catch (e) {
+        console.warn("Could not batch delete entitlement docs:", e);
+      }
+    }
+  } catch (err) {
+    console.error("Error deleting entitlement:", err);
+    throw err;
+  }
+};
+
 export const recordDownloadEvent = async (entitlementId: string, productId: string, userId: string): Promise<void> => {
   try {
     if (entitlementId && entitlementId !== 'direct_entitlement') {

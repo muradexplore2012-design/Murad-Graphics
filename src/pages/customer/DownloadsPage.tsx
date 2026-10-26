@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getUserEntitlements, recordDownloadEvent, getProductById, getUserOrders } from '../../services/api';
+import { getUserEntitlements, recordDownloadEvent, getProductById, getUserOrders, deleteUserEntitlement } from '../../services/api';
 import { DownloadEntitlement, Product } from '../../types';
-import { Download, KeyRound, Copy, Check, X, FolderDown } from 'lucide-react';
+import { Download, KeyRound, Copy, Check, X, FolderDown, Trash2 } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
+
+const getDeletedIds = (uid: string): Set<string> => {
+  try {
+    const raw = localStorage.getItem(`deleted_entitlements_${uid}`);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+};
 
 export const DownloadsPage: React.FC = () => {
   const { user } = useAuth();
@@ -64,7 +73,9 @@ export const DownloadsPage: React.FC = () => {
           }
         });
 
-        setEntitlements(combined);
+        const deletedIds = getDeletedIds(user.uid);
+        const activeEnts = combined.filter(e => !deletedIds.has(e.id) && !deletedIds.has(e.productId));
+        setEntitlements(activeEnts);
 
         // Fetch products in background to accurately resolve delivery method & links
         const uniqueProductIds = Array.from(new Set(combined.map(e => e.productId)));
@@ -84,6 +95,37 @@ export const DownloadsPage: React.FC = () => {
     };
     fetchEntitlements();
   }, [user]);
+
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDeleteEntitlement = async (ent: DownloadEntitlement) => {
+    if (!window.confirm(`আপনি কি নিশ্চিতভাবে "${ent.productName}" আপনার ডাউনলোড লাইব্রেরি থেকে ডিলিট করতে চান?`)) {
+      return;
+    }
+    setDeletingId(ent.id);
+    try {
+      // 1. Optimistically remove from UI
+      setEntitlements(prev => prev.filter(e => e.id !== ent.id));
+
+      // 2. Persist in localStorage
+      if (user) {
+        const deletedKey = `deleted_entitlements_${user.uid}`;
+        const current = Array.from(getDeletedIds(user.uid));
+        current.push(ent.id);
+        if (ent.productId) current.push(ent.productId);
+        localStorage.setItem(deletedKey, JSON.stringify(Array.from(new Set(current))));
+      }
+
+      // 3. Delete from Firestore
+      if (user) {
+        await deleteUserEntitlement(ent.id, user.uid, ent.productId);
+      }
+    } catch (err: any) {
+      console.error("Error deleting item from library:", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleDownloadFile = async (entitlement: DownloadEntitlement) => {
     setDownloadingId(entitlement.id);
@@ -171,8 +213,20 @@ export const DownloadsPage: React.FC = () => {
             return (
               <div 
                 key={ent.id} 
-                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative group"
               >
+                {/* Delete button (Top Right) */}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteEntitlement(ent)}
+                  disabled={deletingId === ent.id}
+                  title="লাইব্রেরি থেকে ডিলিট করুন"
+                  className="absolute top-3.5 right-3.5 p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer opacity-70 group-hover:opacity-100 disabled:opacity-50"
+                  aria-label="Delete item"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
                 <div className="flex gap-4">
                   <img
                     src={ent.thumbnail || '/logo.png'}
@@ -234,11 +288,22 @@ export const DownloadsPage: React.FC = () => {
                 )}
 
                 {/* Bottom Action Area */}
-                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                   <span className="text-[11px] text-slate-500 font-medium">
                     Downloaded: {ent.downloadCount || 0} times
                   </span>
-                  <button
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteEntitlement(ent)}
+                      disabled={deletingId === ent.id}
+                      title="লাইব্রেরি থেকে ডিলিট করুন"
+                      className="inline-flex items-center gap-1 px-2.5 py-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-slate-200/80 hover:border-rose-200"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </button>
+                    <button
                     onClick={() => handleDownloadFile(ent)}
                     disabled={downloadingId === ent.id}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
@@ -246,6 +311,7 @@ export const DownloadsPage: React.FC = () => {
                     <Download className="w-3.5 h-3.5" />
                     <span>{downloadingId === ent.id ? "Opening..." : "Download File"}</span>
                   </button>
+                  </div>
                 </div>
               </div>
             );
