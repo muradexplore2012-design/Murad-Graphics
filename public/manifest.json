@@ -1,5 +1,5 @@
 {
-  "name": "Vyrqonix - YOUR DIGITAL WORLD",
+  "name": "Vyrqonix - Your Digital World",
   "short_name": "Vyrqonix",
   "description": "Download premium graphic design resources, editable templates, software and tools at Vyrqonix.",
   "start_url": "/",
@@ -8,7 +8,11 @@
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#7a00ea",
-  "categories": ["shopping", "productivity", "utilities"],
+  "categories": [
+    "shopping",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/pwa-192x192.png",

@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const indexPath = path.resolve(__dirname, '../index.html');
+const manifestPath = path.resolve(__dirname, '../public/manifest.json');
 
 const config = {
   apiKey: "AIzaSyBcEGAIsdY3l9V3jR_yclhzkvE7gQy-jEU",
@@ -25,36 +26,54 @@ async function syncMeta() {
     }
 
     const data = snap.data();
-    const siteTitle = data.siteTitle || (data.siteName ? `${data.siteName} | Digital Marketplace` : 'Vyrqonix | Graphic Resources, Software & Game');
+    const siteName = (data.siteName || 'Vyrqonix').trim();
+    const siteSubtitle = (data.siteSubtitle || 'YOUR DIGITAL WORLD').trim();
+    const siteTitle = data.siteTitle || `${siteName} | ${siteSubtitle}`;
     const siteDescription = data.siteDescription || 'A digital marketplace for graphic design resources, editable design files, software and apps.';
+    const appFullName = `${siteName} - ${siteSubtitle}`;
 
-    if (!fs.existsSync(indexPath)) {
-      console.warn('index.html not found at', indexPath);
-      process.exit(0);
+    // 1. Sync public/manifest.json
+    if (fs.existsSync(manifestPath)) {
+      try {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        manifest.name = appFullName;
+        manifest.short_name = siteName;
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+        console.log(`Successfully synced manifest.json with name: "${appFullName}"`);
+      } catch (err) {
+        console.warn('Could not sync manifest.json:', err.message);
+      }
     }
 
-    let html = fs.readFileSync(indexPath, 'utf8');
+    // 2. Sync index.html
+    if (fs.existsSync(indexPath)) {
+      let html = fs.readFileSync(indexPath, 'utf8');
 
-    // Replace title
-    html = html.replace(/<title>.*?<\/title>/i, `<title>${siteTitle}</title>`);
-    
-    // Replace meta description
-    html = html.replace(/<meta name="description" content=".*?" \/>/i, `<meta name="description" content="${siteDescription}" />`);
+      // Replace title
+      html = html.replace(/<title>.*?<\/title>/i, `<title>${siteTitle}</title>`);
+      
+      // Replace meta description
+      html = html.replace(/<meta name="description" content=".*?" \/>/i, `<meta name="description" content="${siteDescription}" />`);
 
-    // Replace og:title
-    html = html.replace(/<meta property="og:title" content=".*?" \/>/i, `<meta property="og:title" content="${siteTitle}" />`);
+      // Replace application-name
+      html = html.replace(/<meta name="application-name" content=".*?" \/>/i, `<meta name="application-name" content="${appFullName}" />`);
 
-    // Replace og:description
-    html = html.replace(/<meta property="og:description" content=".*?" \/>/i, `<meta property="og:description" content="${siteDescription}" />`);
+      // Replace og:title
+      html = html.replace(/<meta property="og:title" content=".*?" \/>/i, `<meta property="og:title" content="${siteTitle}" />`);
 
-    // Replace twitter:title
-    html = html.replace(/<meta name="twitter:title" content=".*?" \/>/i, `<meta name="twitter:title" content="${siteTitle}" />`);
+      // Replace og:description
+      html = html.replace(/<meta property="og:description" content=".*?" \/>/i, `<meta property="og:description" content="${siteDescription}" />`);
 
-    // Replace twitter:description
-    html = html.replace(/<meta name="twitter:description" content=".*?" \/>/i, `<meta name="twitter:description" content="${siteDescription}" />`);
+      // Replace twitter:title
+      html = html.replace(/<meta name="twitter:title" content=".*?" \/>/i, `<meta name="twitter:title" content="${siteTitle}" />`);
 
-    fs.writeFileSync(indexPath, html, 'utf8');
-    console.log(`Successfully synced metadata to index.html with title: "${siteTitle}"`);
+      // Replace twitter:description
+      html = html.replace(/<meta name="twitter:description" content=".*?" \/>/i, `<meta name="twitter:description" content="${siteDescription}" />`);
+
+      fs.writeFileSync(indexPath, html, 'utf8');
+      console.log(`Successfully synced metadata to index.html with title: "${siteTitle}"`);
+    }
+
     process.exit(0);
   } catch (err) {
     console.warn('Could not sync Firestore metadata to index.html, using fallback:', err.message);
