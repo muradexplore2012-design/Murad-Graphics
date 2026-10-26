@@ -118,14 +118,25 @@ export const fastCacheInvalidate = (prefix?: string): void => {
 };
 
 // ==================== SITE SETTINGS ====================
-export const getSiteSettings = async (): Promise<SiteSettings> => {
-  const cached = fastCacheGet<SiteSettings>('site_settings', 180_000);
-  if (cached) {
-    if (cached.siteName === 'Murad Graphics' || !cached.siteName) cached.siteName = 'Vyrqonix';
-    return cached;
+export const getSiteSettings = async (forceFresh = false): Promise<SiteSettings> => {
+  const bengaliLicense = "Vyrqonix থেকে ক্রয়কৃত বা ডাউনলোড করা সকল ডিজিটাল আইটেম আপনার ব্যক্তিগত এবং ক্লায়েন্ট প্রজেক্টের কাজের জন্য ব্যবহারযোগ্য। মূল এডিটেবল সোর্স ফাইল বা অ্যাক্সেস সরাসরি পুনরায় বিক্রি, অননুমোদিত শেয়ারিং বা অন্য কোথাও বিতরণ করা সম্পূর্ণ নিষিদ্ধ।";
+  const bengaliRefund = "ডিজিটাল প্রোডাক্টের তাৎক্ষণিক ডেলিভারি প্রকৃতির কারণে একবার ফাইল বা অ্যাক্সেস সক্রিয় হয়ে গেলে সাধারণত রিফান্ড প্রযোজ্য হয় না। তবে কোনো ফাইলে কোনো ত্রুটি থাকলে বা ব্যবহারে সমস্যা হলে এবং আমাদের সাপোর্ট টিম তা সমাধান করতে ব্যর্থ হলে রিফান্ড বা বিকল্প সমাধান বিবেচনা করা হবে।";
+
+  if (!forceFresh) {
+    const cached = fastCacheGet<SiteSettings>('site_settings', 180_000);
+    if (cached) {
+      if (cached.siteName === 'Murad Graphics' || !cached.siteName) cached.siteName = 'Vyrqonix';
+      if (!cached.defaultLicensePolicy || !cached.defaultLicensePolicy.includes('Vyrqonix থেকে')) {
+        cached.defaultLicensePolicy = bengaliLicense;
+      }
+      if (!cached.defaultRefundPolicy || !cached.defaultRefundPolicy.includes('ডিজিটাল প্রোডাক্টের')) {
+        cached.defaultRefundPolicy = bengaliRefund;
+      }
+      return cached;
+    }
   }
 
-  if (inFlightPromises.has('site_settings')) {
+  if (inFlightPromises.has('site_settings') && !forceFresh) {
     return inFlightPromises.get('site_settings')!;
   }
 
@@ -139,11 +150,11 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
         if (data.siteName === 'Murad Graphics' || !data.siteName) {
           data.siteName = 'Vyrqonix';
         }
-        if (!data.defaultLicensePolicy || data.defaultLicensePolicy.includes('All digital items') || data.defaultLicensePolicy.includes('licensed for personal')) {
-          data.defaultLicensePolicy = DEFAULT_SITE_SETTINGS.defaultLicensePolicy;
+        if (!data.defaultLicensePolicy || !data.defaultLicensePolicy.includes('Vyrqonix থেকে')) {
+          data.defaultLicensePolicy = bengaliLicense;
         }
-        if (!data.defaultRefundPolicy || data.defaultRefundPolicy.includes('Due to the irreversible nature')) {
-          data.defaultRefundPolicy = DEFAULT_SITE_SETTINGS.defaultRefundPolicy;
+        if (!data.defaultRefundPolicy || !data.defaultRefundPolicy.includes('ডিজিটাল প্রোডাক্টের')) {
+          data.defaultRefundPolicy = bengaliRefund;
         }
         fastCacheSet('site_settings', data);
         return data;

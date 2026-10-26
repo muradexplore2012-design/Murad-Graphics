@@ -15,6 +15,17 @@
   to = "/index.html"
   status = 200
 
+# Cache control headers for index.html to ensure visitors always load latest updates
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
 # Cache control headers for static assets
 [[headers]]
   for = "/assets/*"
