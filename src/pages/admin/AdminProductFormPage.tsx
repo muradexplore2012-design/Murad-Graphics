@@ -26,13 +26,6 @@ import {
 } from 'lucide-react';
 
 const DEFAULT_FORMATS = [
-  'Subscription',
-  'Invite Link',
-  'Activation Key',
-  'Private Account',
-  'Shared Account',
-  'Email Delivery',
-  'Lifetime',
   'AI',
   'EPS',
   'PSD',
@@ -78,9 +71,6 @@ export const AdminProductFormPage: React.FC = () => {
   const [directDownloadUrl, setDirectDownloadUrl] = useState('');
   const [directFileName, setDirectFileName] = useState('');
   const [directFileSize, setDirectFileSize] = useState<number>(0);
-  const [subscriptionDuration, setSubscriptionDuration] = useState('1 Year');
-  const [subscriptionInstructions, setSubscriptionInstructions] = useState('');
-  const [subscriptionInviteUrl, setSubscriptionInviteUrl] = useState('');
   const [zipPassword, setZipPassword] = useState('');
 
   // Metadata
@@ -115,14 +105,9 @@ export const AdminProductFormPage: React.FC = () => {
           setPreviews(prod.previews || []);
           const allInitialPhotos = [prod.thumbnail, ...(prod.previews || [])].filter(Boolean) as string[];
           setPhotos(allInitialPhotos);
-          setDeliveryMethod(prod.deliveryMethod === 'subscription_access' ? 'subscription_access' : 'google_drive');
+          setDeliveryMethod(prod.deliveryMethod === 'direct_upload' ? 'direct_upload' : 'google_drive');
           setGoogleDriveUrl(prod.googleDriveUrl || '');
-          setSubscriptionDuration(prod.subscriptionDuration || '1 Year');
-          setSubscriptionInstructions(prod.subscriptionInstructions || '');
           setZipPassword(prod.zipPassword || '');
-          if (prod.deliveryMethod === 'subscription_access' && prod.googleDriveUrl) {
-            setSubscriptionInviteUrl(prod.googleDriveUrl);
-          }
           if (prod.formats && prod.formats.length > 0) {
             setSelectedFormats(prod.formats);
             setAvailableFormats(prev => {
@@ -285,12 +270,7 @@ export const AdminProductFormPage: React.FC = () => {
         thumbnail: photos[0] || thumbnail || '',
         previews: photos.length > 1 ? photos.slice(1) : (photos.length === 1 ? [] : previews),
         deliveryMethod,
-        googleDriveUrl: deliveryMethod === 'google_drive' 
-          ? googleDriveUrl 
-          : (deliveryMethod === 'subscription_access' ? subscriptionInviteUrl : ''),
-        zipPassword: zipPassword.trim() || '',
-        subscriptionDuration: subscriptionDuration.trim() || '1 Year',
-        subscriptionInstructions: subscriptionInstructions.trim() || 'অর্ডার সফল হলে আপনার ইমেইল বা হোয়াটসঅ্যাপে সাবস্ক্রিপশন ইনভাইটেশন লিংক / লগইন অ্যাক্সেস পাঠানো হবে।',
+        googleDriveUrl: googleDriveUrl.trim(),
         ...(directDownloadUrl ? {
           fileMetadata: {
             name: directFileName || 'download_asset',
@@ -413,19 +393,9 @@ export const AdminProductFormPage: React.FC = () => {
               <label className="font-semibold block mb-1 text-slate-800">Asset Type *</label>
               <select
                 value={productType}
-                onChange={(e) => {
-                  const val = e.target.value as ProductType;
-                  setProductType(val);
-                  if (val === 'subscription') {
-                    setDeliveryMethod('subscription_access');
-                    if (!selectedFormats.includes('Subscription')) {
-                      setSelectedFormats(prev => [...prev, 'Subscription']);
-                    }
-                  }
-                }}
+                onChange={(e) => setProductType(e.target.value as ProductType)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
               >
-                <option value="subscription">Subscription / Digital Service (Canva, Adobe, ChatGPT, etc.)</option>
                 <option value="template">Template</option>
                 <option value="theme">Website Theme</option>
                 <option value="graphic_resource">Graphic Resource</option>
@@ -566,153 +536,32 @@ export const AdminProductFormPage: React.FC = () => {
 
         {/* Digital File Delivery Method */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">
-            3. Digital Delivery Method & Access
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
+            <span>3. Digital Delivery Method & Download Link</span>
+            <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full">
+              Google Drive Delivery
+            </span>
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <button
-              type="button"
-              onClick={() => setDeliveryMethod('google_drive')}
-              className={`p-4 rounded-2xl border text-left space-y-1 transition-all cursor-pointer ${
-                deliveryMethod === 'google_drive'
-                  ? 'border-cyan-500 bg-cyan-50 text-slate-900 shadow-xs ring-2 ring-cyan-500/20'
-                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-bold text-xs text-cyan-700">
-                <ExternalLink className="w-4 h-4" />
-                <span>Google Drive Link</span>
-              </div>
-              <p className="text-[11px] text-slate-500">
-                Paste a Google Drive shareable link for templates, bundles, or source files.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setDeliveryMethod('subscription_access');
-                if (productType !== 'subscription') {
-                  setProductType('subscription');
-                }
-                if (!selectedFormats.includes('Subscription')) {
-                  setSelectedFormats(prev => [...prev, 'Subscription']);
-                }
-              }}
-              className={`p-4 rounded-2xl border text-left space-y-1 transition-all cursor-pointer ${
-                deliveryMethod === 'subscription_access'
-                  ? 'border-purple-500 bg-purple-50 text-slate-900 shadow-xs ring-2 ring-purple-500/20'
-                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-bold text-xs text-purple-700">
-                <Sparkles className="w-4 h-4" />
-                <span>Subscription / Account</span>
-              </div>
-              <p className="text-[11px] text-slate-500">
-                Canva Pro, Adobe CC, ChatGPT Plus, OTT, Windows Key or private credentials.
-              </p>
-            </button>
+          <div className="p-4 sm:p-5 rounded-2xl bg-cyan-50/70 border border-cyan-200/90 space-y-3">
+            <div className="flex items-center gap-2 font-bold text-xs text-cyan-900">
+              <ExternalLink className="w-4 h-4 text-cyan-600" />
+              <span>Google Drive Shareable Link *</span>
+            </div>
+            <input
+              type="url"
+              required
+              placeholder="https://drive.google.com/file/d/..."
+              value={googleDriveUrl}
+              onChange={(e) => setGoogleDriveUrl(e.target.value)}
+              className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono text-xs"
+            />
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Google Drive-এ ফাইল আপলোড করে "Anyone with the link can view" পারমিশন দিয়ে শেয়ার লিংকটি এখানে দিন। কাস্টমার অর্ডার কনফার্ম হলে এই সুরক্ষিত লিংক থেকে ফাইল ডাউনলোড করতে পারবেন।
+            </p>
           </div>
 
-          {/* Delivery Configuration Inputs */}
-          {deliveryMethod === 'subscription_access' ? (
-            /* Subscription & Digital Service Setup */
-            <div className="p-5 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-purple-100">
-                <span className="font-bold text-xs text-purple-900 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  Subscription Delivery & Access Settings
-                </span>
-                <span className="text-[10px] bg-purple-200/80 text-purple-800 font-bold px-2.5 py-0.5 rounded-full">
-                  No file upload needed
-                </span>
-              </div>
-
-              {/* Validity / Duration Presets */}
-              <div>
-                <label className="font-bold block mb-1 text-slate-800 text-xs">
-                  Subscription Duration / Plan Validity *
-                </label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {['1 Month', '3 Months', '6 Months', '1 Year', '2 Years', 'Lifetime'].map((dur) => (
-                    <button
-                      type="button"
-                      key={dur}
-                      onClick={() => setSubscriptionDuration(dur)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        subscriptionDuration === dur
-                          ? 'bg-purple-600 text-white shadow-xs'
-                          : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-                      }`}
-                    >
-                      {dur}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="text"
-                  placeholder="e.g. 1 Year, 6 Months, or Lifetime..."
-                  value={subscriptionDuration}
-                  onChange={(e) => setSubscriptionDuration(e.target.value)}
-                  className="w-full max-w-sm bg-white border border-slate-200 rounded-xl p-2.5 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold"
-                />
-              </div>
-
-              {/* Customer Delivery Instructions */}
-              <div>
-                <label className="font-bold block mb-1 text-slate-800 text-xs">
-                  Customer Delivery Instructions & Notice *
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="e.g. অর্ডার কনফার্ম হওয়ার পর ১০-৩০ মিনিটের মধ্যে আপনার ইমেইল বা হোয়াটসঅ্যাপে ইনভাইটেশন লিংক / লগইন অ্যাক্সেস পাঠানো হবে। দ্রুত পাওয়ার জন্য হোয়াটসঅ্যাপে অর্ডার আইডি মেসেজ দিন।"
-                  value={subscriptionInstructions}
-                  onChange={(e) => setSubscriptionInstructions(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs leading-relaxed"
-                />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  এই বার্তাটি কাস্টমার অর্ডার সফল হওয়ার পর তার অ্যাকাউন্ট ও অর্ডারের পাতায় দেখতে পাবেন।
-                </p>
-              </div>
-
-              {/* Optional Instant Invite / Direct Link */}
-              <div>
-                <label className="font-bold block mb-1 text-slate-800 text-xs">
-                  Direct Invitation / Access Link (Optional - যদি সরাসরি ইনভাইটেশন লিংক থাকে)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://canva.com/brand/join?... or direct invite link (leave empty if delivered manually)"
-                  value={subscriptionInviteUrl}
-                  onChange={(e) => setSubscriptionInviteUrl(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-xs"
-                />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  যদি সরাসরি ইনভাইটেশন লিংক থাকে তবে দিতে পারেন। না থাকলে খালি রাখুন; কাস্টমারকে ম্যানুয়ালি হোয়াটসঅ্যাপ বা ইমেইলে দেওয়া হবে।
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <label className="font-bold block text-slate-800 text-xs">Google Drive Shareable Link *</label>
-              <input
-                type="url"
-                required
-                placeholder="https://drive.google.com/file/d/..."
-                value={googleDriveUrl}
-                onChange={(e) => setGoogleDriveUrl(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono text-xs"
-              />
-              <p className="text-[11px] text-slate-500">
-                Note: Ensure the file permission in Google Drive is set to "Anyone with the link can view". This link remains protected until purchase confirmation.
-              </p>
-            </div>
-          )}
-
           {/* ZIP / Extraction Password (Optional for drive / file deliveries) */}
-          {deliveryMethod !== 'subscription_access' && (
             <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200/80 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
@@ -734,7 +583,6 @@ export const AdminProductFormPage: React.FC = () => {
                 💡 <strong>কখন দিবেন?</strong> ফাইলটিতে যদি আনজিপ করার কোনো পাসওয়ার্ড থাকে (যেমন ৪ সংখ্যার পাসওয়ার্ড), তবে সেটি এখানে দিন। কাস্টমার অর্ডার সফল হওয়ার পর স্বয়ংক্রিয়ভাবে একটি সুন্দর নোটিশে পাসওয়ার্ড ও কপি বাটন দেখতে পাবে। পাসওয়ার্ড না থাকলে এটি ফাঁকা রাখুন।
               </p>
             </div>
-          )}
         </div>
 
         {/* Media & Previews (1/3+ Photos) */}

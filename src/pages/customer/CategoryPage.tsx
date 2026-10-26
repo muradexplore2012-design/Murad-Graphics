@@ -42,9 +42,9 @@ export const CategoryPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+      <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
         <div className="h-10 bg-slate-200 rounded-xl w-1/3 animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
@@ -68,7 +68,7 @@ export const CategoryPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Category banner header */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-3xl p-6 sm:p-10 text-white shadow-sm relative overflow-hidden">
         <div className="relative z-10 max-w-3xl flex items-center gap-4 sm:gap-6">
@@ -101,7 +101,7 @@ export const CategoryPage: React.FC = () => {
             actionHref="/shop"
           />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

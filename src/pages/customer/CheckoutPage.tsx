@@ -106,7 +106,7 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <div className="pb-6 border-b border-slate-200">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Digital Checkout</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">Instant digital delivery to your account library</p>

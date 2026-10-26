@@ -56,7 +56,6 @@ export const ProductDetailPage: React.FC = () => {
   const [copiedZipPass, setCopiedZipPass] = useState(false);
 
   // Interactive Product States (Matching user screenshot)
-  const [selectedPlan, setSelectedPlan] = useState<string>('1 Month');
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'description' | 'additional' | 'reviews'>('description');
   const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
@@ -155,14 +154,7 @@ export const ProductDetailPage: React.FC = () => {
     setDownloading(true);
     try {
       await recordDownloadEvent('direct_entitlement', product.id, user.uid);
-      
-      if (product.deliveryMethod === 'subscription_access') {
-        if (product.googleDriveUrl) {
-          window.open(product.googleDriveUrl, '_blank');
-        } else {
-          alert("Subscription Activation: " + (product.subscriptionInstructions || "Details have been sent to your registered email / WhatsApp."));
-        }
-      } else if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
+      if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
         window.open(product.googleDriveUrl, '_blank');
       } else if (product.fileMetadata?.downloadUrl) {
         window.open(product.fileMetadata.downloadUrl, '_blank');
@@ -238,7 +230,7 @@ export const ProductDetailPage: React.FC = () => {
   const allImages = [product.thumbnail, ...(product.previews || [])].filter(Boolean);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       
       {/* Breadcrumb Navigation (Matching Reference Screenshot) */}
       <nav className="text-xs text-slate-500 flex items-center gap-2">
@@ -342,55 +334,12 @@ export const ProductDetailPage: React.FC = () => {
           )}
 
 
-          {/* Plan Selector (Matching Screenshot: 1 Month, 6 Months, 1 Year) */}
-          <div className="space-y-2 pt-1">
-            <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">Plan</label>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {['1 Month', '6 Months', '1 Year'].map((plan) => (
-                <button
-                  key={plan}
-                  type="button"
-                  onClick={() => setSelectedPlan(plan)}
-                  className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                    selectedPlan === plan
-                      ? 'bg-purple-50 text-purple-700 border-2 border-purple-600 shadow-xs'
-                      : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
-                >
-                  {plan}
-                </button>
-              ))}
-            </div>
-          </div>
-
+          
           {/* Quantity Stepper & Add to Cart / Buy Now (Matching Screenshot) */}
           <div className="pt-2">
             {hasEntitlement ? (
               <div className="space-y-3">
-                {product.deliveryMethod === 'subscription_access' ? (
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl text-purple-950 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-sm text-purple-900">
-                      <Check className="w-4 h-4 text-emerald-600" />
-                      <span>সাবস্ক্রিপশন অর্ডার সম্পন্ন হয়েছে</span>
-                    </div>
-                    <p className="text-xs text-slate-700 leading-relaxed">
-                      {product.subscriptionInstructions || "আপনার সাবস্ক্রিপশন ইনভাইটেশন লিংক / লগইন অ্যাক্সেস আপনার ইমেইল বা হোয়াটসঅ্যাপে পাঠানো হচ্ছে।"}
-                    </p>
-                    {product.googleDriveUrl && (
-                      <a
-                        href={product.googleDriveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>ইনভাইটেশন লিংক খুলুন</span>
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
                       <Check className="w-4 h-4" />
                       <span>You have purchased access to this product. Download your source files anytime below:</span>
                     </div>
@@ -402,8 +351,6 @@ export const ProductDetailPage: React.FC = () => {
                       <Download className="w-4 h-4" />
                       <span>{downloading ? "Preparing file..." : "Download Source File"}</span>
                     </button>
-                  </>
-                )}
               </div>
             ) : product.isFree ? (
               <button
@@ -595,9 +542,7 @@ export const ProductDetailPage: React.FC = () => {
                   <tr>
                     <td className="py-3 px-4 font-bold text-slate-700">Delivery Method</td>
                     <td className="py-3 px-4 text-slate-600">
-                      {product.deliveryMethod === 'subscription_access'
-                        ? 'Subscription / Email & WhatsApp Activation (10-30 mins)'
-                        : product.deliveryMethod === 'google_drive' 
+                      {product.deliveryMethod === 'google_drive' 
                         ? 'Google Drive Link / Instant Email' 
                         : 'Direct Cloud Download'}
                     </td>
@@ -712,7 +657,7 @@ export const ProductDetailPage: React.FC = () => {
               View Catalog →
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
             {relatedProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -808,16 +753,6 @@ export const ProductDetailPage: React.FC = () => {
                     )}
                   </button>
                 </div>
-              </div>
-            ) : product.deliveryMethod === 'subscription_access' ? (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-slate-700 space-y-2">
-                <p className="font-bold text-blue-900 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-blue-600" />
-                  <span>সাবস্ক্রিপশন এক্সেস</span>
-                </p>
-                <p className="leading-relaxed">
-                  {product.subscriptionInstructions || "আপনার সাবস্ক্রিপশন ইনভাইটেশন ও লগইন তথ্য প্রসেস করা হচ্ছে।"}
-                </p>
               </div>
             ) : (
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-600 text-center">

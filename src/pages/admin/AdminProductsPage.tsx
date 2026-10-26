@@ -167,11 +167,7 @@ export const AdminProductsPage: React.FC = () => {
                 {/* Delivery Source & Formats */}
                 <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {prod.deliveryMethod === 'subscription_access' ? (
-                      <span className="text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-bold">
-                        <Sparkles className="w-3 h-3 text-purple-600" /> Subscription
-                      </span>
-                    ) : prod.deliveryMethod === 'google_drive' ? (
+                    {prod.deliveryMethod === 'google_drive' ? (
                       <span className="text-cyan-700 bg-cyan-50 border border-cyan-200/80 px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-bold">
                         <ExternalLink className="w-3 h-3" /> Drive
                       </span>
@@ -300,11 +296,7 @@ export const AdminProductsPage: React.FC = () => {
 
                       {/* Delivery Source */}
                       <td className="px-3 py-3 xl:px-3.5 xl:py-3.5 whitespace-nowrap">
-                        {prod.deliveryMethod === 'subscription_access' ? (
-                          <span className="text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded-lg text-[11px] flex items-center gap-1 font-bold inline-flex">
-                            <Sparkles className="w-3 h-3 text-purple-600" /> Subscription
-                          </span>
-                        ) : prod.deliveryMethod === 'google_drive' ? (
+                        {prod.deliveryMethod === 'google_drive' ? (
                           <span className="text-cyan-700 bg-cyan-50 border border-cyan-200/80 px-2 py-0.5 rounded-lg text-[11px] flex items-center gap-1 font-semibold inline-flex">
                             <ExternalLink className="w-3 h-3" /> Drive
                           </span>
