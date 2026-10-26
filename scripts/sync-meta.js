@@ -70,6 +70,11 @@ async function syncMeta() {
       // Replace twitter:description
       html = html.replace(/<meta name="twitter:description" content=".*?" \/>/i, `<meta name="twitter:description" content="${siteDescription}" />`);
 
+      // Ensure og:image and twitter:image use high-resolution 1200x630 og-image.png
+      html = html.replace(/<meta property="og:image" content=".*?" \/>/i, `<meta property="og:image" content="https://vyrqonix.netlify.app/og-image.png" />`);
+      html = html.replace(/<meta property="og:image:secure_url" content=".*?" \/>/i, `<meta property="og:image:secure_url" content="https://vyrqonix.netlify.app/og-image.png" />`);
+      html = html.replace(/<meta name="twitter:image" content=".*?" \/>/i, `<meta name="twitter:image" content="https://vyrqonix.netlify.app/og-image.png" />`);
+
       fs.writeFileSync(indexPath, html, 'utf8');
       console.log(`Successfully synced metadata to index.html with title: "${siteTitle}"`);
     }
