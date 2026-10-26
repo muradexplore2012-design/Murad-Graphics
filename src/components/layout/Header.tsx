@@ -136,7 +136,7 @@ export const Header: React.FC = () => {
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-slate-100 transition-all">
       
       {/* ================= DESKTOP TOP ROW (hidden md:block) ================= */}
-      <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
+      <div className="hidden md:block max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
         <div className="flex items-center justify-between gap-4 md:gap-8">
           
           {/* Logo Brand */}
@@ -159,7 +159,7 @@ export const Header: React.FC = () => {
           {/* Centered Search Bar with Purple/Blue Circular Search Button */}
           <form 
             onSubmit={handleSearchSubmit} 
-            className="flex-1 max-w-2xl flex items-center relative"
+            className="flex-1 max-w-2xl xl:max-w-3xl 2xl:max-w-4xl flex items-center relative"
           >
             <div className="w-full relative flex items-center">
               <input
@@ -293,7 +293,7 @@ export const Header: React.FC = () => {
 
       {/* ================= BOTTOM ROW: Category Pill + Menu Links + Actions ================= */}
       <div className="bg-white border-t border-slate-100 hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 gap-4">
             
             {/* Left: All Categories Pill Button + Navigation Links */}

@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
     <>
       {/* ================= DESKTOP FOOTER (hidden md:block) ================= */}
       <footer className="hidden md:block bg-white text-slate-700 pt-16 pb-8 border-t border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Value Proposition Badges */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12 mb-12 border-b border-slate-100">

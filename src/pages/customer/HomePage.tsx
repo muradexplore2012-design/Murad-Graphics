@@ -308,7 +308,7 @@ export const HomePage: React.FC = () => {
     <div className="space-y-12 pb-20">
       
       {/* ================= HERO SECTION (LEFT MAIN SLIDER + RIGHT PROMO POSTERS) ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+      <section className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch">
           
           {/* ================= LEFT: MAIN HERO SLIDER (Circled Section - ONLY THIS SLIDES) ================= */}
@@ -317,7 +317,7 @@ export const HomePage: React.FC = () => {
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className="relative w-full aspect-[1024/440] min-h-[145px] lg:aspect-auto lg:h-[345px] xl:h-[355px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group"
+              className="relative w-full aspect-[1024/440] min-h-[145px] lg:aspect-auto lg:h-[360px] xl:h-[390px] 2xl:h-[430px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group"
             >
               
               {/* Slider Slides with Smooth Fade/Slide */}
@@ -439,11 +439,11 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* ================= TABLET & DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
-          <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-5 xl:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 lg:h-[345px] xl:h-[355px]">
+          <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-5 xl:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 lg:h-[360px] xl:h-[390px] 2xl:h-[430px]">
             
             {/* Top Poster (Wide banner) */}
             {sideTopPoster && (
-              <div className="w-full h-[140px] md:h-[155px] lg:h-[185px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950 shrink-0">
+              <div className="w-full h-[140px] md:h-[155px] lg:h-[195px] xl:h-[210px] 2xl:h-[230px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950 shrink-0">
                 {sideTopPoster.ctaLink?.startsWith('http') ? (
                   <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                     <img
@@ -469,7 +469,7 @@ export const HomePage: React.FC = () => {
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
-            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 h-[140px] md:h-[155px] lg:h-[145px]`}>
+            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 h-[140px] md:h-[155px] lg:h-[150px] xl:h-[165px] 2xl:h-[185px]`}>
               
               {/* Bottom Left Poster */}
               {sideBottomLeftPoster && (
@@ -534,7 +534,7 @@ export const HomePage: React.FC = () => {
 
       {/* ================= CATEGORIES SECTION (CAROUSEL SLIDER WITH OVERFLOW-ONLY ARROWS) ================= */}
       {categories.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header: Collections */}
           <div className="mb-2 sm:mb-2.5">
             <h2 className="text-xs sm:text-sm font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1.5">
@@ -623,7 +623,7 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* ================= PRODUCT SECTIONS ================= */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+      <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Trending Products (Free & Paid All Assets) */}
         <section>
@@ -640,7 +640,7 @@ export const HomePage: React.FC = () => {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
@@ -653,7 +653,7 @@ export const HomePage: React.FC = () => {
               actionHref="/shop"
             />
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
               {allProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
