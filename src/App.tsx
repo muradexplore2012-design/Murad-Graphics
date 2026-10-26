@@ -108,6 +108,7 @@ export function App() {
                   <Route path="account" element={<AccountPage />} />
                   <Route path="account/orders/:id" element={<OrderDetailPage />} />
                   <Route path="account/downloads" element={<DownloadsPage />} />
+                  <Route path="downloads" element={<Navigate to="/account/downloads" replace />} />
                   <Route path="wishlist" element={<WishlistPage />} />
                   <Route path="login" element={<LoginPage />} />
                   

@@ -83,7 +83,25 @@ const CartIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, 
   );
 };
 
-// 5. Account Icon (Outline vs Solid User)
+// 5. Download Icon (Outline vs Solid Tray Download)
+const DownloadIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, className }) => {
+  if (active) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path fillRule="evenodd" clipRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v10.19l2.72-2.72a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0l-4-4a.75.75 0 1 1 1.06-1.06l2.72 2.72V3a.75.75 0 0 1 .75-.75Zm-8.25 14a.75.75 0 0 1 .75.75v2.25c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75V17a.75.75 0 0 1 1.5 0v2.25A2.25 2.25 0 0 1 18.75 21.5H5.25A2.25 2.25 0 0 1 3 19.25V17a.75.75 0 0 1 .75-.75Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+};
+
+// 6. Account Icon (Outline vs Solid User)
 const AccountIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, className }) => {
   if (active) {
     return (
@@ -117,14 +135,15 @@ export const BottomNavigation: React.FC = () => {
   const isHomeActive = pathname === '/';
   const isShopActive = pathname.startsWith('/shop') || pathname.startsWith('/category') || pathname.startsWith('/product');
   const isCartActive = pathname.startsWith('/cart') || pathname.startsWith('/checkout');
-  const isAccountActive = pathname.startsWith('/account') || pathname === '/login';
+  const isDownloadsActive = pathname.startsWith('/account/downloads') || pathname === '/downloads';
+  const isAccountActive = (pathname.startsWith('/account') && !isDownloadsActive) || pathname === '/login';
 
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
       className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] rounded-t-3xl pb-[max(0.4rem,env(safe-area-inset-bottom))]"
     >
-      <div className="grid grid-cols-4 items-center max-w-md mx-auto px-2 h-16">
+      <div className="grid grid-cols-5 items-center max-w-md mx-auto px-1 h-16">
         
         {/* 1. Home */}
         <Link
@@ -136,7 +155,7 @@ export const BottomNavigation: React.FC = () => {
           <div className="relative flex items-center justify-center w-6 h-6">
             <HomeIcon active={isHomeActive} className="w-5 h-5 transition-transform" />
           </div>
-          <span className={`text-[11px] mt-1 leading-tight transition-colors ${
+          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
             isHomeActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
           }`}>
             Home
@@ -153,7 +172,7 @@ export const BottomNavigation: React.FC = () => {
           <div className="relative flex items-center justify-center w-6 h-6">
             <ShopIcon active={isShopActive} className="w-5 h-5 transition-transform" />
           </div>
-          <span className={`text-[11px] mt-1 leading-tight transition-colors ${
+          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
             isShopActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
           }`}>
             Shop
@@ -177,14 +196,31 @@ export const BottomNavigation: React.FC = () => {
               </span>
             )}
           </div>
-          <span className={`text-[11px] mt-1 leading-tight transition-colors ${
+          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
             isCartActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
           }`}>
             Cart
           </span>
         </Link>
 
-        {/* 4. Account */}
+        {/* 4. Downloads Library */}
+        <Link
+          to="/account/downloads"
+          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
+            isDownloadsActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <div className="relative flex items-center justify-center w-6 h-6">
+            <DownloadIcon active={isDownloadsActive} className="w-5 h-5 transition-transform" />
+          </div>
+          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors truncate max-w-full text-center ${
+            isDownloadsActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
+          }`}>
+            Downloads
+          </span>
+        </Link>
+
+        {/* 5. Account */}
         <Link
           to={user ? "/account" : "/login"}
           className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
@@ -208,7 +244,7 @@ export const BottomNavigation: React.FC = () => {
               <AccountIcon active={isAccountActive} className="w-5 h-5 transition-transform" />
             )}
           </div>
-          <span className={`text-[11px] mt-1 leading-tight transition-colors ${
+          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
             isAccountActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
           }`}>
             Account

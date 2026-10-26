@@ -32,7 +32,10 @@ export const DownloadsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchEntitlements = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const [ents, orders] = await Promise.all([
@@ -231,6 +234,14 @@ export const DownloadsPage: React.FC = () => {
             <div key={i} className="h-44 bg-slate-200 rounded-2xl animate-pulse" />
           ))}
         </div>
+      ) : !user ? (
+        <EmptyState
+          icon={<FolderDown className="w-8 h-8 text-[#7a00ea]" />}
+          title="Sign in to view your Downloads Library"
+          description="Access all your purchased digital files, templates, and subscription access in one place."
+          actionLabel="Login / Sign Up"
+          actionHref="/login"
+        />
       ) : filteredEntitlements.length === 0 ? (
         <EmptyState
           icon={<FolderDown className="w-8 h-8 text-blue-600" />}
