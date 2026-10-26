@@ -168,17 +168,6 @@ export const Footer: React.FC = () => {
                   <Mail className="w-4 h-4 text-blue-600 shrink-0" />
                   <a href={`mailto:${settings.email}`} className="hover:text-blue-600 transition-colors">{settings.email}</a>
                 </div>
-                <div className="pt-2">
-                  <a 
-                    href={`https://wa.me/88${settings.whatsapp.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-xs group"
-                  >
-                    <img src="/whatsapp.webp" alt="WhatsApp" className="w-4 h-4 rounded object-contain" />
-                    <span>WhatsApp Support</span>
-                  </a>
-                </div>
               </div>
             </div>
           </div>
