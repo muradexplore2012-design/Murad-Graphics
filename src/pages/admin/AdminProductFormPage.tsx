@@ -745,7 +745,7 @@ export const AdminProductFormPage: React.FC = () => {
                 4. Preview Images & Photos
               </h2>
               <p className="text-slate-500 text-xs mt-0.5">
-                Upload 1, 2, 3 or more photos. Any specific photo can be removed individually. The first photo is your Main Thumbnail.
+                প্রোডাক্ট ছবির সাইজ 1080×1080 (1:1 স্কয়ার রেশিও) ব্যবহার করুন। ১ম ছবিটি মেইন থাম্বনেইল হিসেবে সেট হবে।
               </p>
             </div>
             <div className="flex items-center gap-2">

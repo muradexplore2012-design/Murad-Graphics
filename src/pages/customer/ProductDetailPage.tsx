@@ -68,6 +68,10 @@ export const ProductDetailPage: React.FC = () => {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [slug]);
+
+  useEffect(() => {
     let isMounted = true;
     const loadProduct = async () => {
       if (!slug) {
@@ -205,7 +209,7 @@ export const ProductDetailPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="aspect-[4/3] bg-slate-200 rounded-3xl" />
+          <div className="aspect-square w-full bg-slate-200 rounded-3xl" />
           <div className="space-y-4">
             <div className="h-8 bg-slate-200 rounded w-3/4" />
             <div className="h-6 bg-slate-200 rounded w-1/4" />
@@ -251,12 +255,12 @@ export const ProductDetailPage: React.FC = () => {
         {/* ================= LEFT COLUMN: MAIN PRODUCT POSTER & GALLERY ================= */}
         <div className="lg:col-span-6 space-y-4">
           
-          {/* Main Poster Container with Magnifying Glass Zoom */}
-          <div className="relative group rounded-3xl border border-slate-200/90 overflow-hidden bg-slate-100/70 p-2 sm:p-4 flex items-center justify-center shadow-sm min-h-[340px] sm:min-h-[420px]">
+          {/* Main Poster Container (Exact 1080:1080 Square 1:1 Aspect Ratio Matching Photo 2) */}
+          <div className="relative group rounded-3xl border border-slate-200/90 overflow-hidden bg-slate-900 shadow-sm aspect-square w-full flex items-center justify-center">
             <img
               src={selectedImage}
               alt={product.name}
-              className="w-full h-auto max-h-[480px] object-contain rounded-2xl shadow-xs transition-transform duration-300 group-hover:scale-[1.01]"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
 
             {/* Magnifying Glass Zoom Button */}
@@ -271,7 +275,7 @@ export const ProductDetailPage: React.FC = () => {
             </button>
 
             {product.isFree && (
-              <span className="absolute top-4 left-4 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow-md tracking-wider">
+              <span className="absolute top-4 left-4 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow-md tracking-wider z-10">
                 FREE DOWNLOAD
               </span>
             )}

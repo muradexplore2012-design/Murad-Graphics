@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
@@ -54,6 +54,17 @@ const PageLoader: React.FC = () => (
     <div className="w-8 h-8 rounded-full border-2 border-purple-600 border-t-transparent animate-spin" />
   </div>
 );
+
+// Global ScrollToTop Component for instant reset on route change
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+
+  return null;
+};
 
 // Dynamic Site Title & PWA App Name Synchronizer (Controlled from Admin Settings Panel)
 const SiteTitleSync: React.FC = () => {
@@ -128,6 +139,7 @@ const SiteTitleSync: React.FC = () => {
 export function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <SiteTitleSync />
       <AuthProvider>
         <CartProvider>
