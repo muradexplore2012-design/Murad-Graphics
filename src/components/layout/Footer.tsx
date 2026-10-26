@@ -47,7 +47,7 @@ export const Footer: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-slate-900 font-bold text-sm">100% Genuine & Authentic</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Verified digital access and official premium subscriptions</p>
+                <p className="text-xs text-slate-500 mt-0.5">Verified digital access and premium creative assets</p>
               </div>
             </div>
 
