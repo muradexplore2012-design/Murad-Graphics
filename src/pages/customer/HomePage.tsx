@@ -438,12 +438,12 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* ================= DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
-          <div className="hidden lg:flex lg:col-span-5 xl:col-span-4 flex-col gap-3 sm:gap-4 lg:h-[345px] xl:h-[355px]">
+          {/* ================= TABLET & DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
+          <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-5 xl:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 lg:h-[345px] xl:h-[355px]">
             
-            {/* Top Poster (Wide banner) - Hidden on mobile, visible on tablet/desktop */}
+            {/* Top Poster (Wide banner) */}
             {sideTopPoster && (
-              <div className="hidden md:block w-full md:h-[175px] lg:h-[185px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950 shrink-0">
+              <div className="w-full h-[140px] md:h-[155px] lg:h-[185px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950 shrink-0">
                 {sideTopPoster.ctaLink?.startsWith('http') ? (
                   <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                     <img
@@ -469,7 +469,7 @@ export const HomePage: React.FC = () => {
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
-            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 h-[112px] min-[390px]:h-[120px] sm:h-[125px] md:h-[135px] lg:h-[145px]`}>
+            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 h-[140px] md:h-[155px] lg:h-[145px]`}>
               
               {/* Bottom Left Poster */}
               {sideBottomLeftPoster && (
@@ -563,7 +563,7 @@ export const HomePage: React.FC = () => {
               {/* All Products First Card */}
               <Link
                 to="/shop"
-                className="shrink-0 w-28 sm:w-52 aspect-[4/3] rounded-xl sm:rounded-3xl overflow-hidden border sm:border-2 border-purple-500/50 hover:border-purple-400 shadow-sm sm:shadow-[0_0_18px_rgba(147,51,234,0.25)] hover:shadow-[0_0_28px_rgba(168,85,247,0.55)] transition-all duration-300 hover:scale-105 active:scale-95 group/card relative bg-[#0d0524]"
+                className="shrink-0 w-28 sm:w-44 md:w-48 lg:w-52 aspect-[4/3] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden border sm:border-2 border-purple-500/50 hover:border-purple-400 shadow-sm sm:shadow-[0_0_18px_rgba(147,51,234,0.25)] hover:shadow-[0_0_28px_rgba(168,85,247,0.55)] transition-all duration-300 hover:scale-105 active:scale-95 group/card relative bg-[#0d0524]"
               >
                 <img
                   src="/categories/all-products.png"
@@ -577,7 +577,7 @@ export const HomePage: React.FC = () => {
                 <Link
                   key={cat.id}
                   to={`/category/${cat.slug}`}
-                  className="shrink-0 w-28 sm:w-52 aspect-[4/3] rounded-xl sm:rounded-3xl overflow-hidden border sm:border-2 border-purple-500/50 hover:border-purple-400 shadow-sm sm:shadow-[0_0_18px_rgba(147,51,234,0.25)] hover:shadow-[0_0_28px_rgba(168,85,247,0.55)] transition-all duration-300 hover:scale-105 active:scale-95 group/card relative bg-[#0d0524]"
+                  className="shrink-0 w-28 sm:w-44 md:w-48 lg:w-52 aspect-[4/3] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden border sm:border-2 border-purple-500/50 hover:border-purple-400 shadow-sm sm:shadow-[0_0_18px_rgba(147,51,234,0.25)] hover:shadow-[0_0_28px_rgba(168,85,247,0.55)] transition-all duration-300 hover:scale-105 active:scale-95 group/card relative bg-[#0d0524]"
                 >
                   {cat.image ? (
                     <img 

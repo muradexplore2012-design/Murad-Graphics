@@ -311,11 +311,11 @@ export const Header: React.FC = () => {
                 </button>
               </div>
 
-              {/* Navigation Menu Links */}
-              <nav className="hidden lg:flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold">
+              {/* Navigation Menu Links (Visible on Tablet & Desktop) */}
+              <nav className="hidden md:flex items-center gap-1 lg:gap-2 text-xs lg:text-sm font-bold">
                 <Link
                   to="/"
-                  className={`px-3.5 py-1.5 rounded-full transition-all ${
+                  className={`px-2.5 lg:px-3.5 py-1.5 rounded-full transition-all ${
                     isActiveRoute('/')
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -326,7 +326,7 @@ export const Header: React.FC = () => {
 
                 <Link
                   to="/shop"
-                  className={`px-3.5 py-1.5 rounded-full transition-all ${
+                  className={`px-2.5 lg:px-3.5 py-1.5 rounded-full transition-all ${
                     isActiveRoute('/shop')
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -337,7 +337,7 @@ export const Header: React.FC = () => {
 
                 <Link
                   to="/about"
-                  className={`px-3.5 py-1.5 rounded-full transition-all ${
+                  className={`px-2.5 lg:px-3.5 py-1.5 rounded-full transition-all ${
                     isActiveRoute('/about')
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -348,7 +348,7 @@ export const Header: React.FC = () => {
 
                 <Link
                   to="/shop?search=game"
-                  className={`px-3.5 py-1.5 rounded-full transition-all ${
+                  className={`px-2.5 lg:px-3.5 py-1.5 rounded-full transition-all ${
                     location.search.toLowerCase().includes('game')
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
@@ -359,7 +359,7 @@ export const Header: React.FC = () => {
 
                 <Link
                   to="/contact"
-                  className={`px-3.5 py-1.5 rounded-full transition-all ${
+                  className={`px-2.5 lg:px-3.5 py-1.5 rounded-full transition-all ${
                     isActiveRoute('/contact')
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
