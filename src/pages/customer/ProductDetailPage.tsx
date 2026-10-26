@@ -118,15 +118,12 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleFreeDownload = async () => {
     if (!product) return;
-    if (!user) {
-      navigate('/login?redirect=/product/' + product.slug);
-      return;
-    }
-
     setDownloading(true);
     try {
-      await grantFreeEntitlement({ uid: user.uid, email: user.email || '' }, product);
-      setHasEntitlement(true);
+      if (user) {
+        await grantFreeEntitlement({ uid: user.uid, email: user.email || '' }, product).catch(() => {});
+        setHasEntitlement(true);
+      }
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
 
       if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
@@ -138,7 +135,7 @@ export const ProductDetailPage: React.FC = () => {
       setDownloadSuccessMessage('Item claimed! It has also been saved to your Downloads Library.');
       setShowDownloadModal(true);
     } catch (e: any) {
-      alert("Error processing free download: " + e.message);
+      alert("Error: " + e.message);
     } finally {
       setDownloading(false);
     }
@@ -692,7 +689,7 @@ export const ProductDetailPage: React.FC = () => {
       {/* ================= DOWNLOAD SUCCESS & ZIP PASSWORD MODAL ================= */}
       {showDownloadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-4 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowDownloadModal(false)}
@@ -707,20 +704,33 @@ export const ProductDetailPage: React.FC = () => {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                ডাউনলোড শুরু হয়েছে! 🎉
+                ডাউনলোড ও ফাইল এক্সেস 🎉
               </h3>
               <p className="text-xs text-slate-500 font-medium">
                 {product.name}
               </p>
             </div>
 
-            {/* ZIP Password Notice (If Product has ZIP Password) */}
-            {product.zipPassword ? (
+            {/* Direct Download Button (Always accessible) */}
+            {(product.googleDriveUrl || product.fileMetadata?.downloadUrl) && (
+              <a
+                href={product.googleDriveUrl || product.fileMetadata?.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                <span>📥 ফাইলটি ডাউনলোড করুন (Google Drive Link)</span>
+              </a>
+            )}
+
+            {/* ZIP Password Notice (If Product has Password) */}
+            {product.zipPassword && (
               <div className="space-y-3 p-4 bg-purple-50/80 border border-purple-200/90 rounded-2xl">
                 <div className="flex items-start gap-2.5">
                   <KeyRound className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    ফাইলটি <strong className="text-purple-950 font-black">ZIP</strong> আকারে রয়েছে। ফাইলটি ডাউনলোড করার পর আনজিপ (Unzip/Extract) করতে নিচের <strong className="text-purple-950 font-black">৪ সংখ্যার পাসওয়ার্ডটি</strong> প্রয়োজন হবে:
+                    ফাইলটি <strong className="text-purple-950 font-black">ZIP / RAR</strong> আকারে রয়েছে। ফাইলটি আনজিপ (Unzip/Extract) করতে নিচের <strong className="text-purple-950 font-black">পাসওয়ার্ডটি</strong> প্রয়োজন হবে:
                   </p>
                 </div>
 
@@ -738,7 +748,7 @@ export const ProductDetailPage: React.FC = () => {
                       setCopiedZipPass(true);
                       setTimeout(() => setCopiedZipPass(false), 2000);
                     }}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
                   >
                     {copiedZipPass ? (
                       <>
@@ -754,27 +764,55 @@ export const ProductDetailPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-600 text-center">
-                ফাইলটি আপনার ডিভাইসে ডাউনলোড হচ্ছে। এটি আপনার Downloads Library-তেও সংরক্ষণ করা হয়েছে।
+            )}
+
+            {/* How to Use / Extract / Run Instructions */}
+            <div className="p-4 bg-blue-50/80 border border-blue-200/90 rounded-2xl text-xs space-y-2.5">
+              <div className="flex items-center gap-2 font-bold text-blue-950">
+                <span className="text-base">📌</span>
+                <span>কিভাবে কি করতে হবে / নির্দেশাবলী:</span>
+              </div>
+              
+              {product.downloadInstructions ? (
+                <div className="text-slate-700 leading-relaxed font-medium whitespace-pre-line bg-white/70 p-3 rounded-xl border border-blue-100">
+                  {product.downloadInstructions}
+                </div>
+              ) : (
+                <ol className="list-decimal list-inside space-y-1.5 text-slate-700 font-medium leading-relaxed">
+                  <li>ওপরের সবুজ বাটনে ক্লিক করে ফাইলটি ডাউনলোড করে নিন।</li>
+                  {product.zipPassword && (
+                    <li>ফাইলটি আনজিপ (Extract) করার সময় ওপরের পাসওয়ার্ডটি দিন।</li>
+                  )}
+                  {product.productType === 'game' ? (
+                    <li>আনজিপ করার পর ভেতরের <strong className="font-mono text-blue-700">Setup.exe</strong> বা গেম ফাইলটি রান করে খেলা শুরু করুন।</li>
+                  ) : product.productType === 'software' ? (
+                    <li>আনজিপ করার পর <strong className="font-mono text-blue-700">Setup / Installer</strong> ফাইলটি ওপেন করে ইন্সটল সম্পন্ন করুন।</li>
+                  ) : (
+                    <li>ফাইলটি আপনার ডিভাইসে ওপেন করে ডিজাইন শুরু করুন।</li>
+                  )}
+                </ol>
+              )}
+            </div>
+
+            {/* Notification Badge */}
+            {user && (
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-[11px] text-emerald-800 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>আইটেমটি আপনার <strong>Downloads Library</strong>-তেও সংরক্ষণ করা হয়েছে।</span>
               </div>
             )}
 
-            {/* Notification Badge */}
-            <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-[11px] text-emerald-800 flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>রিসোর্সটি আপনার <strong>Downloads Library</strong>-তে যুক্ত করা হয়েছে।</span>
-            </div>
-
             {/* Action Buttons */}
-            <div className="space-y-2.5 pt-1">
-              <Link
-                to="/downloads"
-                className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 text-center"
-              >
-                <span>Downloads Library দেখুন</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+            <div className="space-y-2 pt-1">
+              {user && (
+                <Link
+                  to="/downloads"
+                  className="w-full py-2.5 px-4 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
+                >
+                  <span>Downloads Library দেখুন</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => setShowDownloadModal(false)}

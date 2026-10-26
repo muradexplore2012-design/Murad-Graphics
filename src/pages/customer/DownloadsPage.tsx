@@ -28,6 +28,8 @@ export const DownloadsPage: React.FC = () => {
     productName: string;
     zipPassword?: string;
     downloadUrl?: string;
+    instructions?: string;
+    productType?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -149,7 +151,9 @@ export const DownloadsPage: React.FC = () => {
         setActiveDownloadModal({
           productName: product.name,
           zipPassword: zipPass,
-          downloadUrl: targetUrl
+          downloadUrl: targetUrl,
+          instructions: product.downloadInstructions,
+          productType: product.productType
         });
       } else if (product.fileMetadata?.downloadUrl) {
         targetUrl = product.fileMetadata.downloadUrl;
@@ -157,7 +161,9 @@ export const DownloadsPage: React.FC = () => {
         setActiveDownloadModal({
           productName: product.name,
           zipPassword: zipPass,
-          downloadUrl: targetUrl
+          downloadUrl: targetUrl,
+          instructions: product.downloadInstructions,
+          productType: product.productType
         });
       } else {
         alert("Digital download is being refreshed. Please contact support if this persists.");
@@ -389,6 +395,34 @@ export const DownloadsPage: React.FC = () => {
                 ফাইলটি আপনার ডিভাইসে ডাউনলোড হচ্ছে। কোনো সমস্যা হলে নিচের বাটন দিয়ে পুনরায় ডাউনলোড করতে পারেন।
               </div>
             )}
+
+            {/* How to Use / Instructions in DownloadsPage */}
+            <div className="p-4 bg-blue-50/80 border border-blue-200/90 rounded-2xl text-xs space-y-2 text-left">
+              <div className="flex items-center gap-2 font-bold text-blue-950">
+                <span className="text-base">📌</span>
+                <span>কিভাবে কি করতে হবে / নির্দেশাবলী:</span>
+              </div>
+              
+              {activeDownloadModal.instructions ? (
+                <div className="text-slate-700 leading-relaxed font-medium whitespace-pre-line bg-white/70 p-3 rounded-xl border border-blue-100">
+                  {activeDownloadModal.instructions}
+                </div>
+              ) : (
+                <ol className="list-decimal list-inside space-y-1.5 text-slate-700 font-medium leading-relaxed">
+                  <li>ওপরের সবুজ বাটন থেকে ফাইলটি ডাউনলোড করুন।</li>
+                  {activeDownloadModal.zipPassword && (
+                    <li>ফাইলটি আনজিপ (Extract) করার সময় ওপরের পাসওয়ার্ডটি দিন।</li>
+                  )}
+                  {activeDownloadModal.productType === 'game' ? (
+                    <li>আনজিপ করার পর ভেতরের <strong className="font-mono text-blue-700">Setup.exe</strong> বা গেম ফাইলটি রান করুন।</li>
+                  ) : activeDownloadModal.productType === 'software' ? (
+                    <li>আনজিপ করার পর <strong className="font-mono text-blue-700">Setup / Installer</strong> ফাইলটি ওপেন করে ইন্সটল করুন।</li>
+                  ) : (
+                    <li>ফাইলটি আপনার ডিভাইসে ওপেন করে ব্যবহার করুন।</li>
+                  )}
+                </ol>
+              )}
+            </div>
 
             {/* Actions */}
             <div className="space-y-2.5 pt-2">

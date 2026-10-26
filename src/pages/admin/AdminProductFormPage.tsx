@@ -22,7 +22,8 @@ import {
   KeyRound,
   ShieldCheck,
   Tag,
-  ImagePlus
+  ImagePlus,
+  FileText
 } from 'lucide-react';
 
 const DEFAULT_FORMATS = [
@@ -77,6 +78,7 @@ export const AdminProductFormPage: React.FC = () => {
   const [directFileSize, setDirectFileSize] = useState<number>(0);
   const [zipPassword, setZipPassword] = useState('');
   const [customButtonText, setCustomButtonText] = useState('');
+  const [downloadInstructions, setDownloadInstructions] = useState('');
 
   // Metadata
   const [availableFormats, setAvailableFormats] = useState<string[]>(DEFAULT_FORMATS);
@@ -114,6 +116,7 @@ export const AdminProductFormPage: React.FC = () => {
           setGoogleDriveUrl(prod.googleDriveUrl || '');
           setZipPassword(prod.zipPassword || '');
           setCustomButtonText(prod.customButtonText || '');
+          setDownloadInstructions(prod.downloadInstructions || '');
           if (prod.formats && prod.formats.length > 0) {
             setSelectedFormats(prod.formats);
             setAvailableFormats(prev => {
@@ -279,6 +282,7 @@ export const AdminProductFormPage: React.FC = () => {
         googleDriveUrl: googleDriveUrl.trim(),
         zipPassword: zipPassword.trim() || '',
         customButtonText: customButtonText.trim() || '',
+        downloadInstructions: downloadInstructions.trim() || '',
         ...(directDownloadUrl ? {
           fileMetadata: {
             name: directFileName || 'download_asset',
@@ -769,6 +773,70 @@ export const AdminProductFormPage: React.FC = () => {
                 💡 <strong>কখন দিবেন?</strong> ফাইলটিতে যদি আনজিপ করার কোনো পাসওয়ার্ড থাকে (যেমন ৪ সংখ্যার পাসওয়ার্ড), তবে সেটি এখানে দিন। কাস্টমার অর্ডার সফল হওয়ার পর স্বয়ংক্রিয়ভাবে একটি সুন্দর নোটিশে পাসওয়ার্ড ও কপি বাটন দেখতে পাবে। পাসওয়ার্ড না থাকলে এটি ফাঁকা রাখুন।
               </p>
             </div>
+
+          {/* How-To-Use / Installation Instructions (কিভাবে কি করতে হবে) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-amber-700" />
+                <span>কিভাবে কি করতে হবে / ইন্সটলেশন গাইড (ঐচ্ছিক / Optional)</span>
+              </label>
+              <span className="text-[10px] font-semibold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                ডাউনলোড পপআপে কাস্টমার দেখতে পাবে
+              </span>
+            </div>
+
+            <textarea
+              rows={3}
+              placeholder="যেমন: ১. জিপ ফাইলটি ডাউনলোড করে আনজিপ করুন। ২. আনজিপ করতে পাসওয়ার্ড MG2026 দিন। ৩. Setup.exe রান করে ইন্সটল করুন..."
+              value={downloadInstructions}
+              onChange={(e) => setDownloadInstructions(e.target.value)}
+              className="w-full bg-white border border-amber-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs leading-relaxed"
+            />
+
+            {/* Quick Presets for Instructions */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] text-slate-500 font-medium block">
+                দ্রুত গাইডলাইন সিলেক্ট করুন:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setDownloadInstructions("১. ফাইলটি ডাউনলোড করে আনজিপ (Extract) করুন।\n২. আনজিপ করতে উপরের পাসওয়ার্ডটি দিন।\n৩. ভেতর থেকে Setup.exe বা গেম ফাইলটি রান করে প্লে করুন।")}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-amber-200 text-amber-900 hover:bg-amber-100/60 cursor-pointer"
+                >
+                  🎮 গেম ইন্সটল গাইড
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDownloadInstructions("১. ফাইলটি ডাউনলোড করে আনজিপ করুন।\n২. পাসওয়ার্ড দিয়ে এক্সট্রাক্ট করুন।\n৩. Setup / Installer ফাইলটি রান করে ইন্সটল সম্পন্ন করুন।")}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-amber-200 text-amber-900 hover:bg-amber-100/60 cursor-pointer"
+                >
+                  💻 সফটওয়্যার গাইড
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDownloadInstructions("১. জিপ ফাইলটি ডাউনলোড করে আনজিপ করুন।\n২. পাসওয়ার্ড চাইলে উপরের পাসওয়ার্ড দিন।\n৩. Photoshop / Illustrator এ সোর্স ফাইল ওপেন করে এডিট করুন।")}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-amber-200 text-amber-900 hover:bg-amber-100/60 cursor-pointer"
+                >
+                  🎨 গ্রাফিক্স / ডিজাইন গাইড
+                </button>
+                {downloadInstructions && (
+                  <button
+                    type="button"
+                    onClick={() => setDownloadInstructions('')}
+                    className="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 cursor-pointer"
+                  >
+                    খালি করুন
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              💡 কাস্টমার যখন ডাউনলোড বাটনে ক্লিক করবে, তখন এই নিয়মাবলীটি পপআপে দেখতে পাবে। খালি রাখলে স্বয়ংক্রিয় সাধারণ গাইডলাইন প্রদর্শিত হবে।
+            </p>
+          </div>
         </div>
 
         {/* Media & Previews (1/3+ Photos) */}
