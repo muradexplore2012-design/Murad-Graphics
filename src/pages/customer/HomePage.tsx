@@ -246,6 +246,30 @@ export const HomePage: React.FC = () => {
     setCurrentSlide((prev) => (prev + 1) % sliderBanners.length);
   };
 
+  // Touch Swipe for mobile hero banner
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return;
+    const distance = touchStartX - touchEndX;
+    const minSwipeDistance = 45;
+    if (distance > minSwipeDistance) {
+      handleNextSlide();
+    } else if (distance < -minSwipeDistance) {
+      handlePrevSlide();
+    }
+  };
+
   const checkCategoryScroll = () => {
     const el = categoriesScrollRef.current;
     if (!el) return;
@@ -289,7 +313,12 @@ export const HomePage: React.FC = () => {
           
           {/* ================= LEFT: MAIN HERO SLIDER (Circled Section - ONLY THIS SLIDES) ================= */}
           <div className="lg:col-span-7 xl:col-span-8">
-            <div className="relative w-full aspect-[1024/440] min-h-[145px] lg:aspect-auto lg:h-[345px] xl:h-[355px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group">
+            <div 
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="relative w-full aspect-[1024/440] min-h-[145px] lg:aspect-auto lg:h-[345px] xl:h-[355px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group"
+            >
               
               {/* Slider Slides with Smooth Fade/Slide */}
               {sliderBanners.map((slide, index) => {
@@ -329,13 +358,13 @@ export const HomePage: React.FC = () => {
                 );
               })}
 
-              {/* Navigation Arrows for Slider (only if multiple slides exist) */}
+              {/* Navigation Arrows for Slider (Desktop only; hidden on mobile touch devices) */}
               {sliderBanners.length > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={handlePrevSlide}
-                    className="absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 active:scale-95 shadow-md"
+                    className="hidden md:flex absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md items-center justify-center transition-all opacity-0 group-hover:opacity-100 active:scale-95 shadow-md"
                     aria-label="Previous Slide"
                   >
                     <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -344,7 +373,7 @@ export const HomePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNextSlide}
-                    className="absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 active:scale-95 shadow-md"
+                    className="hidden md:flex absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md items-center justify-center transition-all opacity-0 group-hover:opacity-100 active:scale-95 shadow-md"
                     aria-label="Next Slide"
                   >
                     <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
