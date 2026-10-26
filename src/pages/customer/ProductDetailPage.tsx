@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Download, 
@@ -66,6 +67,18 @@ export const ProductDetailPage: React.FC = () => {
   const [commentInput, setCommentInput] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+
+  // Freeze background scrolling when modal is open
+  useEffect(() => {
+    if (showDownloadModal || isZoomOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showDownloadModal, isZoomOpen]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -654,9 +667,9 @@ export const ProductDetailPage: React.FC = () => {
       )}
 
       {/* ================= POSTER ZOOM / LIGHTBOX MODAL ================= */}
-      {isZoomOpen && (
+      {isZoomOpen && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[99999] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setIsZoomOpen(false)}
         >
           <div className="relative max-w-4xl max-h-[90vh] bg-slate-950 rounded-3xl overflow-hidden p-2 shadow-2xl border border-white/20" onClick={(e) => e.stopPropagation()}>
@@ -674,12 +687,13 @@ export const ProductDetailPage: React.FC = () => {
               className="w-full h-auto max-h-[82vh] object-contain rounded-2xl"
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ================= DOWNLOAD SUCCESS & ZIP PASSWORD MODAL ================= */}
-      {showDownloadModal && (
-        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
+      {showDownloadModal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-4 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
@@ -813,7 +827,8 @@ export const ProductDetailPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUserEntitlements, recordDownloadEvent, getProductById, getUserOrders, deleteUserEntitlement } from '../../services/api';
@@ -31,6 +32,18 @@ export const DownloadsPage: React.FC = () => {
     instructions?: string;
     productType?: string;
   } | null>(null);
+
+
+  // Freeze background scrolling when modal is open
+  useEffect(() => {
+    if (activeDownloadModal) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [activeDownloadModal]);
 
   useEffect(() => {
     const fetchEntitlements = async () => {
@@ -324,8 +337,8 @@ export const DownloadsPage: React.FC = () => {
       )}
 
       {/* ================= FILE DOWNLOAD / ZIP PASSWORD POPUP MODAL ================= */}
-      {activeDownloadModal && (
-        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
+      {activeDownloadModal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-5 animate-in zoom-in-95 duration-200">
             {/* Close Button */}
             <button
@@ -443,7 +456,8 @@ export const DownloadsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
