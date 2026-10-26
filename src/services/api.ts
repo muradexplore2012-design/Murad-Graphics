@@ -45,9 +45,9 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   whatsapp: "01566088159",
   currency: "BDT",
   timezone: "Asia/Dhaka",
-  defaultLicensePolicy: "All digital items purchased or downloaded from Vyrqonix are licensed for personal and commercial client projects. Resale, sub-licensing, or redistribution of original editable source files is strictly prohibited.",
+  defaultLicensePolicy: "All digital items purchased or downloaded from Vyrqonix are for personal and client projects. Resale, redistribution, or unauthorized sharing of original editable source files is strictly prohibited.",
   defaultRefundPolicy: "Due to the irreversible nature of digital downloads, sales of downloadable graphics and software are generally final once the download entitlement is activated. However, if a file is demonstrably corrupt or broken and our support team cannot provide a working version, a refund or credit will be evaluated.",
-  termsAndConditions: "By using Vyrqonix and downloading digital assets, you agree to comply with our licensing terms, copyright guidelines, and acceptable use policy.",
+  termsAndConditions: "By using Vyrqonix and downloading digital assets, you agree to comply with our terms of service, copyright guidelines, and acceptable use policy.",
   privacyPolicy: "We respect your privacy. Vyrqonix collects only the minimum information required for account authentication and digital purchase order verification.",
   aboutText: "Vyrqonix is a premier digital assets marketplace dedicated to empowering creators, agencies, freelancers, and businesses with high-quality graphic resources, templates, and software solutions.",
   faqList: [

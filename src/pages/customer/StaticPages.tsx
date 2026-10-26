@@ -25,7 +25,7 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-extrabold text-slate-900">Contact Support</h1>
-        <p className="text-xs text-slate-500">Need help with your download or license? Reach out to our Dhaka support desk.</p>
+        <p className="text-xs text-slate-500">Need help with your order or access? Reach out to our Dhaka support desk.</p>
       </div>
 
       <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">

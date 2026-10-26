@@ -46,8 +46,8 @@ export const Footer: React.FC = () => {
                 <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
-                <h4 className="text-slate-900 font-bold text-sm">Commercial License</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Safe to use in your client graphics and digital projects</p>
+                <h4 className="text-slate-900 font-bold text-sm">100% Genuine & Authentic</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Verified digital access and official premium subscriptions</p>
               </div>
             </div>
 
@@ -146,7 +146,6 @@ export const Footer: React.FC = () => {
                 <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
                 <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact Support</Link></li>
                 <li><Link to="/faq" className="hover:text-blue-600 transition-colors">FAQs & Help</Link></li>
-                <li><Link to="/license-policy" className="hover:text-blue-600 transition-colors">License Policy</Link></li>
                 <li><Link to="/refund-policy" className="hover:text-blue-600 transition-colors">Refund Policy</Link></li>
                 <li><Link to="/privacy-policy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>

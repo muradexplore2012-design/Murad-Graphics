@@ -581,7 +581,7 @@ export const ProductDetailPage: React.FC = () => {
                   <tr>
                     <td className="py-3 px-4 font-bold text-slate-700">File Formats</td>
                     <td className="py-3 px-4 text-slate-600">
-                      {product.formats && product.formats.length > 0 ? product.formats.join(', ') : 'Digital License / Direct Cloud'}
+                      {product.formats && product.formats.length > 0 ? product.formats.join(', ') : 'Direct Access / Cloud Delivery'}
                     </td>
                   </tr>
                   <tr className="bg-slate-50/70">
@@ -598,12 +598,8 @@ export const ProductDetailPage: React.FC = () => {
                         : 'Direct Cloud Download'}
                     </td>
                   </tr>
-                  <tr className="bg-slate-50/70">
-                    <td className="py-3 px-4 font-bold text-slate-700">License Terms</td>
-                    <td className="py-3 px-4 text-slate-600">{product.licenseTerms || 'Genuine Personal & Commercial License'}</td>
-                  </tr>
                   {product.version && (
-                    <tr>
+                    <tr className="bg-slate-50/70">
                       <td className="py-3 px-4 font-bold text-slate-700">Version</td>
                       <td className="py-3 px-4 text-slate-600">{product.version}</td>
                     </tr>

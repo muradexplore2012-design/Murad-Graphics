@@ -27,7 +27,7 @@ const sampleCategories: { id: string; name: string; slug: string }[] = [
   { id: 'cat-2', name: 'Adobe Creative Cloud', slug: 'adobe-creative-cloud' },
   { id: 'cat-3', name: 'Creative Tools', slug: 'creative-tools' },
   { id: 'cat-4', name: 'LinkedIn Subscription', slug: 'linkedin-subscription' },
-  { id: 'cat-5', name: 'Windows Licence', slug: 'windows-licence' },
+  { id: 'cat-5', name: 'Windows Genuine', slug: 'windows-genuine' },
   { id: 'cat-6', name: 'Educational', slug: 'educational' },
   { id: 'cat-7', name: 'Microsoft Office', slug: 'microsoft-office' },
   { id: 'cat-8', name: 'Autodesk', slug: 'autodesk' },

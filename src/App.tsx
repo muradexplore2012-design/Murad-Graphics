@@ -114,7 +114,7 @@ export function App() {
                   {/* Information pages */}
                   <Route path="about" element={<AboutPage />} />
                   <Route path="contact" element={<ContactPage />} />
-                  <Route path="license-policy" element={<LicensePolicyPage />} />
+                  <Route path="license-policy" element={<Navigate to="/terms" replace />} />
                   <Route path="refund-policy" element={<RefundPolicyPage />} />
                   <Route path="terms" element={<TermsPage />} />
                   <Route path="privacy-policy" element={<PrivacyPage />} />

@@ -28,7 +28,7 @@ import {
 const DEFAULT_FORMATS = [
   'Subscription',
   'Invite Link',
-  'License Key',
+  'Activation Key',
   'Private Account',
   'Shared Account',
   'Email Delivery',

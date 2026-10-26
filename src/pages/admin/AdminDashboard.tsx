@@ -192,7 +192,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="p-4 rounded-2xl bg-white border border-blue-100 space-y-2 shadow-xs">
               <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block">Step 3</span>
               <h4 className="text-sm font-bold text-slate-900">Configure Settings</h4>
-              <p className="text-xs text-slate-600">Review phone numbers, WhatsApp, licensing terms, and social links.</p>
+              <p className="text-xs text-slate-600">Review phone numbers, WhatsApp, site policies, and social links.</p>
               <Link to="/admin/settings" className="text-xs text-blue-600 font-bold hover:underline inline-block pt-1">
                 Open Settings →
               </Link>

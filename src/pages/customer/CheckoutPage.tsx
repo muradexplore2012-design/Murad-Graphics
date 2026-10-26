@@ -302,7 +302,7 @@ export const CheckoutPage: React.FC = () => {
             </button>
 
             <div className="text-[11px] text-slate-400 text-center leading-relaxed">
-              By confirming your order, you agree to Vyrqonix's digital licensing terms and instant access policy.
+              By confirming your order, you agree to Vyrqonix's terms of service and instant access policy.
             </div>
           </div>
         </div>

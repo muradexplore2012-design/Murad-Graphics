@@ -314,7 +314,7 @@ export const AdminSettingsPage: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="font-semibold block mb-1 text-slate-800">Commercial License Terms</label>
+                <label className="font-semibold block mb-1 text-slate-800">Usage & Service Terms</label>
                 <textarea
                   rows={4}
                   value={settings.defaultLicensePolicy}

@@ -78,7 +78,7 @@ export const CATEGORY_ICON_OPTIONS = [
   { id: 'Music', label: 'Audio & Music' },
   { id: 'Globe', label: 'Web & Domains' },
   { id: 'ShoppingBag', label: 'E-Commerce' },
-  { id: 'Shield', label: 'License & Security' },
+  { id: 'Shield', label: 'Security & Safety' },
   { id: 'Type', label: 'Fonts & Typography' },
   { id: 'Flame', label: 'Hot / Trending' },
   { id: 'Monitor', label: 'Desktop & OS' }
