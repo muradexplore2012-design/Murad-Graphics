@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Download, 
+  FileText, 
   ShoppingCart, 
   Heart, 
   CheckCircle2, 
@@ -126,11 +127,7 @@ export const ProductDetailPage: React.FC = () => {
       }
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
 
-      if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
-        window.open(product.googleDriveUrl, '_blank');
-      } else if (product.fileMetadata?.downloadUrl) {
-        window.open(product.fileMetadata.downloadUrl, '_blank');
-      }
+      
 
       setDownloadSuccessMessage('Item claimed! It has also been saved to your Downloads Library.');
       setShowDownloadModal(true);
@@ -151,13 +148,7 @@ export const ProductDetailPage: React.FC = () => {
     setDownloading(true);
     try {
       await recordDownloadEvent('direct_entitlement', product.id, user.uid);
-      if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
-        window.open(product.googleDriveUrl, '_blank');
-      } else if (product.fileMetadata?.downloadUrl) {
-        window.open(product.fileMetadata.downloadUrl, '_blank');
-      } else {
-        alert("The download link is currently being prepared by the administrator.");
-      }
+      
 
       setShowDownloadModal(true);
     } catch (e: any) {
@@ -688,7 +679,7 @@ export const ProductDetailPage: React.FC = () => {
 
       {/* ================= DOWNLOAD SUCCESS & ZIP PASSWORD MODAL ================= */}
       {showDownloadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-4 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
@@ -704,7 +695,7 @@ export const ProductDetailPage: React.FC = () => {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                ডাউনলোড ও ফাইল এক্সেস 🎉
+                ডাউনলোড ও ফাইল এক্সেস
               </h3>
               <p className="text-xs text-slate-500 font-medium">
                 {product.name}
@@ -720,7 +711,7 @@ export const ProductDetailPage: React.FC = () => {
                 className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
               >
                 <Download className="w-4 h-4" />
-                <span>📥 ফাইলটি ডাউনলোড করুন (Google Drive Link)</span>
+                <span>ফাইলটি ডাউনলোড করুন (Google Drive Link)</span>
               </a>
             )}
 
@@ -769,7 +760,7 @@ export const ProductDetailPage: React.FC = () => {
             {/* How to Use / Extract / Run Instructions */}
             <div className="p-4 bg-blue-50/80 border border-blue-200/90 rounded-2xl text-xs space-y-2.5">
               <div className="flex items-center gap-2 font-bold text-blue-950">
-                <span className="text-base">📌</span>
+                <FileText className="w-4 h-4 text-blue-600 shrink-0" />
                 <span>কিভাবে কি করতে হবে / নির্দেশাবলী:</span>
               </div>
               

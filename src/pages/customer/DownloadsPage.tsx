@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUserEntitlements, recordDownloadEvent, getProductById, getUserOrders, deleteUserEntitlement } from '../../services/api';
 import { DownloadEntitlement, Product } from '../../types';
-import { Download, KeyRound, Copy, Check, X, FolderDown, Trash2 } from 'lucide-react';
+import { Download, FileText, KeyRound, Copy, Check, X, FolderDown, Trash2 } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 
 const getDeletedIds = (uid: string): Set<string> => {
@@ -147,7 +147,6 @@ export const DownloadsPage: React.FC = () => {
 
       if (product.deliveryMethod === 'google_drive' && product.googleDriveUrl) {
         targetUrl = product.googleDriveUrl;
-        window.open(product.googleDriveUrl, '_blank');
         setActiveDownloadModal({
           productName: product.name,
           zipPassword: zipPass,
@@ -157,7 +156,6 @@ export const DownloadsPage: React.FC = () => {
         });
       } else if (product.fileMetadata?.downloadUrl) {
         targetUrl = product.fileMetadata.downloadUrl;
-        window.open(product.fileMetadata.downloadUrl, '_blank');
         setActiveDownloadModal({
           productName: product.name,
           zipPassword: zipPass,
@@ -327,7 +325,7 @@ export const DownloadsPage: React.FC = () => {
 
       {/* ================= FILE DOWNLOAD / ZIP PASSWORD POPUP MODAL ================= */}
       {activeDownloadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative space-y-5 animate-in zoom-in-95 duration-200">
             {/* Close Button */}
             <button
@@ -343,7 +341,7 @@ export const DownloadsPage: React.FC = () => {
                 <Check className="w-8 h-8" />
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                ডাউনলোড শুরু হয়েছে! 🎉
+                ডাউনলোড ও ফাইল এক্সেস
               </h3>
               <p className="text-xs text-slate-500 font-medium">
                 {activeDownloadModal.productName}
@@ -399,7 +397,7 @@ export const DownloadsPage: React.FC = () => {
             {/* How to Use / Instructions in DownloadsPage */}
             <div className="p-4 bg-blue-50/80 border border-blue-200/90 rounded-2xl text-xs space-y-2 text-left">
               <div className="flex items-center gap-2 font-bold text-blue-950">
-                <span className="text-base">📌</span>
+                <FileText className="w-4 h-4 text-blue-600 shrink-0" />
                 <span>কিভাবে কি করতে হবে / নির্দেশাবলী:</span>
               </div>
               
@@ -433,7 +431,7 @@ export const DownloadsPage: React.FC = () => {
                   className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
-                  <span>পুনরায় ডাউনলোড লিংক খুলুন</span>
+                  <span>ফাইলটি ডাউনলোড করুন (Google Drive Link)</span>
                 </button>
               )}
               <button
