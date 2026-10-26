@@ -73,11 +73,9 @@ export const Footer: React.FC = () => {
                   alt="Vyrqonix Logo" 
                   className="h-8 sm:h-9 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
                 />
-                <img 
-                  src="/vyrqonix-brand-text.png" 
-                  alt="Vyrqonix - Your Digital World." 
-                  className="h-7 sm:h-8 w-auto object-contain"
-                />
+                <span className="text-2xl font-black tracking-tight text-slate-900 leading-none">
+                  Vyr<span className="text-blue-600">qonix</span>
+                </span>
               </Link>
               <p className="text-sm text-slate-500 leading-relaxed max-w-sm">
                 {settings.siteDescription}
