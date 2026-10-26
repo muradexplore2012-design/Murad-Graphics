@@ -9,7 +9,8 @@ import {
 } from '../../services/api';
 import { SiteSettings, AdminMember } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
+import {
+  Info,
   Save, 
   ShieldCheck, 
   Sliders, 
@@ -107,12 +108,12 @@ export const AdminSettingsPage: React.FC = () => {
 
     const targetEmail = emailInput.trim().toLowerCase();
     if (!targetEmail) {
-      setAdminError("Please enter a valid email address.");
+      setAdminError("দয়া করে একটি সঠিক ইমেইল এড্রেস লিখুন।");
       return;
     }
 
     if (!targetEmail.includes('@') || !targetEmail.includes('.')) {
-      setAdminError("Please provide a well-formed email address.");
+      setAdminError("দয়া করে সঠিক ফরম্যাটের ইমেইল এড্রেস লিখুন।");
       return;
     }
 
@@ -134,11 +135,11 @@ export const AdminSettingsPage: React.FC = () => {
         email: user.email
       });
 
-      setAdminSuccess(`Success! ${newAdmin.email} has been granted administrator access. Note: They must sign out and sign in again, or refresh their browser for administrative permissions to take full effect.`);
+      setAdminSuccess(`সফল হয়েছে! ${newAdmin.email} কে এডমিন অ্যাক্সেস দেওয়া হয়েছে। তিনি ব্রাউজার রিফ্রেশ করলেই বা পুনরায় লগইন করলেই এডমিন সুবিধা ব্যবহার করতে পারবেন।`);
       setEmailInput('');
       await loadAdmins();
     } catch (err: any) {
-      setAdminError(err.message || "Failed to appoint administrator.");
+      setAdminError(err.message || "এডমিন নিয়োগ করতে ব্যর্থ হয়েছে।");
     } finally {
       setSubmittingAdmin(false);
     }
@@ -388,17 +389,39 @@ export const AdminSettingsPage: React.FC = () => {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">Appoint Administrator</h2>
+                <h2 className="text-sm font-bold text-slate-900">Appoint Administrator (এডমিন নিয়োগ)</h2>
                 <p className="text-[11px] text-slate-500">
-                  Grant operational administrative privileges to an existing registered customer
+                  নিবন্ধিত অ্যাকাউন্টকে ওয়েবসাইটের এডমিন এক্সেস ও পরিচালনা সুবিধা দিন
                 </p>
               </div>
+            </div>
+
+            {/* Bengali Rule Guide Box */}
+            <div className="bg-purple-50/60 border border-purple-200 rounded-2xl p-4 sm:p-5 text-xs space-y-3">
+              <div className="flex items-center gap-2 text-purple-950 font-bold">
+                <Info className="w-4 h-4 text-[#7a00ea] shrink-0" />
+                <span className="text-xs">নতুন এডমিন যুক্ত করার নিয়মাবলী (Guidelines):</span>
+              </div>
+              <ol className="list-decimal list-inside space-y-2 text-slate-700 text-[11px] leading-relaxed pl-0.5">
+                <li>
+                  <strong className="text-slate-900">১. ওয়েবসাইটে আগে সাইন-ইন/একাউন্ট করতে হবে:</strong> যাকে আপনি এডমিন বানাতে চান, তাকে প্রথমে <a href="/" target="_blank" rel="noreferrer" className="text-[#7a00ea] font-bold underline underline-offset-2">Vyrqonix</a> ওয়েবসাইটে গিয়ে (কাস্টমার হিসেবে) অন্তত একবার গুগল বা ইমেইল দিয়ে লগইন/সাইন-আপ করতে হবে।
+                </li>
+                <li>
+                  <strong className="text-slate-900">২. সঠিক ইমেইল দিন:</strong> ইউজার যে ইমেইল দিয়ে একাউন্ট খুলেছেন, ঠিক সেই ইমেইল এড্রেসটি নিচের ইনপুট বক্সে লিখুন।
+                </li>
+                <li>
+                  <strong className="text-slate-900">৩. Make Admin বাটনে চাপ দিন:</strong> <strong>"Make Admin"</strong> বাটনে ক্লিক করে কনফার্ম করলে তিনি তাৎক্ষণিকভাবে এডমিন তালিকায় যুক্ত হয়ে যাবেন।
+                </li>
+                <li>
+                  <strong className="text-slate-900">৪. এডমিন প্যানেল এক্সেস:</strong> এরপর তিনি পেজ রিফ্রেশ করলে কিংবা লগআউট করে পুনরায় লগইন করলেই এডমিন কনসোল ব্যবহার করতে পারবেন।
+                </li>
+              </ol>
             </div>
 
             <form onSubmit={handleInitiateMakeAdmin} className="space-y-4">
               <div>
                 <label className="font-bold text-slate-800 block mb-1.5">
-                  User Account Email Address <span className="text-rose-500">*</span>
+                  ইউজারের ইমেইল এড্রেস (User Account Email Address) <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative flex items-center">
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
@@ -412,9 +435,12 @@ export const AdminSettingsPage: React.FC = () => {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#7a00ea] focus:bg-white transition-all text-xs"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                  Important: The user must already have created an account on Vyrqonix and signed in at least once.
-                </p>
+                <div className="mt-2 text-[11px] bg-amber-50 text-amber-800 border border-amber-200/80 p-2.5 rounded-xl font-medium leading-relaxed flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>জরুরি নিয়ম:</strong> ইউজারকে অবশ্যই আগে Vyrqonix ওয়েবসাইটে একবার সাইন-ইন করে একাউন্ট তৈরি করতে হবে। একাউন্ট তৈরি না থাকলে ফায়ারবেসে ইউজার খুঁজে পাওয়া যাবে না এবং এডমিন বানানো যাবে না।
+                  </span>
+                </div>
               </div>
 
               <div className="flex justify-end pt-2">
@@ -424,7 +450,7 @@ export const AdminSettingsPage: React.FC = () => {
                   className="flex items-center gap-2 px-6 py-3 bg-[#7a00ea] hover:bg-[#6800c7] text-white rounded-xl font-bold transition-all shadow-md shadow-purple-600/20 active:scale-95 disabled:opacity-50 cursor-pointer text-xs"
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span>{submittingAdmin ? "Verifying & Appointing..." : "Make Admin"}</span>
+                  <span>{submittingAdmin ? "যাচাই করা হচ্ছে..." : "Make Admin"}</span>
                 </button>
               </div>
             </form>
@@ -557,15 +583,15 @@ export const AdminSettingsPage: React.FC = () => {
             </div>
 
             <div className="text-center space-y-2">
-              <h3 className="text-base font-bold text-slate-900">Confirm Administrator Promotion</h3>
+              <h3 className="text-base font-bold text-slate-900">এডমিন নিয়োগ নিশ্চিত করুন (Confirm Promotion)</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Are you sure you want to grant full operational administrative privileges to:
+                আপনি কি নিশ্চিত যে এই ইউজারকে সম্পূর্ণ এডমিন ক্ষমতা দিতে চান?
               </p>
-              <p className="text-xs font-bold text-slate-900 bg-slate-100 py-2 px-3 rounded-xl break-all">
+              <p className="text-xs font-bold text-[#7a00ea] bg-purple-50 border border-purple-100 py-2 px-3 rounded-xl break-all">
                 {emailInput.trim().toLowerCase()}
               </p>
-              <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 leading-normal">
-                This account will be able to manage products, categories, orders, coupons, and banners.
+              <p className="text-[11px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200 leading-normal">
+                এই ইউজার ওয়েবসাইটটির প্রোডাক্ট, ক্যাটাগরি, সেলস অর্ডার, কুপন এবং ব্যানার ম্যানেজ করতে পারবেন।
               </p>
             </div>
 

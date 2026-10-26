@@ -1170,7 +1170,7 @@ export const makeAdminByEmail = async (
   const userQuerySnap = await getDocs(q);
 
   if (userQuerySnap.empty) {
-    throw new Error("This email has not signed in to the website yet. The user must sign up or log in to Vyrqonix at least once before they can be promoted to an administrator.");
+    throw new Error("এই ইমেইলটি দিয়ে এখনও ওয়েবসাইটে সাইন-ইন করা হয়নি। যাকে এডমিন বানাতে চান তাকে আগে Vyrqonix ওয়েবসাইটে অন্তত একবার লগইন বা সাইন-আপ করতে হবে।");
   }
 
   const userDoc = userQuerySnap.docs[0];
@@ -1180,7 +1180,7 @@ export const makeAdminByEmail = async (
   // Check if target user is already in `admins` collection
   const adminDocSnap = await getDoc(doc(db, "admins", targetUid));
   if (adminDocSnap.exists() && adminDocSnap.data().status === 'active') {
-    throw new Error("This user is already an administrator.");
+    throw new Error("এই ইউজার ইতোমধ্যে একজন এডমিন হিসেবে যুক্ত আছেন।");
   }
 
   const newAdminData: AdminMember = {
