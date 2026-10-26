@@ -55,33 +55,71 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
-// Dynamic Site Title Synchronizer (Controlled from Admin Settings Panel)
+// Dynamic Site Title & PWA App Name Synchronizer (Controlled from Admin Settings Panel)
 const SiteTitleSync: React.FC = () => {
   useEffect(() => {
-    const applyTitle = (title?: string, name?: string) => {
-      if (title && title.trim()) {
-        document.title = title.trim();
-      } else if (name && name.trim()) {
-        document.title = `${name.trim()} | Digital Marketplace`;
+    const syncSettings = (s?: any) => {
+      if (!s) return;
+      const siteName = (s.siteName || 'Vyrqonix').trim();
+      const siteSubtitle = (s.siteSubtitle || 'YOUR DIGITAL WORLD').trim();
+      const siteTitle = s.siteTitle ? s.siteTitle.trim() : `${siteName} | ${siteSubtitle}`;
+
+      document.title = siteTitle;
+
+      // Sync PWA desktop/mobile shortcut name with logo subtitle
+      const fullName = `${siteName} - ${siteSubtitle}`;
+      const appNameMeta = document.querySelector('meta[name="application-name"]');
+      if (appNameMeta) appNameMeta.setAttribute('content', fullName);
+
+      const appleTitleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appleTitleMeta) appleTitleMeta.setAttribute('content', siteName);
+
+      // Notify active Service Worker to dynamically serve updated manifest
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'UPDATE_PWA_SETTINGS',
+          siteName,
+          siteSubtitle
+        });
+      }
+
+      // Update link[rel="manifest"] with dynamic Blob manifest
+      const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
+      if (manifestLink) {
+        fetch('/manifest.json')
+          .then((res) => res.json())
+          .then((manifest) => {
+            manifest.name = fullName;
+            manifest.short_name = siteName;
+            const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/manifest+json' });
+            manifestLink.setAttribute('href', URL.createObjectURL(blob));
+          })
+          .catch(() => {});
       }
     };
 
-    // 1. Instant sync from local cache to prevent title flicker
+    // 1. Instant sync from local cache to prevent flicker
     try {
       const cached = localStorage.getItem('mg_site_settings_cache');
       if (cached) {
-        const parsed = JSON.parse(cached);
-        applyTitle(parsed.siteTitle, parsed.siteName);
+        syncSettings(JSON.parse(cached));
       }
     } catch {}
 
     // 2. Fetch latest settings from Firestore and apply
     getSiteSettings().then((s) => {
-      applyTitle(s.siteTitle, s.siteName);
+      syncSettings(s);
       try {
         localStorage.setItem('mg_site_settings_cache', JSON.stringify(s));
       } catch {}
     });
+
+    // 3. Listen to live updates from Admin Settings page
+    const handleLiveUpdate = (e: any) => {
+      if (e.detail) syncSettings(e.detail);
+    };
+    window.addEventListener('mg_site_settings_updated', handleLiveUpdate);
+    return () => window.removeEventListener('mg_site_settings_updated', handleLiveUpdate);
   }, []);
 
   return null;

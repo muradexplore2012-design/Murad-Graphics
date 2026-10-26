@@ -91,6 +91,7 @@ export const AdminSettingsPage: React.FC = () => {
       }
       try {
         localStorage.setItem('mg_site_settings_cache', JSON.stringify(settings));
+        window.dispatchEvent(new CustomEvent('mg_site_settings_updated', { detail: settings }));
       } catch {}
       await recordAuditLog({
         adminUid: user?.uid || '',
@@ -269,13 +270,13 @@ export const AdminSettingsPage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={settings.siteSubtitle ?? 'Digital Marketplace'}
-                  placeholder="Digital Marketplace"
+                  value={settings.siteSubtitle ?? 'YOUR DIGITAL WORLD'}
+                  placeholder="YOUR DIGITAL WORLD"
                   onChange={(e) => setSettings({ ...settings, siteSubtitle: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">
-                  হেডারে লোগোর নামের নিচে যে ছোট লেখাটি দেখায় (যেমন: Digital Marketplace)।
+                  হেডারে লোগোর নামের নিচে এবং অ্যাপে যে ছোট লেখাটি দেখায় (যেমন: YOUR DIGITAL WORLD)।
                 </p>
               </div>
 

@@ -151,7 +151,7 @@ export const Header: React.FC = () => {
                 Vyr<span className="text-blue-600">qonix</span>
               </span>
               <span className="text-[10px] tracking-wider uppercase font-bold text-slate-400 mt-0.5 sm:mt-1">
-                {settings.siteSubtitle || "Digital Marketplace"}
+                {settings.siteSubtitle || "YOUR DIGITAL WORLD"}
               </span>
             </div>
           </Link>
