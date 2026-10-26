@@ -264,6 +264,22 @@ export const AdminSettingsPage: React.FC = () => {
               </div>
 
               <div>
+                <label className="font-semibold block mb-1 text-slate-800">
+                  Logo Subtitle / Tagline (লোগোর নিচের ছোট লেখা)
+                </label>
+                <input
+                  type="text"
+                  value={settings.siteSubtitle ?? 'Digital Marketplace'}
+                  placeholder="Digital Marketplace"
+                  onChange={(e) => setSettings({ ...settings, siteSubtitle: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  হেডারে লোগোর নামের নিচে যে ছোট লেখাটি দেখায় (যেমন: Digital Marketplace)।
+                </p>
+              </div>
+
+              <div>
                 <label className="font-semibold block mb-1 text-slate-800">Support Phone (Bangladesh)</label>
                 <input
                   type="text"
