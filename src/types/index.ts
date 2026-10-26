@@ -5,6 +5,7 @@ export type ProductType =
   | 'font' 
   | 'mockup' 
   | 'software' 
+  | 'game' 
   | 'app' 
   | 'bundle' 
   | 'subscription' 
@@ -48,6 +49,7 @@ export interface Product {
   fileMetadata?: ProductFileMetadata;
   googleDriveUrl?: string; // only if deliveryMethod is google_drive
   zipPassword?: string; // Optional password to extract/unzip the file (e.g. 4-digit code)
+  customButtonText?: string; // e.g. 'Download Free Game', 'Download Software'
   subscriptionDuration?: string; // e.g. "1 Month", "6 Months", "1 Year", "Lifetime"
   subscriptionInstructions?: string; // Delivery note or credentials instructions for customer
   

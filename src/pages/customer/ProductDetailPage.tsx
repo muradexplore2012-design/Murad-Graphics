@@ -349,7 +349,7 @@ export const ProductDetailPage: React.FC = () => {
                       className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all active:scale-95"
                     >
                       <Download className="w-4 h-4" />
-                      <span>{downloading ? "Preparing file..." : "Download Source File"}</span>
+                      <span>{downloading ? "Preparing file..." : (product.customButtonText || (product.productType === 'game' ? 'Download Game' : product.productType === 'software' ? 'Download Software' : product.productType === 'template' ? 'Download Template' : 'Download Source File'))}</span>
                     </button>
               </div>
             ) : product.isFree ? (
@@ -359,7 +359,7 @@ export const ProductDetailPage: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all active:scale-95"
               >
                 <Download className="w-4 h-4" />
-                <span>{downloading ? "Processing..." : "Download Free Resource"}</span>
+                <span>{downloading ? "Processing..." : (product.customButtonText || (product.productType === 'game' ? 'Download Free Game' : product.productType === 'software' ? 'Download Free Software' : product.productType === 'template' ? 'Download Free Template' : 'Download Free Resource'))}</span>
               </button>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3 w-full">

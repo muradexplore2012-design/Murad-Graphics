@@ -99,7 +99,8 @@ export const ShopPage: React.FC = () => {
         const matchesDesc = p.shortDescription?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
         const matchesTags = p.tags?.some(t => t.toLowerCase().includes(q));
         const matchesCat = p.categoryName?.toLowerCase().includes(q);
-        if (!matchesName && !matchesDesc && !matchesTags && !matchesCat) {
+        const matchesType = p.productType?.toLowerCase().includes(q);
+        if (!matchesName && !matchesDesc && !matchesTags && !matchesCat && !matchesType) {
           return false;
         }
       }

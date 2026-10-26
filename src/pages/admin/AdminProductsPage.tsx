@@ -176,6 +176,16 @@ export const AdminProductsPage: React.FC = () => {
                         <HardDrive className="w-3 h-3" /> Storage
                       </span>
                     )}
+                    {prod.productType === 'game' && (
+                      <span className="text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                        🎮 Game
+                      </span>
+                    )}
+                    {prod.productType === 'software' && (
+                      <span className="text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                        💻 Software
+                      </span>
+                    )}
 
                     {prod.formats?.slice(0, 3).map((f, i) => (
                       <span key={i} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">

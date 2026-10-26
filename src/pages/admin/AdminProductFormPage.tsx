@@ -31,8 +31,12 @@ const DEFAULT_FORMATS = [
   'PSD',
   'PDF',
   'ZIP',
+  'RAR',
   'APK',
-  'EXE'
+  'EXE',
+  'ISO',
+  'Setup',
+  'Portable'
 ];
 
 export const AdminProductFormPage: React.FC = () => {
@@ -72,6 +76,7 @@ export const AdminProductFormPage: React.FC = () => {
   const [directFileName, setDirectFileName] = useState('');
   const [directFileSize, setDirectFileSize] = useState<number>(0);
   const [zipPassword, setZipPassword] = useState('');
+  const [customButtonText, setCustomButtonText] = useState('');
 
   // Metadata
   const [availableFormats, setAvailableFormats] = useState<string[]>(DEFAULT_FORMATS);
@@ -108,6 +113,7 @@ export const AdminProductFormPage: React.FC = () => {
           setDeliveryMethod(prod.deliveryMethod === 'direct_upload' ? 'direct_upload' : 'google_drive');
           setGoogleDriveUrl(prod.googleDriveUrl || '');
           setZipPassword(prod.zipPassword || '');
+          setCustomButtonText(prod.customButtonText || '');
           if (prod.formats && prod.formats.length > 0) {
             setSelectedFormats(prod.formats);
             setAvailableFormats(prev => {
@@ -271,6 +277,8 @@ export const AdminProductFormPage: React.FC = () => {
         previews: photos.length > 1 ? photos.slice(1) : (photos.length === 1 ? [] : previews),
         deliveryMethod,
         googleDriveUrl: googleDriveUrl.trim(),
+        zipPassword: zipPassword.trim() || '',
+        customButtonText: customButtonText.trim() || '',
         ...(directDownloadUrl ? {
           fileMetadata: {
             name: directFileName || 'download_asset',
@@ -393,17 +401,27 @@ export const AdminProductFormPage: React.FC = () => {
               <label className="font-semibold block mb-1 text-slate-800">Asset Type *</label>
               <select
                 value={productType}
-                onChange={(e) => setProductType(e.target.value as ProductType)}
+                onChange={(e) => {
+                  const val = e.target.value as ProductType;
+                  setProductType(val);
+                  if (!customButtonText) {
+                    if (val === 'game') setCustomButtonText(isFree ? 'Download Free Game' : 'Download Game');
+                    else if (val === 'software') setCustomButtonText(isFree ? 'Download Free Software' : 'Download Software');
+                    else if (val === 'graphic_resource') setCustomButtonText(isFree ? 'Download Free Resource' : 'Download Resource');
+                    else if (val === 'template') setCustomButtonText(isFree ? 'Download Free Template' : 'Download Template');
+                  }
+                }}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
               >
-                <option value="template">Template</option>
-                <option value="theme">Website Theme</option>
-                <option value="graphic_resource">Graphic Resource</option>
-                <option value="font">Font</option>
-                <option value="mockup">Mockup</option>
-                <option value="software">Software / Tool</option>
-                <option value="bundle">Bundle</option>
-                <option value="other">Other</option>
+                <option value="game">🎮 Game / PC & Mobile Game</option>
+                <option value="software">💻 Software / Tool / Application</option>
+                <option value="graphic_resource">🎨 Graphic Resource</option>
+                <option value="template">📄 Template</option>
+                <option value="theme">🌐 Website Theme</option>
+                <option value="font">🔤 Font</option>
+                <option value="mockup">📱 Mockup</option>
+                <option value="bundle">📦 Bundle</option>
+                <option value="other">⚡ Other</option>
               </select>
             </div>
 
@@ -535,14 +553,112 @@ export const AdminProductFormPage: React.FC = () => {
         </div>
 
         {/* Digital File Delivery Method */}
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
-            <span>3. Digital Delivery Method & Download Link</span>
-            <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full">
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                3. Digital Delivery Method & Download Settings
+              </h2>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Google Drive লিংক এবং কাস্টমার কী ধরনের আইটেম (Game, Software নাকি Graphic Resource) ডাউনলোড করবে তা নির্ধারণ করুন।
+              </p>
+            </div>
+            <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full self-start sm:self-auto">
               Google Drive Delivery
             </span>
-          </h2>
+          </div>
 
+          {/* Quick Item Type Chooser: Game, Software, Graphic Resource, Template */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span>এটি কী ধরনের আইটেম? (Game, Software নাকি Graphic Asset) *</span>
+              </label>
+              <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                সিলেক্ট করলে বাটনের লিখা স্বয়ংক্রিয়ভাবে সেট হবে
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setProductType('game');
+                  setCustomButtonText(isFree ? 'Download Free Game' : 'Download Game');
+                }}
+                className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                  productType === 'game'
+                    ? 'border-purple-600 bg-purple-50/80 text-purple-950 font-bold shadow-xs ring-2 ring-purple-600/20'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-medium'
+                }`}
+              >
+                <span className="text-2xl">🎮</span>
+                <div>
+                  <div className="text-xs font-bold">Game</div>
+                  <div className="text-[10px] text-slate-500">PC / Mobile গেম</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setProductType('software');
+                  setCustomButtonText(isFree ? 'Download Free Software' : 'Download Software');
+                }}
+                className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                  productType === 'software'
+                    ? 'border-blue-600 bg-blue-50/80 text-blue-950 font-bold shadow-xs ring-2 ring-blue-600/20'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-medium'
+                }`}
+              >
+                <span className="text-2xl">💻</span>
+                <div>
+                  <div className="text-xs font-bold">Software</div>
+                  <div className="text-[10px] text-slate-500">টুলস বা সফটওয়্যার</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setProductType('graphic_resource');
+                  setCustomButtonText(isFree ? 'Download Free Resource' : 'Download Resource');
+                }}
+                className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                  productType === 'graphic_resource'
+                    ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 font-bold shadow-xs ring-2 ring-emerald-600/20'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-medium'
+                }`}
+              >
+                <span className="text-2xl">🎨</span>
+                <div>
+                  <div className="text-xs font-bold">Graphic Asset</div>
+                  <div className="text-[10px] text-slate-500">গ্রাফিক্স বা ডিজাইন</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setProductType('template');
+                  setCustomButtonText(isFree ? 'Download Free Template' : 'Download Template');
+                }}
+                className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                  productType === 'template'
+                    ? 'border-amber-600 bg-amber-50/80 text-amber-950 font-bold shadow-xs ring-2 ring-amber-600/20'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-medium'
+                }`}
+              >
+                <span className="text-2xl">📄</span>
+                <div>
+                  <div className="text-xs font-bold">Template</div>
+                  <div className="text-[10px] text-slate-500">টেমপ্লেট বা থিম</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Google Drive Link Box */}
           <div className="p-4 sm:p-5 rounded-2xl bg-cyan-50/70 border border-cyan-200/90 space-y-3">
             <div className="flex items-center gap-2 font-bold text-xs text-cyan-900">
               <ExternalLink className="w-4 h-4 text-cyan-600" />
@@ -557,7 +673,77 @@ export const AdminProductFormPage: React.FC = () => {
               className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono text-xs"
             />
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Google Drive-এ ফাইল আপলোড করে "Anyone with the link can view" পারমিশন দিয়ে শেয়ার লিংকটি এখানে দিন। কাস্টমার অর্ডার কনফার্ম হলে এই সুরক্ষিত লিংক থেকে ফাইল ডাউনলোড করতে পারবেন।
+              Google Drive-এ ফাইল (গেম, সফটওয়্যার, অথবা জিপ ফাইল) আপলোড করে "Anyone with the link can view" পারমিশন দিয়ে শেয়ার লিংকটি এখানে দিন। কাস্টমার অর্ডার কনফার্ম হলে এই সুরক্ষিত লিংক থেকে ফাইল ডাউনলোড করতে পারবেন।
+            </p>
+          </div>
+
+          {/* Custom Download Button Label Box (Addressing user request & circled screenshot) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-purple-50/50 border border-purple-200/80 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <Tag className="w-4 h-4 text-[#7a00ea]" />
+                <span>ডাউনলোড বাটন লিখা / Download Button Text (কাস্টমাইজেশন)</span>
+              </label>
+              <span className="text-[10px] font-semibold text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                ওয়েবসাইটে বাটনের উপর সরাসরি দেখাবে
+              </span>
+            </div>
+
+            <input
+              type="text"
+              placeholder={
+                isFree
+                  ? (productType === 'game' ? 'Download Free Game' : productType === 'software' ? 'Download Free Software' : 'Download Free Resource')
+                  : (productType === 'game' ? 'Download Game' : productType === 'software' ? 'Download Software' : 'Download Source File')
+              }
+              value={customButtonText}
+              onChange={(e) => setCustomButtonText(e.target.value)}
+              className="w-full bg-white border border-purple-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#7a00ea] font-semibold text-xs"
+            />
+
+            {/* Quick Click Preset Suggestions */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] text-slate-500 font-medium block">
+                এক ক্লিকে বাটনের টেক্সট পছন্দ করুন:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Download Free Game',
+                  'Download Game',
+                  'Download Free Software',
+                  'Download Software',
+                  'Download Free Resource',
+                  'Download Resource',
+                  'Download Free Template',
+                  'Download File'
+                ].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setCustomButtonText(preset)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                      customButtonText === preset
+                        ? 'bg-[#7a00ea] text-white border-[#7a00ea] shadow-2xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-purple-300 hover:bg-purple-50/50'
+                    }`}
+                  >
+                    {preset}
+                  </button>
+                ))}
+                {customButtonText && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomButtonText('')}
+                    className="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 cursor-pointer"
+                  >
+                    রিসেট (অটোমেটিক)
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              💡 ফাঁকা রাখলে প্রোডাক্টের টাইপ (Game / Software / Resource) অনুযায়ী স্বয়ংক্রিয়ভাবে সঠিক নাম বাটনে চলে আসবে। আপনি চাইলে ওপরের বাটন চাপ দিয়ে অথবা লিখে যেকোনো টেক্সট দিতে পারেন।
             </p>
           </div>
 
