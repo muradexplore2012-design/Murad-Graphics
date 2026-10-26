@@ -628,6 +628,50 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string },
       });
     }
 
+    // Also record a verified free order record so it appears under My Orders & Purchases
+    try {
+      const existingOrderQ = query(
+        collection(db, "orders"),
+        where("userId", "==", user.uid),
+        limit(20)
+      );
+      const orderSnap = await getDocs(existingOrderQ);
+      const hasOrder = orderSnap.docs.some(d => {
+        const data = d.data();
+        return data.items?.some((i: any) => i.productId === product.id);
+      });
+
+      if (!hasOrder) {
+        const orderNumber = `FREE-${Date.now().toString().slice(-6)}`;
+        await addDoc(collection(db, "orders"), {
+          userId: user.uid,
+          userEmail: user.email,
+          orderNumber: orderNumber,
+          items: [{
+            productId: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: 0,
+            thumbnail: product.thumbnail || '',
+            isFree: true,
+            formats: product.formats || [],
+            zipPassword: product.zipPassword || '',
+            deliveryMethod: product.deliveryMethod || 'direct_upload',
+          }],
+          subtotal: 0,
+          discount: 0,
+          total: 0,
+          currency: 'BDT',
+          paymentMethod: 'free_checkout',
+          paymentStatus: 'verified',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+    } catch (orderErr) {
+      console.warn("Could not save free order doc:", orderErr);
+    }
+
     // Increment download/claim count safely
     try {
       const productRef = doc(db, "products", product.id);

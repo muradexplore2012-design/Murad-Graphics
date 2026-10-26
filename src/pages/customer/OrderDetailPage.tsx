@@ -19,6 +19,40 @@ export const OrderDetailPage: React.FC = () => {
     const fetchOrder = async () => {
       if (!id) return;
       try {
+        if (id.startsWith('ent_')) {
+          const entId = id.replace('ent_', '');
+          const entSnap = await getDoc(doc(db, "downloadEntitlements", entId));
+          if (entSnap.exists()) {
+            const ent = entSnap.data();
+            setOrder({
+              id,
+              orderNumber: `FREE-${entId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase() || 'CLAIM'}`,
+              userId: ent.userId,
+              userEmail: ent.userEmail,
+              items: [{
+                productId: ent.productId,
+                name: ent.productName,
+                slug: ent.productSlug,
+                price: 0,
+                thumbnail: ent.thumbnail,
+                isFree: true,
+                formats: [],
+                zipPassword: ent.zipPassword || '',
+                deliveryMethod: ent.deliveryMethod || 'direct_upload',
+              }],
+              subtotal: 0,
+              discount: 0,
+              total: 0,
+              currency: 'BDT',
+              paymentMethod: 'free_checkout',
+              paymentStatus: 'verified',
+              createdAt: ent.accessGrantedAt || new Date().toISOString(),
+              updatedAt: ent.accessGrantedAt || new Date().toISOString()
+            } as Order);
+            setLoading(false);
+            return;
+          }
+        }
         const snap = await getDoc(doc(db, "orders", id));
         if (snap.exists()) {
           setOrder({ id: snap.id, ...snap.data() } as Order);

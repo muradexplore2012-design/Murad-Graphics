@@ -31,7 +31,44 @@ export const AccountPage: React.FC = () => {
           getUserOrders(user.uid),
           getUserEntitlements(user.uid)
         ]);
-        setOrders(userOrders);
+
+        // Merge free entitlements into orders list so claimed free items show up in My Orders & Purchases
+        const existingProductIdsInOrders = new Set();
+        userOrders.forEach(o => o.items?.forEach(i => existingProductIdsInOrders.add(i.productId)));
+
+        const syntheticOrders: Order[] = userEnts
+          .filter(ent => !existingProductIdsInOrders.has(ent.productId))
+          .map(ent => ({
+            id: `ent_${ent.id}`,
+            orderNumber: `FREE-${(ent.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase() || 'CLAIM'}`,
+            userId: ent.userId,
+            userEmail: ent.userEmail,
+            items: [{
+              productId: ent.productId,
+              name: ent.productName,
+              slug: ent.productSlug,
+              price: 0,
+              thumbnail: ent.thumbnail,
+              isFree: true,
+              formats: [],
+              zipPassword: ent.zipPassword || '',
+              deliveryMethod: ent.deliveryMethod || 'direct_upload',
+            }],
+            subtotal: 0,
+            discount: 0,
+            total: 0,
+            currency: 'BDT' as const,
+            paymentMethod: 'free_checkout' as const,
+            paymentStatus: 'verified' as const,
+            createdAt: ent.accessGrantedAt || new Date().toISOString(),
+            updatedAt: ent.accessGrantedAt || new Date().toISOString()
+          }));
+
+        const combinedOrders = [...userOrders, ...syntheticOrders].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setOrders(combinedOrders);
         setEntitlements(userEnts);
       } catch (e) {
         console.error("Error loading account data:", e);
@@ -105,7 +142,7 @@ export const AccountPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-900">My Orders & Purchases</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Real-time status of your orders</p>
+            <p className="text-xs text-slate-500 mt-0.5">Real-time status of your orders & claimed products</p>
           </div>
         </div>
 
@@ -127,50 +164,103 @@ export const AccountPage: React.FC = () => {
                   <tr>
                     <th className="px-6 py-4">Order #</th>
                     <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Items</th>
+                    <th className="px-6 py-4">Item / Product</th>
                     <th className="px-6 py-4">Amount</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {orders.map((o) => (
-                    <tr key={o.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-6 py-4 font-mono font-bold text-slate-900">
-                        #{o.orderNumber}
-                      </td>
-                      <td className="px-6 py-4">
-                        {new Date(o.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-slate-800">
-                        {o.items?.length || 0} item{o.items?.length > 1 ? 's' : ''}
-                      </td>
-                      <td className="px-6 py-4 font-black text-slate-900">
-                        ৳{o.total}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                          o.paymentStatus === 'verified'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : o.paymentStatus === 'pending'
-                            ? 'bg-amber-50 text-amber-700'
-                            : 'bg-rose-50 text-rose-700'
-                        }`}>
-                          {o.paymentStatus === 'verified' && <CheckCircle className="w-3 h-3" />}
-                          {o.paymentStatus === 'pending' && <Clock className="w-3 h-3" />}
-                          {o.paymentStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          to={`/account/orders/${o.id}`}
-                          className="font-bold text-blue-600 hover:text-blue-700 hover:underline"
-                        >
-                          View Details
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                  {orders.map((o) => {
+                    const firstItem = o.items?.[0];
+                    const isFreeOrder = o.total === 0 || o.paymentMethod === 'free_checkout';
+                    return (
+                      <tr key={o.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="px-6 py-4 font-mono font-bold text-slate-900 whitespace-nowrap">
+                          #{o.orderNumber}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-500">
+                          {new Date(o.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {firstItem?.thumbnail ? (
+                              <img 
+                                src={firstItem.thumbnail} 
+                                alt="" 
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-200/80 shadow-xs shrink-0" 
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                <Package className="w-5 h-5 text-slate-400" />
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-900 truncate max-w-[200px] sm:max-w-[320px]">
+                                {firstItem?.name || "Product Item"}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {isFreeOrder ? (
+                                  <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.2 rounded font-semibold">
+                                    Free Claim
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200/60 px-1.5 py-0.2 rounded font-semibold">
+                                    Paid Order
+                                  </span>
+                                )}
+                                {o.items?.length > 1 && (
+                                  <span className="text-[10px] text-slate-400">+{o.items.length - 1} more</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {isFreeOrder ? (
+                            <span className="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full text-[11px]">
+                              Free (৳0)
+                            </span>
+                          ) : (
+                            <span className="font-black text-slate-900 text-sm">
+                              ৳{o.total}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                            o.paymentStatus === 'verified'
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : o.paymentStatus === 'pending'
+                              ? 'bg-amber-50 text-amber-700'
+                              : 'bg-rose-50 text-rose-700'
+                          }`}>
+                            {o.paymentStatus === 'verified' && <CheckCircle className="w-3 h-3" />}
+                            {o.paymentStatus === 'pending' && <Clock className="w-3 h-3" />}
+                            {isFreeOrder ? 'Claimed' : o.paymentStatus}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          {o.id.startsWith('ent_') ? (
+                            <Link
+                              to="/account/downloads"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded-xl transition-all shadow-xs"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download</span>
+                            </Link>
+                          ) : (
+                            <Link
+                              to={`/account/orders/${o.id}`}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-xl transition-all"
+                            >
+                              <span>View Details</span>
+                            </Link>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
