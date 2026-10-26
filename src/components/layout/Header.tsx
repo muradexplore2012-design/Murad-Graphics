@@ -143,17 +143,14 @@ export const Header: React.FC = () => {
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
             <img 
               src="/logo.png" 
-              alt="Vyrqonix" 
+              alt="Vyrqonix Logo Mark" 
               className="h-8 sm:h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105 drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
             />
-            <div className="flex flex-col">
-              <span className="font-black text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
-                Vyr<span className="text-blue-600">qonix</span>
-              </span>
-              <span className="text-[10px] tracking-wider uppercase font-bold text-slate-400 mt-0.5 sm:mt-1">
-                {settings.siteSubtitle || "YOUR DIGITAL WORLD"}
-              </span>
-            </div>
+            <img 
+              src="/vyrqonix-brand-text.png" 
+              alt="Vyrqonix - Your Digital World." 
+              className="h-7 sm:h-8.5 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+            />
           </Link>
 
           {/* Centered Search Bar with Purple/Blue Circular Search Button */}
@@ -222,17 +219,17 @@ export const Header: React.FC = () => {
           </button>
 
           {/* Center: Brand Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
+          <Link to="/" className="flex items-center gap-1.5 shrink-0">
             <img 
               src="/logo.png" 
               alt="Vyrqonix" 
-              className="h-7 w-auto object-contain drop-shadow-[0_1px_3px_rgba(59,130,246,0.12)]"
+              className="h-6 w-auto object-contain drop-shadow-[0_1px_3px_rgba(59,130,246,0.12)]"
             />
-            <div className="flex flex-col">
-              <span className="font-black text-lg tracking-tight text-slate-900 leading-none">
-                Vyr<span className="text-[#7a00ea]">qonix</span>
-              </span>
-            </div>
+            <img 
+              src="/vyrqonix-brand-text.png" 
+              alt="Vyrqonix" 
+              className="h-5 sm:h-6 w-auto object-contain"
+            />
           </Link>
 
           {/* Right: Circular Purple Cart Button */}
