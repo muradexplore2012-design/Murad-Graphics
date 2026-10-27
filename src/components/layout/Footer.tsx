@@ -25,13 +25,11 @@ export const Footer: React.FC = () => {
 
   return (
     <>
-      {/* ================= DESKTOP FOOTER (hidden md:block) ================= */}
-      <footer className="hidden md:block bg-white text-slate-700 pt-16 pb-8 border-t border-slate-200/80">
+      {/* ================= STANDALONE VALUE PROPOSITION BADGES (SEPARATED FROM FOOTER) ================= */}
+      <section className="hidden md:block py-8 sm:py-10">
         <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Value Proposition Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12 mb-12 border-b border-slate-100">
-            <div className="flex items-center gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
               <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
                 <DownloadCloud className="w-6 h-6 stroke-[2.2]" />
               </div>
@@ -41,7 +39,7 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-xs">
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
                 <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
               </div>
@@ -51,7 +49,7 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-xs">
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
               <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0 border border-purple-100">
                 <Sparkles className="w-6 h-6 stroke-[2.2]" />
               </div>
@@ -61,7 +59,13 @@ export const Footer: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* ================= DESKTOP FOOTER (hidden md:block) ================= */}
+      <footer className="hidden md:block bg-white text-slate-700 pt-14 pb-8 border-t border-slate-200/80">
+        <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+          
           {/* Main Footer Links */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12">
             

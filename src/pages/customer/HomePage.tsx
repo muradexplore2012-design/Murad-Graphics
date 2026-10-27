@@ -536,10 +536,13 @@ export const HomePage: React.FC = () => {
       {categories.length > 0 && (
         <section className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header: Collections */}
-          <div className="mb-2 sm:mb-2.5">
+          <div className="flex items-center justify-between mb-2 sm:mb-2.5">
             <h2 className="text-xs sm:text-sm font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1.5">
               <Layers className="w-4 h-4" /> Collections
             </h2>
+            <Link to="/shop" className="text-xs sm:text-sm font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1 group">
+              View All <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
 
           <div className="relative group">
@@ -635,7 +638,7 @@ export const HomePage: React.FC = () => {
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Trending Products</h2>
             </div>
             <Link to="/shop" className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
-              Browse More <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
