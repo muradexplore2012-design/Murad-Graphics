@@ -120,7 +120,7 @@ export interface Order {
   total: number;
   currency: 'BDT';
   paymentStatus: OrderPaymentStatus;
-  paymentMethod?: 'bKash' | 'Nagad' | 'Rocket' | 'bank_transfer' | 'manual' | 'free_checkout';
+  paymentMethod?: 'bKash' | 'Nagad' | 'Rocket' | 'bank_transfer' | 'manual' | 'free_checkout' | 'Free Download' | string;
   transactionId?: string;
   paymentNote?: string;
   verifiedAt?: string;

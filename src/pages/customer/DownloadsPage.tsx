@@ -89,7 +89,14 @@ export const DownloadsPage: React.FC = () => {
         });
 
         const deletedIds = getDeletedIds(user.uid);
-        const activeEnts = combined.filter(e => !deletedIds.has(e.id) && !deletedIds.has(e.productId));
+        // Real Firestore entitlements are active and must be displayed.
+        // Fallback synthetic order items are only filtered if specifically deleted by their ID.
+        const activeEnts = combined.filter(e => {
+          if (!e.id.startsWith('order_')) {
+            return true;
+          }
+          return !deletedIds.has(e.id);
+        });
         setEntitlements(activeEnts);
 
         // Fetch products in background to accurately resolve delivery method & links
@@ -114,7 +121,7 @@ export const DownloadsPage: React.FC = () => {
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDeleteEntitlement = async (ent: DownloadEntitlement) => {
-    if (!window.confirm(`আপনি কি নিশ্চিতভাবে "${ent.productName}" আপনার ডাউনলোড লাইব্রেরি থেকে ডিলিট করতে চান?`)) {
+    if (!window.confirm(`আপনি কি নিশ্চিতভাবে "${ent.productName}" আপনার লাইব্রেরি থেকে ডিলিট করতে চান?`)) {
       return;
     }
     setDeletingId(ent.id);
@@ -122,12 +129,11 @@ export const DownloadsPage: React.FC = () => {
       // 1. Optimistically remove from UI
       setEntitlements(prev => prev.filter(e => e.id !== ent.id));
 
-      // 2. Persist in localStorage
+      // 2. Persist in localStorage by ID only (never block product globally)
       if (user) {
         const deletedKey = `deleted_entitlements_${user.uid}`;
         const current = Array.from(getDeletedIds(user.uid));
         current.push(ent.id);
-        if (ent.productId) current.push(ent.productId);
         localStorage.setItem(deletedKey, JSON.stringify(Array.from(new Set(current))));
       }
 
@@ -203,9 +209,9 @@ export const DownloadsPage: React.FC = () => {
       {/* Header */}
       <div className="pb-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Digital Library</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Vyrqonix Library</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Access and re-download your purchased assets and design files
+            Access and re-download your claimed and purchased digital assets, software & games
           </p>
         </div>
       </div>

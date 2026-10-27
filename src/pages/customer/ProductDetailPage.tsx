@@ -130,22 +130,39 @@ export const ProductDetailPage: React.FC = () => {
     };
   }, [slug, user]);
 
+  useEffect(() => {
+    if (user && product) {
+      const pending = sessionStorage.getItem('mg_pending_free_download');
+      if (pending === product.id) {
+        sessionStorage.removeItem('mg_pending_free_download');
+        handleFreeDownload();
+      }
+    }
+  }, [user, product?.id]);
+
   const handleFreeDownload = async () => {
     if (!product) return;
+    if (!user) {
+      sessionStorage.setItem('mg_pending_free_download', product.id);
+      navigate('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      return;
+    }
+
     setDownloading(true);
     try {
-      if (user) {
-        await grantFreeEntitlement({ uid: user.uid, email: user.email || '' }, product).catch(() => {});
-        setHasEntitlement(true);
-      }
+      await grantFreeEntitlement({ 
+        uid: user.uid, 
+        email: user.email || '', 
+        displayName: user.displayName || undefined 
+      }, product);
+      setHasEntitlement(true);
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
 
-      
-
-      setDownloadSuccessMessage('Item claimed! It has also been saved to your Downloads Library.');
+      setDownloadSuccessMessage('Item claimed! It has also been saved to your Vyrqonix Library.');
       setShowDownloadModal(true);
     } catch (e: any) {
-      alert("Error: " + e.message);
+      console.error("Free download error:", e);
+      setShowDownloadModal(true);
     } finally {
       setDownloading(false);
     }
@@ -803,7 +820,7 @@ export const ProductDetailPage: React.FC = () => {
             {user && (
               <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-[11px] text-emerald-800 flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>আইটেমটি আপনার <strong>Downloads Library</strong>-তেও সংরক্ষণ করা হয়েছে।</span>
+                <span>আইটেমটি আপনার <strong>Vyrqonix Library</strong>-তেও সংরক্ষণ করা হয়েছে।</span>
               </div>
             )}
 
@@ -814,7 +831,7 @@ export const ProductDetailPage: React.FC = () => {
                   to="/downloads"
                   className="w-full py-2.5 px-4 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
                 >
-                  <span>Downloads Library দেখুন</span>
+                  <span>Vyrqonix Library দেখুন</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               )}

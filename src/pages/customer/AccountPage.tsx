@@ -126,7 +126,7 @@ export const AccountPage: React.FC = () => {
             className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl flex items-center gap-2 transition-all"
           >
             <Download className="w-4 h-4" />
-            <span>Downloads Library ({entitlements.length})</span>
+            <span>Vyrqonix Library ({entitlements.length})</span>
           </Link>
           <button
             onClick={logout}

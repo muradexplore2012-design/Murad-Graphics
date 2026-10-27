@@ -24,7 +24,8 @@ import { db, storage, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL, ADMIN_EMAIL } from "..
 import { 
   Product, 
   Category, 
-  Order, 
+  Order,
+  OrderPaymentStatus, 
   DownloadEntitlement, 
   Coupon, 
   Review, 
@@ -499,11 +500,96 @@ export const getUserOrders = async (userId: string): Promise<Order[]> => {
 
 export const getAllOrdersAdmin = async (): Promise<Order[]> => {
   try {
-    const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+    // 1. Fetch all orders from 'orders' collection
+    let ordersList: Order[] = [];
+    try {
+      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      ordersList = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+    } catch (err) {
+      console.warn("Fallback query without orderBy for orders:", err);
+      try {
+        const snap = await getDocs(collection(db, "orders"));
+        ordersList = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+      } catch (e) {
+        console.error("Failed to fetch orders collection:", e);
+      }
+    }
+
+    // 2. Fetch all download entitlements so every free download or claim is included
+    let entitlementsList: DownloadEntitlement[] = [];
+    try {
+      const snap = await getDocs(collection(db, "downloadEntitlements"));
+      entitlementsList = snap.docs.map((d) => ({ id: d.id, ...d.data() } as DownloadEntitlement));
+    } catch (e) {
+      console.warn("Could not fetch downloadEntitlements for admin orders:", e);
+    }
+
+    // 3. Track existing user + product pairs already present in orders to prevent duplicates
+    const existingPairs = new Set<string>();
+    ordersList.forEach((order) => {
+      const u = order.userId || order.userEmail || '';
+      order.items?.forEach((item) => {
+        if (item.productId) {
+          existingPairs.add(`${u}_${item.productId}`);
+        }
+      });
+    });
+
+    // 4. Merge synthetic orders from entitlements
+    const syntheticOrders: Order[] = entitlementsList
+      .filter((ent) => {
+        const u = ent.userId || ent.userEmail || '';
+        return !existingPairs.has(`${u}_${ent.productId}`);
+      })
+      .map((ent) => {
+        const rawDate = ent.accessGrantedAt || (ent as any).createdAt || ent.lastDownloadedAt || new Date().toISOString();
+        const shortId = (ent.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase() || 'CLAIM';
+        const cName = (ent as any).customerName || (ent.userEmail ? ent.userEmail.split('@')[0] : 'Free User');
+        return {
+          id: `ent_${ent.id}`,
+          orderNumber: `FREE-${shortId}`,
+          userId: ent.userId || '',
+          userEmail: ent.userEmail || 'Customer',
+          customerName: cName,
+          customerPhone: (ent as any).customerPhone || '',
+          items: [{
+            productId: ent.productId,
+            name: ent.productName || 'Free Digital Asset',
+            slug: ent.productSlug || '',
+            price: 0,
+            thumbnail: ent.thumbnail || '',
+            isFree: true,
+            formats: [],
+            zipPassword: ent.zipPassword || '',
+            deliveryMethod: ent.deliveryMethod || 'direct_upload',
+            quantity: 1
+          }],
+          subtotal: 0,
+          discount: 0,
+          total: 0,
+          currency: 'BDT',
+          paymentMethod: 'Free Download',
+          transactionId: 'FREE-CLAIM',
+          paymentStatus: 'verified' as OrderPaymentStatus,
+          status: 'completed',
+          createdAt: rawDate,
+          updatedAt: rawDate
+        };
+      });
+
+    const combined = [...ordersList, ...syntheticOrders];
+
+    // 5. Sort all by date descending
+    combined.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+
+    return combined;
   } catch (err) {
-    console.error("Error fetching all orders for admin:", err);
+    console.error("Error fetching all orders & downloads for admin:", err);
     return [];
   }
 };
@@ -537,7 +623,13 @@ export const updateOrderStatus = async (orderId: string, status: Order["paymentS
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
-  await deleteDoc(doc(db, "orders", orderId));
+  if (orderId.startsWith('ent_')) {
+    const rawId = orderId.replace('ent_', '');
+    await deleteDoc(doc(db, "downloadEntitlements", rawId)).catch(() => {});
+  } else {
+    await deleteDoc(doc(db, "orders", orderId)).catch(() => {});
+    await deleteDoc(doc(db, "downloadEntitlements", orderId)).catch(() => {});
+  }
 };
 
 export const createAdminManualOrder = async (orderData: Partial<Order>): Promise<string> => {
@@ -600,8 +692,10 @@ export const grantEntitlementsForOrder = async (order: Order) => {
   await batch.commit();
 };
 
-export const grantFreeEntitlement = async (user: { uid: string; email: string }, product: Product): Promise<void> => {
+export const grantFreeEntitlement = async (user: { uid: string; email: string; displayName?: string }, product: Product): Promise<void> => {
   try {
+    const customerDisplayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Customer');
+
     // Check if entitlement already exists
     const q = query(
       collection(db, "downloadEntitlements"),
@@ -615,6 +709,7 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string },
       await addDoc(collection(db, "downloadEntitlements"), {
         userId: user.uid,
         userEmail: user.email,
+        customerName: customerDisplayName,
         productId: product.id,
         productName: product.name,
         productSlug: product.slug,
@@ -646,12 +741,14 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string },
         await addDoc(collection(db, "orders"), {
           userId: user.uid,
           userEmail: user.email,
+          customerName: customerDisplayName,
           orderNumber: orderNumber,
           items: [{
             productId: product.id,
             name: product.name,
             slug: product.slug,
             price: 0,
+            quantity: 1,
             thumbnail: product.thumbnail || '',
             isFree: true,
             formats: product.formats || [],
@@ -662,8 +759,10 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string },
           discount: 0,
           total: 0,
           currency: 'BDT',
-          paymentMethod: 'free_checkout',
+          paymentMethod: 'Free Download',
+          transactionId: 'FREE-CLAIM',
           paymentStatus: 'verified',
+          status: 'completed',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         });

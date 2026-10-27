@@ -9,7 +9,8 @@ import {
 import { Order, OrderPaymentStatus } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
-  ShoppingBag, 
+  ShoppingBag,
+  Download, 
   Search, 
   CheckCircle, 
   Clock, 
@@ -143,13 +144,18 @@ export const AdminOrdersPage: React.FC = () => {
   };
 
   const filtered = orders.filter(o => {
-    if (statusFilter !== 'all' && o.paymentStatus !== statusFilter) return false;
+    const isFree = o.total === 0 || o.paymentMethod === 'Free Download' || o.paymentMethod === 'free' || o.paymentMethod === 'free_checkout';
+    if (statusFilter === 'free' && !isFree) return false;
+    if (statusFilter === 'paid' && isFree) return false;
+    if (statusFilter !== 'all' && statusFilter !== 'free' && statusFilter !== 'paid' && o.paymentStatus !== statusFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       const matchNum = o.orderNumber?.toLowerCase().includes(q);
       const matchEmail = o.userEmail?.toLowerCase().includes(q);
+      const matchName = o.customerName?.toLowerCase().includes(q);
       const matchTrx = o.transactionId?.toLowerCase().includes(q);
-      if (!matchNum && !matchEmail && !matchTrx) return false;
+      const matchItem = o.items?.some(i => i.name?.toLowerCase().includes(q));
+      if (!matchNum && !matchEmail && !matchName && !matchTrx && !matchItem) return false;
     }
     return true;
   });
@@ -158,8 +164,8 @@ export const AdminOrdersPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Orders & Purchases ({orders.length})</h1>
-          <p className="text-xs text-slate-500 mt-1">Verify mobile payments (bKash/Nagad/Rocket), add manual sales, and delete records</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Orders & Downloads ({orders.length})</h1>
+          <p className="text-xs text-slate-500 mt-1">Live unified list of all customer downloads & purchases (Free & Paid)</p>
         </div>
 
         <button
@@ -193,7 +199,9 @@ export const AdminOrdersPage: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-slate-700 font-semibold focus:outline-none"
           >
-            <option value="all">All Orders</option>
+            <option value="all">All (Free & Paid)</option>
+            <option value="free">Free Downloads Only</option>
+            <option value="paid">Paid Purchases Only</option>
             <option value="pending">Pending Verification</option>
             <option value="verified">Verified (Active)</option>
             <option value="failed">Failed / Cancelled</option>
@@ -223,76 +231,128 @@ export const AdminOrdersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        <span className="font-mono font-bold text-slate-900 block">#{order.orderNumber}</span>
-                        <span className="text-[11px] text-slate-400">{new Date(order.createdAt).toLocaleString()}</span>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          {order.items?.length || 0} product{order.items?.length > 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    </td>
+                {filtered.map((order) => {
+                  const isFree = order.total === 0 || order.paymentMethod === 'Free Download' || order.paymentMethod === 'free' || order.paymentMethod === 'free_checkout';
+                  return (
+                    <tr key={order.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-slate-900 block">#{order.orderNumber}</span>
+                            {isFree ? (
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase">
+                                Free
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold uppercase">
+                                Paid
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-slate-400 block">{new Date(order.createdAt).toLocaleString()}</span>
+                          {order.items && order.items.length > 0 ? (
+                            <div className="flex items-center gap-2 mt-1.5 pt-1 border-t border-slate-100">
+                              {order.items[0].thumbnail ? (
+                                <img src={order.items[0].thumbnail} alt="" className="w-6 h-6 rounded object-cover border border-slate-200 shrink-0" />
+                              ) : (
+                                <div className="w-6 h-6 rounded bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                  <Download className="w-3 h-3" />
+                                </div>
+                              )}
+                              <span className="font-semibold text-slate-800 line-clamp-1 max-w-[200px]" title={order.items[0].name}>
+                                {order.items[0].name}
+                                {order.items.length > 1 && ` (+${order.items.length - 1} more)`}
+                              </span>
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-slate-400">Direct Download</p>
+                          )}
+                        </div>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-slate-900">{order.customerName}</p>
-                      <p className="text-[11px] text-slate-500">{order.userEmail}</p>
-                      {order.customerPhone && (
-                        <p className="text-[11px] text-blue-600 font-mono mt-0.5">{order.customerPhone}</p>
-                      )}
-                    </td>
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-slate-900">{order.customerName || (order.userEmail ? order.userEmail.split('@')[0] : 'Customer')}</p>
+                        <p className="text-[11px] text-slate-500">{order.userEmail}</p>
+                        {order.customerPhone && (
+                          <p className="text-[11px] text-blue-600 font-mono mt-0.5">{order.customerPhone}</p>
+                        )}
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-bold text-slate-700 text-[10px] uppercase block w-fit">
-                        {order.paymentMethod || 'Manual'}
-                      </span>
-                      <p className="text-[11px] font-mono text-emerald-700 font-bold mt-1">
-                        TrxID: {order.transactionId || 'None'}
-                      </p>
-                    </td>
+                      <td className="px-6 py-4">
+                        {isFree ? (
+                          <div>
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 font-bold text-emerald-700 text-[10px] uppercase inline-flex items-center gap-1">
+                              <Download className="w-3 h-3" /> Free Download
+                            </span>
+                            <p className="text-[11px] font-mono text-slate-400 mt-1">Instant Access</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-bold text-blue-700 text-[10px] uppercase block w-fit">
+                              {order.paymentMethod || 'bKash'}
+                            </span>
+                            <p className="text-[11px] font-mono text-emerald-700 font-bold mt-1">
+                              TrxID: {order.transactionId || 'None'}
+                            </p>
+                          </div>
+                        )}
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-black text-slate-900">৳{order.total}</span>
-                      {order.discount > 0 && (
-                        <span className="text-[10px] text-emerald-600 font-bold block">(-৳{order.discount} coupon)</span>
-                      )}
-                    </td>
+                      <td className="px-6 py-4">
+                        {isFree ? (
+                          <span className="text-sm font-black text-emerald-600">৳0 (Free)</span>
+                        ) : (
+                          <>
+                            <span className="text-sm font-black text-slate-900">৳{order.total}</span>
+                            {order.discount > 0 && (
+                              <span className="text-[10px] text-emerald-600 font-bold block">(-৳{order.discount} coupon)</span>
+                            )}
+                          </>
+                        )}
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <select
-                          disabled={updatingId === order.id}
-                          value={order.paymentStatus}
-                          onChange={(e) => handleStatusChange(order, e.target.value as OrderPaymentStatus)}
-                          className={`rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase focus:outline-none transition-all ${
-                            order.paymentStatus === 'verified'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : order.paymentStatus === 'pending'
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                              : 'bg-rose-50 text-rose-700 border border-rose-200'
-                          }`}
+                      <td className="px-6 py-4">
+                        {isFree ? (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold uppercase">
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>DOWNLOAD UNLOCKED</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <select
+                              disabled={updatingId === order.id}
+                              value={order.paymentStatus}
+                              onChange={(e) => handleStatusChange(order, e.target.value as OrderPaymentStatus)}
+                              className={`rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase focus:outline-none transition-all ${
+                                order.paymentStatus === 'verified'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : order.paymentStatus === 'pending'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+                              }`}
+                            >
+                              <option value="pending" className="bg-white text-amber-700">PENDING</option>
+                              <option value="verified" className="bg-white text-emerald-700">VERIFIED (GRANT DOWNLOAD)</option>
+                              <option value="failed" className="bg-white text-rose-700">FAILED / CANCELLED</option>
+                            </select>
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
+                          className="p-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1"
+                          title="Delete Record Permanently"
                         >
-                          <option value="pending" className="bg-white text-amber-700">PENDING</option>
-                          <option value="verified" className="bg-white text-emerald-700">VERIFIED (GRANT DOWNLOAD)</option>
-                          <option value="failed" className="bg-white text-rose-700">FAILED / CANCELLED</option>
-                        </select>
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
-                        className="p-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1"
-                        title="Delete Order Permanently"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span className="text-[11px] font-semibold">Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                          <Trash2 className="w-4 h-4" />
+                          <span className="text-[11px] font-semibold">Delete</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
