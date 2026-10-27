@@ -7,15 +7,6 @@ import { DownloadEntitlement, Product } from '../../types';
 import { Download, FileText, KeyRound, Copy, Check, X, FolderDown, Trash2 } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 
-const getDeletedIds = (uid: string): Set<string> => {
-  try {
-    const raw = localStorage.getItem(`deleted_entitlements_${uid}`);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-};
-
 export const DownloadsPage: React.FC = () => {
   const { user } = useAuth();
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>([]);
@@ -88,16 +79,12 @@ export const DownloadsPage: React.FC = () => {
           }
         });
 
-        const deletedIds = getDeletedIds(user.uid);
-        // Real Firestore entitlements are active and must be displayed.
-        // Fallback synthetic order items are only filtered if specifically deleted by their ID.
-        const activeEnts = combined.filter(e => {
-          if (!e.id.startsWith('order_')) {
-            return true;
-          }
-          return !deletedIds.has(e.id);
-        });
-        setEntitlements(activeEnts);
+        // Clear any old stale local storage blacklist that may have blocked claimed products
+        try {
+          localStorage.removeItem(`deleted_entitlements_${user.uid}`);
+        } catch {}
+
+        setEntitlements(combined);
 
         // Fetch products in background to accurately resolve delivery method & links
         const uniqueProductIds = Array.from(new Set(combined.map(e => e.productId)));
@@ -129,15 +116,7 @@ export const DownloadsPage: React.FC = () => {
       // 1. Optimistically remove from UI
       setEntitlements(prev => prev.filter(e => e.id !== ent.id));
 
-      // 2. Persist in localStorage by ID only (never block product globally)
-      if (user) {
-        const deletedKey = `deleted_entitlements_${user.uid}`;
-        const current = Array.from(getDeletedIds(user.uid));
-        current.push(ent.id);
-        localStorage.setItem(deletedKey, JSON.stringify(Array.from(new Set(current))));
-      }
-
-      // 3. Delete from Firestore
+      // 2. Delete / mark deleted in Firestore
       if (user) {
         await deleteUserEntitlement(ent.id, user.uid, ent.productId);
       }
