@@ -54,8 +54,8 @@ export const Footer: React.FC = () => {
                 <Sparkles className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
-                <h4 className="text-slate-900 font-bold text-sm">100% Editable Source Files</h4>
-                <p className="text-xs text-slate-500 mt-0.5">AI, PSD, EPS, SVG, fonts, software & apps</p>
+                <h4 className="text-slate-900 font-bold text-sm">100% Editable Files & Working Games</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Layered design assets, verified software & tested games</p>
               </div>
             </div>
           </div>
