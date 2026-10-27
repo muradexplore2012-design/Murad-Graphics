@@ -12,14 +12,24 @@ export const DownloadsPage: React.FC = () => {
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>(() => {
     try {
       if (typeof window !== 'undefined') {
-        const raw = sessionStorage.getItem('mg_cache_entitlements_current');
-        if (raw) return JSON.parse(raw);
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('mg_user_entitlements_') || k.startsWith('mg_cache_entitlements_'))) {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const list = JSON.parse(raw);
+              if (Array.isArray(list) && list.length > 0) return list;
+            }
+          }
+        }
+        const sessionRaw = sessionStorage.getItem('mg_cache_entitlements_current');
+        if (sessionRaw) return JSON.parse(sessionRaw);
       }
     } catch {}
     return [];
   });
   const [productCache, setProductCache] = useState<Record<string, Product>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(() => entitlements.length === 0);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -52,10 +62,11 @@ export const DownloadsPage: React.FC = () => {
         return;
       }
       
-      // If we don't already have cached items, show loading skeleton
+      // If we don't already have cached items, check localStorage first for instant 0ms load
+      const userStorageKey = `mg_user_entitlements_${user.uid}`;
       const cachedKey = `mg_cache_entitlements_${user.uid}`;
       try {
-        const cachedRaw = sessionStorage.getItem(cachedKey);
+        const cachedRaw = localStorage.getItem(userStorageKey) || localStorage.getItem(cachedKey) || sessionStorage.getItem(cachedKey);
         if (cachedRaw) {
           const parsed = JSON.parse(cachedRaw);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -67,7 +78,7 @@ export const DownloadsPage: React.FC = () => {
 
       try {
         const [ents, orders] = await Promise.all([
-          getUserEntitlements(user.uid),
+          getUserEntitlements(user.uid, user.email || undefined),
           getUserOrders(user.uid).catch(() => [])
         ]);
 
@@ -116,6 +127,8 @@ export const DownloadsPage: React.FC = () => {
           setEntitlements(combined);
           setLoading(false); // Instant render without waiting for individual product details!
           try {
+            localStorage.setItem(userStorageKey, JSON.stringify(combined));
+            localStorage.setItem(cachedKey, JSON.stringify(combined));
             sessionStorage.setItem(cachedKey, JSON.stringify(combined));
             sessionStorage.setItem('mg_cache_entitlements_current', JSON.stringify(combined));
           } catch {}
@@ -157,7 +170,18 @@ export const DownloadsPage: React.FC = () => {
     setDeletingId(ent.id);
     try {
       // 1. Optimistically remove from UI
-      setEntitlements(prev => prev.filter(e => e.id !== ent.id));
+      setEntitlements(prev => {
+        const next = prev.filter(e => e.id !== ent.id);
+        try {
+          if (user) {
+            localStorage.setItem(`mg_user_entitlements_${user.uid}`, JSON.stringify(next));
+            localStorage.setItem(`mg_cache_entitlements_${user.uid}`, JSON.stringify(next));
+            sessionStorage.setItem(`mg_cache_entitlements_${user.uid}`, JSON.stringify(next));
+            sessionStorage.setItem('mg_cache_entitlements_current', JSON.stringify(next));
+          }
+        } catch {}
+        return next;
+      });
 
       // 2. Delete / mark deleted in Firestore
       if (user) {

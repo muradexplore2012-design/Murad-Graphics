@@ -695,6 +695,7 @@ export const grantEntitlementsForOrder = async (order: Order) => {
 export const grantFreeEntitlement = async (user: { uid: string; email: string; displayName?: string }, product: Product): Promise<void> => {
   try {
     const customerDisplayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Customer');
+    const safeEmail = user.email || '';
 
     // Check if entitlement already exists
     const q = query(
@@ -710,23 +711,23 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string; d
     if (!activeDoc) {
       if (!snap.empty) {
         // Reactivate previously deleted/hidden document
-        await updateDoc(snap.docs[0].ref, {
+        await updateDoc(snap.docs[0].ref, cleanUndefined({
           status: 'active',
-          productName: product.name,
-          productSlug: product.slug,
+          productName: product.name || '',
+          productSlug: product.slug || '',
           thumbnail: product.thumbnail || '',
           zipPassword: product.zipPassword || '',
           deliveryMethod: product.deliveryMethod || 'direct_upload',
           accessGrantedAt: new Date().toISOString()
-        });
+        }));
       } else {
-        await addDoc(collection(db, "downloadEntitlements"), {
+        await addDoc(collection(db, "downloadEntitlements"), cleanUndefined({
           userId: user.uid,
-          userEmail: user.email,
+          userEmail: safeEmail,
           customerName: customerDisplayName,
           productId: product.id,
-          productName: product.name,
-          productSlug: product.slug,
+          productName: product.name || '',
+          productSlug: product.slug || '',
           thumbnail: product.thumbnail || '',
           isFree: true,
           zipPassword: product.zipPassword || '',
@@ -734,7 +735,7 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string; d
           accessGrantedAt: new Date().toISOString(),
           downloadCount: 0,
           status: 'active'
-        });
+        }));
       }
     }
 
@@ -753,15 +754,15 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string; d
 
       if (!hasOrder) {
         const orderNumber = `FREE-${Date.now().toString().slice(-6)}`;
-        await addDoc(collection(db, "orders"), {
+        await addDoc(collection(db, "orders"), cleanUndefined({
           userId: user.uid,
-          userEmail: user.email,
+          userEmail: safeEmail,
           customerName: customerDisplayName,
           orderNumber: orderNumber,
           items: [{
             productId: product.id,
             name: product.name,
-            slug: product.slug,
+            slug: product.slug || '',
             price: 0,
             quantity: 1,
             thumbnail: product.thumbnail || '',
@@ -774,13 +775,13 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string; d
           discount: 0,
           total: 0,
           currency: 'BDT',
-          paymentMethod: 'Free Download',
+          paymentMethod: 'free_checkout',
           transactionId: 'FREE-CLAIM',
           paymentStatus: 'verified',
           status: 'completed',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
-        });
+        }));
       }
     } catch (orderErr) {
       console.warn("Could not save free order doc:", orderErr);
@@ -801,18 +802,50 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string; d
   }
 };
 
-export const getUserEntitlements = async (userId: string): Promise<DownloadEntitlement[]> => {
+export const getUserEntitlements = async (userId: string, userEmail?: string): Promise<DownloadEntitlement[]> => {
   try {
-    // Query by userId only - eliminates any need for Firestore composite indexes
-    const q = query(
-      collection(db, "downloadEntitlements"),
-      where("userId", "==", userId)
-    );
-    const snap = await getDocs(q);
-    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as DownloadEntitlement));
-    return list
-      .filter((item) => !item.status || item.status === 'active')
-      .sort((a, b) => new Date(b.accessGrantedAt || 0).getTime() - new Date(a.accessGrantedAt || 0).getTime());
+    const listMap = new Map<string, DownloadEntitlement>();
+
+    // 1. Query by userId
+    try {
+      const q = query(
+        collection(db, "downloadEntitlements"),
+        where("userId", "==", userId)
+      );
+      const snap = await getDocs(q);
+      snap.docs.forEach((d) => {
+        const item = { id: d.id, ...d.data() } as DownloadEntitlement;
+        if (!item.status || item.status === 'active') {
+          listMap.set(item.productId || item.id, item);
+        }
+      });
+    } catch (e) {
+      console.warn("Error querying entitlements by userId:", e);
+    }
+
+    // 2. Query by userEmail as secondary fallback if available
+    if (userEmail && userEmail.includes('@')) {
+      try {
+        const qEmail = query(
+          collection(db, "downloadEntitlements"),
+          where("userEmail", "==", userEmail)
+        );
+        const emailSnap = await getDocs(qEmail);
+        emailSnap.docs.forEach((d) => {
+          const item = { id: d.id, ...d.data() } as DownloadEntitlement;
+          if (!item.status || item.status === 'active') {
+            if (!listMap.has(item.productId || item.id)) {
+              listMap.set(item.productId || item.id, item);
+            }
+          }
+        });
+      } catch {
+        // Fallback
+      }
+    }
+
+    const list = Array.from(listMap.values());
+    return list.sort((a, b) => new Date(b.accessGrantedAt || 0).getTime() - new Date(a.accessGrantedAt || 0).getTime());
   } catch (err) {
     console.error("Error fetching user entitlements:", err);
     return [];

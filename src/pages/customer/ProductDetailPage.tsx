@@ -156,10 +156,10 @@ export const ProductDetailPage: React.FC = () => {
         displayName: user.displayName || undefined 
       }, product);
       setHasEntitlement(true);
-      // Immediately cache in sessionStorage so Vyrqonix Library displays it instantly without any delay
+      // Immediately cache in localStorage and sessionStorage so Vyrqonix Library displays it instantly without any delay
       try {
-        const cacheKey = `mg_cache_entitlements_${user.uid}`;
-        const raw = sessionStorage.getItem(cacheKey);
+        const cacheKey = `mg_user_entitlements_${user.uid}`;
+        const raw = localStorage.getItem(cacheKey) || sessionStorage.getItem(`mg_cache_entitlements_${user.uid}`);
         const existing = raw ? JSON.parse(raw) : [];
         if (!existing.some((e: any) => e.productId === product.id)) {
           existing.unshift({
@@ -177,7 +177,10 @@ export const ProductDetailPage: React.FC = () => {
             downloadCount: 0,
             status: 'active'
           });
-          sessionStorage.setItem(cacheKey, JSON.stringify(existing));
+          localStorage.setItem(cacheKey, JSON.stringify(existing));
+          localStorage.setItem(`mg_cache_entitlements_${user.uid}`, JSON.stringify(existing));
+          sessionStorage.setItem(`mg_cache_entitlements_${user.uid}`, JSON.stringify(existing));
+          sessionStorage.setItem('mg_cache_entitlements_current', JSON.stringify(existing));
         }
       } catch {}
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
@@ -852,7 +855,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="space-y-2 pt-1">
               {user && (
                 <Link
-                  to="/downloads"
+                  to="/account/downloads"
                   className="w-full py-2.5 px-4 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
                 >
                   <span>Vyrqonix Library দেখুন</span>

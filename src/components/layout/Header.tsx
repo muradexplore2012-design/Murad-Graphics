@@ -574,8 +574,37 @@ export const Header: React.FC = () => {
             </Link>
           ))}
 
-          {/* Secondary links */}
-          <div className="pt-3 mt-3 border-t border-slate-100 space-y-0.5">
+          {/* User Account & Library Quick Links */}
+          <div className="pt-3 mt-3 border-t border-slate-100 space-y-1">
+            {user ? (
+              <>
+                <Link
+                  to="/account"
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#7a00ea] hover:bg-purple-50 rounded-xl transition-colors"
+                >
+                  <UserIcon className="w-4 h-4 text-purple-600" />
+                  <span>My Profile & Orders</span>
+                </Link>
+                <Link
+                  to="/account/downloads"
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-slate-800 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                >
+                  <Download className="w-4 h-4 text-emerald-600" />
+                  <span>Vyrqonix Library</span>
+                </Link>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setCategoriesDrawerOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+              >
+                <UserIcon className="w-4 h-4 text-blue-600" />
+                <span>Sign In / Register</span>
+              </Link>
+            )}
             <Link
               to="/shop?type=free"
               onClick={() => setCategoriesDrawerOpen(false)}
