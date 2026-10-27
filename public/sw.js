@@ -1,5 +1,5 @@
 // Vyrqonix Lightweight PWA Service Worker
-const CACHE_NAME = 'vyrqonix-pwa-v3';
+const CACHE_NAME = 'vyrqonix-pwa-v4';
 
 let dynamicSubtitle = 'YOUR DIGITAL WORLD';
 let dynamicSiteName = 'Vyrqonix';
