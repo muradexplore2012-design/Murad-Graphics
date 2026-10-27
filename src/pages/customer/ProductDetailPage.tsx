@@ -156,6 +156,30 @@ export const ProductDetailPage: React.FC = () => {
         displayName: user.displayName || undefined 
       }, product);
       setHasEntitlement(true);
+      // Immediately cache in sessionStorage so Vyrqonix Library displays it instantly without any delay
+      try {
+        const cacheKey = `mg_cache_entitlements_${user.uid}`;
+        const raw = sessionStorage.getItem(cacheKey);
+        const existing = raw ? JSON.parse(raw) : [];
+        if (!existing.some((e: any) => e.productId === product.id)) {
+          existing.unshift({
+            id: `claimed_${Date.now()}_${product.id}`,
+            userId: user.uid,
+            userEmail: user.email || '',
+            productId: product.id,
+            productName: product.name,
+            productSlug: product.slug,
+            thumbnail: product.thumbnail || '',
+            isFree: true,
+            zipPassword: product.zipPassword || '',
+            deliveryMethod: product.deliveryMethod || 'direct_upload',
+            accessGrantedAt: new Date().toISOString(),
+            downloadCount: 0,
+            status: 'active'
+          });
+          sessionStorage.setItem(cacheKey, JSON.stringify(existing));
+        }
+      } catch {}
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
 
       setDownloadSuccessMessage('Item claimed! It has also been saved to your Vyrqonix Library.');

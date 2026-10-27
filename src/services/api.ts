@@ -701,26 +701,41 @@ export const grantFreeEntitlement = async (user: { uid: string; email: string; d
       collection(db, "downloadEntitlements"),
       where("userId", "==", user.uid),
       where("productId", "==", product.id),
-      limit(1)
+      limit(5)
     );
     const snap = await getDocs(q);
 
-    if (snap.empty) {
-      await addDoc(collection(db, "downloadEntitlements"), {
-        userId: user.uid,
-        userEmail: user.email,
-        customerName: customerDisplayName,
-        productId: product.id,
-        productName: product.name,
-        productSlug: product.slug,
-        thumbnail: product.thumbnail || '',
-        isFree: true,
-        zipPassword: product.zipPassword || '',
-        deliveryMethod: product.deliveryMethod || 'direct_upload',
-        accessGrantedAt: new Date().toISOString(),
-        downloadCount: 0,
-        status: 'active'
-      });
+    const activeDoc = snap.docs.find(d => !d.data().status || d.data().status === 'active');
+
+    if (!activeDoc) {
+      if (!snap.empty) {
+        // Reactivate previously deleted/hidden document
+        await updateDoc(snap.docs[0].ref, {
+          status: 'active',
+          productName: product.name,
+          productSlug: product.slug,
+          thumbnail: product.thumbnail || '',
+          zipPassword: product.zipPassword || '',
+          deliveryMethod: product.deliveryMethod || 'direct_upload',
+          accessGrantedAt: new Date().toISOString()
+        });
+      } else {
+        await addDoc(collection(db, "downloadEntitlements"), {
+          userId: user.uid,
+          userEmail: user.email,
+          customerName: customerDisplayName,
+          productId: product.id,
+          productName: product.name,
+          productSlug: product.slug,
+          thumbnail: product.thumbnail || '',
+          isFree: true,
+          zipPassword: product.zipPassword || '',
+          deliveryMethod: product.deliveryMethod || 'direct_upload',
+          accessGrantedAt: new Date().toISOString(),
+          downloadCount: 0,
+          status: 'active'
+        });
+      }
     }
 
     // Also record a verified free order record so it appears under My Orders & Purchases

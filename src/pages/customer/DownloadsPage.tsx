@@ -9,7 +9,15 @@ import { EmptyState } from '../../components/ui/EmptyState';
 
 export const DownloadsPage: React.FC = () => {
   const { user } = useAuth();
-  const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>([]);
+  const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = sessionStorage.getItem('mg_cache_entitlements_current');
+        if (raw) return JSON.parse(raw);
+      }
+    } catch {}
+    return [];
+  });
   const [productCache, setProductCache] = useState<Record<string, Product>>({});
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -37,12 +45,26 @@ export const DownloadsPage: React.FC = () => {
   }, [activeDownloadModal]);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchEntitlements = async () => {
       if (!user) {
         setLoading(false);
         return;
       }
-      setLoading(true);
+      
+      // If we don't already have cached items, show loading skeleton
+      const cachedKey = `mg_cache_entitlements_${user.uid}`;
+      try {
+        const cachedRaw = sessionStorage.getItem(cachedKey);
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setEntitlements(parsed);
+            setLoading(false);
+          }
+        }
+      } catch {}
+
       try {
         const [ents, orders] = await Promise.all([
           getUserEntitlements(user.uid),
@@ -54,7 +76,13 @@ export const DownloadsPage: React.FC = () => {
 
         // Fallback: If any verified order has items not yet in entitlements, include them
         orders.forEach(order => {
-          if (order.paymentStatus === 'verified' || order.subtotal === 0) {
+          if (
+            order.paymentStatus === 'verified' || 
+            order.subtotal === 0 || 
+            order.paymentMethod === 'free_checkout' || 
+            order.paymentMethod === 'free' || 
+            order.paymentMethod === 'Free Download'
+          ) {
             order.items?.forEach(item => {
               if (!existingProductIds.has(item.productId)) {
                 existingProductIds.add(item.productId);
@@ -84,25 +112,40 @@ export const DownloadsPage: React.FC = () => {
           localStorage.removeItem(`deleted_entitlements_${user.uid}`);
         } catch {}
 
-        setEntitlements(combined);
+        if (isMounted) {
+          setEntitlements(combined);
+          setLoading(false); // Instant render without waiting for individual product details!
+          try {
+            sessionStorage.setItem(cachedKey, JSON.stringify(combined));
+            sessionStorage.setItem('mg_cache_entitlements_current', JSON.stringify(combined));
+          } catch {}
+        }
 
-        // Fetch products in background to accurately resolve delivery method & links
+        // Fetch products in background asynchronously without blocking the UI
         const uniqueProductIds = Array.from(new Set(combined.map(e => e.productId)));
-        const productsList = await Promise.all(
+        Promise.all(
           uniqueProductIds.map(id => getProductById(id).catch(() => null))
-        );
-        const pMap: Record<string, Product> = {};
-        productsList.forEach(p => {
-          if (p) pMap[p.id] = p;
-        });
-        setProductCache(pMap);
+        ).then(productsList => {
+          if (!isMounted) return;
+          const pMap: Record<string, Product> = {};
+          productsList.forEach(p => {
+            if (p) pMap[p.id] = p;
+          });
+          setProductCache(pMap);
+        }).catch(() => {});
+
       } catch (err) {
         console.error("Error loading entitlements:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     fetchEntitlements();
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
