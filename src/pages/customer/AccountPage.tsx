@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getUserOrders, getUserEntitlements } from '../../services/api';
+import { getUserOrders, getUserEntitlements, deleteUserOrder } from '../../services/api';
 import { Order, DownloadEntitlement } from '../../types';
 import { 
   User as UserIcon, 
@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   ShoppingBag,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { TableSkeleton } from '../../components/ui/Skeletons';
@@ -23,6 +24,7 @@ export const AccountPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -46,11 +48,27 @@ export const AccountPage: React.FC = () => {
           getUserEntitlements(user.uid, user.email || undefined)
         ]);
 
+        // Filter out deleted items from local blacklist
+        const deletedOrderIds = new Set<string>();
+        try {
+          const rawO = localStorage.getItem(`mg_deleted_order_ids_${user.uid}`);
+          if (rawO) JSON.parse(rawO).forEach((id: string) => deletedOrderIds.add(id));
+        } catch {}
+
+        const deletedProductIds = new Set<string>();
+        try {
+          const rawP = localStorage.getItem(`mg_deleted_product_ids_${user.uid}`);
+          if (rawP) JSON.parse(rawP).forEach((id: string) => deletedProductIds.add(id));
+        } catch {}
+
+        const activeOrders = userOrders.filter(o => !deletedOrderIds.has(o.id));
+        const activeEnts = userEnts.filter(e => !deletedProductIds.has(e.productId));
+
         // Merge free entitlements into orders list so claimed free items show up in My Orders & Purchases
         const existingProductIdsInOrders = new Set();
-        userOrders.forEach(o => o.items?.forEach(i => existingProductIdsInOrders.add(i.productId)));
+        activeOrders.forEach(o => o.items?.forEach(i => existingProductIdsInOrders.add(i.productId)));
 
-        const syntheticOrders: Order[] = userEnts
+        const syntheticOrders: Order[] = activeEnts
           .filter(ent => !existingProductIdsInOrders.has(ent.productId))
           .map(ent => ({
             id: `ent_${ent.id}`,
@@ -78,12 +96,12 @@ export const AccountPage: React.FC = () => {
             updatedAt: ent.accessGrantedAt || new Date().toISOString()
           }));
 
-        const combinedOrders = [...userOrders, ...syntheticOrders].sort(
+        const combinedOrders = [...activeOrders, ...syntheticOrders].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
         setOrders(combinedOrders);
-        setEntitlements(userEnts);
+        setEntitlements(activeEnts);
         try {
           localStorage.setItem(ordersCacheKey, JSON.stringify(combinedOrders));
         } catch {}
@@ -95,6 +113,72 @@ export const AccountPage: React.FC = () => {
     };
     fetchUserData();
   }, [user]);
+
+  const handleDeleteOrder = async (order: Order) => {
+    if (!window.confirm(`আপনি কি নিশ্চিতভাবে এই আইটেমটি (#${order.orderNumber}) ডিলিট করতে চান?`)) {
+      return;
+    }
+    setDeletingOrderId(order.id);
+    try {
+      // 1. Optimistic state update
+      const nextOrders = orders.filter(o => o.id !== order.id);
+      setOrders(nextOrders);
+
+      const productIds = order.items?.map(i => i.productId).filter(Boolean) || [];
+      if (productIds.length > 0) {
+        setEntitlements(prev => prev.filter(e => !productIds.includes(e.productId)));
+      }
+
+      // 2. Persist updated cache and deleted blacklist
+      if (user) {
+        const ordersCacheKey = `mg_user_orders_${user.uid}`;
+        try {
+          localStorage.setItem(ordersCacheKey, JSON.stringify(nextOrders));
+        } catch {}
+
+        // Add to deleted order IDs
+        try {
+          const rawO = localStorage.getItem(`mg_deleted_order_ids_${user.uid}`);
+          const oList: string[] = rawO ? JSON.parse(rawO) : [];
+          if (!oList.includes(order.id)) {
+            oList.push(order.id);
+            localStorage.setItem(`mg_deleted_order_ids_${user.uid}`, JSON.stringify(oList));
+          }
+        } catch {}
+
+        // Add to deleted product IDs so they don't reappear in Vyrqonix Library
+        if (productIds.length > 0) {
+          try {
+            const rawP = localStorage.getItem(`mg_deleted_product_ids_${user.uid}`);
+            const pList: string[] = rawP ? JSON.parse(rawP) : [];
+            productIds.forEach(pId => {
+              if (!pList.includes(pId)) pList.push(pId);
+            });
+            localStorage.setItem(`mg_deleted_product_ids_${user.uid}`, JSON.stringify(pList));
+
+            // Also update Vyrqonix library cache
+            const libKey = `mg_user_entitlements_${user.uid}`;
+            const rawLib = localStorage.getItem(libKey);
+            if (rawLib) {
+              const currentLib = JSON.parse(rawLib);
+              if (Array.isArray(currentLib)) {
+                const updatedLib = currentLib.filter((e: any) => !productIds.includes(e.productId));
+                localStorage.setItem(libKey, JSON.stringify(updatedLib));
+                localStorage.setItem(`mg_cache_entitlements_${user.uid}`, JSON.stringify(updatedLib));
+              }
+            }
+          } catch {}
+        }
+
+        // 3. Delete in Firestore
+        await deleteUserOrder(order.id, user.uid, productIds);
+      }
+    } catch (err) {
+      console.error("Error deleting order:", err);
+    } finally {
+      setDeletingOrderId(null);
+    }
+  };
 
   if (!user) {
     return (
@@ -170,10 +254,10 @@ export const AccountPage: React.FC = () => {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <TableSkeleton rows={3} />
             </div>
-            <div className="md:hidden space-y-3">
+            <div className="lg:hidden space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="bg-white rounded-2xl border border-slate-200/80 p-4 space-y-3 animate-pulse">
                   <div className="flex justify-between items-center">
@@ -205,8 +289,8 @@ export const AccountPage: React.FC = () => {
           />
         ) : (
           <>
-            {/* Mobile View: High-clarity responsive order cards */}
-            <div className="md:hidden space-y-3">
+            {/* Mobile View: High-clarity responsive order cards (No horizontal scroll) */}
+            <div className="lg:hidden space-y-3">
               {orders.map((o) => {
                 const firstItem = o.items?.[0];
                 const isFreeOrder = o.total === 0 || o.paymentMethod === 'free_checkout';
@@ -279,8 +363,8 @@ export const AccountPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Bottom Row: Amount & Action Button */}
-                    <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
+                    {/* Bottom Row: Amount & Action Buttons (Download/View Details + Delete) */}
+                    <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
                         <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                           Amount
@@ -296,11 +380,23 @@ export const AccountPage: React.FC = () => {
                         )}
                       </div>
 
-                      <div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOrder(o)}
+                          disabled={deletingOrderId === o.id}
+                          title="অর্ডারটি ডিলিট করুন"
+                          className="px-2.5 py-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-xl transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 text-xs font-semibold"
+                          aria-label="Delete order"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                          <span>Delete</span>
+                        </button>
+
                         {o.id.startsWith('ent_') ? (
                           <Link
                             to="/account/downloads"
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-[0.98]"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-[0.98]"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>Download</span>
@@ -308,9 +404,9 @@ export const AccountPage: React.FC = () => {
                         ) : (
                           <Link
                             to={`/account/orders/${o.id}`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-[0.98]"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-[0.98]"
                           >
-                            <span>View Details</span>
+                            <span>Details</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </Link>
                         )}
@@ -322,7 +418,7 @@ export const AccountPage: React.FC = () => {
             </div>
 
             {/* Desktop View: Full Table */}
-            <div className="hidden md:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm">
+            <div className="hidden lg:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-slate-600">
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
@@ -406,22 +502,36 @@ export const AccountPage: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right whitespace-nowrap">
-                            {o.id.startsWith('ent_') ? (
-                              <Link
-                                to="/account/downloads"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded-xl transition-all shadow-xs"
+                            <div className="inline-flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteOrder(o)}
+                                disabled={deletingOrderId === o.id}
+                                title="অর্ডারটি ডিলিট করুন"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-xl transition-all cursor-pointer text-xs font-semibold disabled:opacity-50"
+                                aria-label="Delete order"
                               >
-                                <Download className="w-3.5 h-3.5" />
-                                <span>Download</span>
-                              </Link>
-                            ) : (
-                              <Link
-                                to={`/account/orders/${o.id}`}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-xl transition-all"
-                              >
-                                <span>View Details</span>
-                              </Link>
-                            )}
+                                <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                                <span>Delete</span>
+                              </button>
+
+                              {o.id.startsWith('ent_') ? (
+                                <Link
+                                  to="/account/downloads"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded-xl transition-all shadow-xs"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  <span>Download</span>
+                                </Link>
+                              ) : (
+                                <Link
+                                  to={`/account/orders/${o.id}`}
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-xl transition-all"
+                                >
+                                  <span>View Details</span>
+                                </Link>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

@@ -490,7 +490,9 @@ export const getUserOrders = async (userId: string): Promise<Order[]> => {
       where("userId", "==", userId)
     );
     const snap = await getDocs(q);
-    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+    const list = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() } as Order))
+      .filter((o) => o.status !== 'deleted' && !(o as any).hiddenByUser);
     return list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   } catch (err) {
     console.error("Error fetching user orders:", err);
@@ -873,13 +875,25 @@ export const checkUserEntitlement = async (userId: string, productId: string): P
 
 export const deleteUserEntitlement = async (entitlementId: string, userId: string, productId?: string): Promise<void> => {
   try {
-    if (entitlementId && !entitlementId.startsWith('order_')) {
+    // 1. If entitlementId starts with order_, extract order id and mark it deleted/hidden
+    if (entitlementId && entitlementId.startsWith('order_')) {
+      const parts = entitlementId.split('_');
+      // format: order_{orderId}_{productId}
+      const orderId = parts[1];
+      if (orderId) {
+        const orderRef = doc(db, "orders", orderId);
+        await deleteDoc(orderRef).catch(async () => {
+          await updateDoc(orderRef, { status: 'deleted', hiddenByUser: true });
+        });
+      }
+    } else if (entitlementId) {
       const entRef = doc(db, "downloadEntitlements", entitlementId);
       await deleteDoc(entRef).catch(async () => {
         await updateDoc(entRef, { status: 'deleted' });
       });
     }
 
+    // 2. Also find and delete any matching entitlements in downloadEntitlements
     if (productId && userId) {
       try {
         const q = query(
@@ -894,9 +908,58 @@ export const deleteUserEntitlement = async (entitlementId: string, userId: strin
       } catch (e) {
         console.warn("Could not batch delete entitlement docs:", e);
       }
+
+      // Also soft-delete / hide any order in 'orders' containing this productId
+      try {
+        const orderQ = query(
+          collection(db, "orders"),
+          where("userId", "==", userId),
+          limit(20)
+        );
+        const oSnap = await getDocs(orderQ);
+        for (const d of oSnap.docs) {
+          const data = d.data();
+          if (data.items?.some((i: any) => i.productId === productId)) {
+            await deleteDoc(d.ref).catch(() => updateDoc(d.ref, { status: 'deleted', hiddenByUser: true }));
+          }
+        }
+      } catch (oe) {
+        console.warn("Could not batch delete order docs for product:", oe);
+      }
     }
   } catch (err) {
     console.error("Error deleting entitlement:", err);
+    throw err;
+  }
+};
+
+export const deleteUserOrder = async (orderId: string, userId: string, productIds?: string[]): Promise<void> => {
+  try {
+    // 1. If it's a synthetic entitlement order
+    if (orderId.startsWith('ent_')) {
+      const realEntId = orderId.replace('ent_', '');
+      await deleteUserEntitlement(realEntId, userId, productIds?.[0]);
+      return;
+    }
+
+    // 2. Real order in 'orders' collection
+    const orderRef = doc(db, "orders", orderId);
+    await deleteDoc(orderRef).catch(async () => {
+      await updateDoc(orderRef, {
+        status: 'deleted',
+        hiddenByUser: true,
+        updatedAt: new Date().toISOString()
+      });
+    });
+
+    // 3. Also delete corresponding download entitlements for the items in this order
+    if (productIds && productIds.length > 0) {
+      for (const pId of productIds) {
+        await deleteUserEntitlement('', userId, pId).catch(() => {});
+      }
+    }
+  } catch (err) {
+    console.error("Error deleting order:", err);
     throw err;
   }
 };

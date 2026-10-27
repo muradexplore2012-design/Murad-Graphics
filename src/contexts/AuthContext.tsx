@@ -75,9 +75,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Process redirect sign-in if returning from Google redirect
-    getRedirectResult(auth).catch((err) => {
-      console.warn("Google redirect auth error:", err);
-    });
+    getRedirectResult(auth)
+      .then((cred) => {
+        if (cred?.user) {
+          setUser(cred.user);
+        }
+      })
+      .catch((err) => {
+        console.warn("Google redirect auth error:", err);
+      });
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -135,9 +141,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    const userCred = await signInWithPopup(auth, provider);
-    if (userCred?.user) {
-      setUser(userCred.user);
+    try {
+      const userCred = await signInWithPopup(auth, provider);
+      if (userCred?.user) {
+        setUser(userCred.user);
+      }
+    } catch (err: any) {
+      console.warn("Google popup encounter, checking redirect fallback:", err);
+      if (
+        err.code === 'auth/popup-blocked' ||
+        err.code === 'auth/cancelled-popup-request' ||
+        err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/operation-not-supported-in-this-environment'
+      ) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw err;
     }
   };
 

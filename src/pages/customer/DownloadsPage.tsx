@@ -82,11 +82,22 @@ export const DownloadsPage: React.FC = () => {
           getUserOrders(user.uid).catch(() => [])
         ]);
 
-        const combined = [...ents];
-        const existingProductIds = new Set(ents.map(e => e.productId));
+        // Read deleted blacklist to prevent resurrection of deleted items on refresh
+        const deletedProductIds = new Set<string>();
+        try {
+          const rawDel = localStorage.getItem(`mg_deleted_product_ids_${user.uid}`);
+          if (rawDel) {
+            const list = JSON.parse(rawDel);
+            if (Array.isArray(list)) list.forEach(id => deletedProductIds.add(id));
+          }
+        } catch {}
+
+        const combined = ents.filter(e => !deletedProductIds.has(e.productId));
+        const existingProductIds = new Set(combined.map(e => e.productId));
 
         // Fallback: If any verified order has items not yet in entitlements, include them
         orders.forEach(order => {
+          if (order.status === 'deleted' || (order as any).hiddenByUser) return;
           if (
             order.paymentStatus === 'verified' || 
             order.subtotal === 0 || 
@@ -95,6 +106,7 @@ export const DownloadsPage: React.FC = () => {
             order.paymentMethod === 'Free Download'
           ) {
             order.items?.forEach(item => {
+              if (deletedProductIds.has(item.productId)) return; // Never resurrect deleted items
               if (!existingProductIds.has(item.productId)) {
                 existingProductIds.add(item.productId);
                 combined.push({
@@ -117,11 +129,6 @@ export const DownloadsPage: React.FC = () => {
             });
           }
         });
-
-        // Clear any old stale local storage blacklist that may have blocked claimed products
-        try {
-          localStorage.removeItem(`deleted_entitlements_${user.uid}`);
-        } catch {}
 
         if (isMounted) {
           setEntitlements(combined);
@@ -183,7 +190,20 @@ export const DownloadsPage: React.FC = () => {
         return next;
       });
 
-      // 2. Delete / mark deleted in Firestore
+      // 2. Add to deleted blacklist in localStorage so it NEVER reappears on refresh
+      if (user && ent.productId) {
+        try {
+          const delKey = `mg_deleted_product_ids_${user.uid}`;
+          const raw = localStorage.getItem(delKey);
+          const delList: string[] = raw ? JSON.parse(raw) : [];
+          if (!delList.includes(ent.productId)) {
+            delList.push(ent.productId);
+            localStorage.setItem(delKey, JSON.stringify(delList));
+          }
+        } catch {}
+      }
+
+      // 3. Delete / mark deleted in Firestore
       if (user) {
         await deleteUserEntitlement(ent.id, user.uid, ent.productId);
       }
@@ -290,7 +310,7 @@ export const DownloadsPage: React.FC = () => {
                   onClick={() => handleDeleteEntitlement(ent)}
                   disabled={deletingId === ent.id}
                   title="লাইব্রেরি থেকে ডিলিট করুন"
-                  className="absolute top-3.5 right-3.5 p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer opacity-70 group-hover:opacity-100 disabled:opacity-50"
+                  className="absolute top-3.5 right-3.5 p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer disabled:opacity-50 z-10"
                   aria-label="Delete item"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -367,10 +387,10 @@ export const DownloadsPage: React.FC = () => {
                       onClick={() => handleDeleteEntitlement(ent)}
                       disabled={deletingId === ent.id}
                       title="লাইব্রেরি থেকে ডিলিট করুন"
-                      className="inline-flex items-center gap-1 px-2.5 py-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-slate-200/80 hover:border-rose-200"
+                      className="inline-flex items-center gap-1 px-2.5 py-2 text-rose-600 bg-rose-50/70 hover:bg-rose-100 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-rose-200/80 active:scale-95"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Delete</span>
+                      <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Delete</span>
                     </button>
                     <button
                     onClick={() => handleDownloadFile(ent)}

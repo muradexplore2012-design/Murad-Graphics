@@ -8,16 +8,9 @@ import {
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-const getAuthDomain = () => {
-  if (typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')) {
-    return window.location.hostname;
-  }
-  return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "muradgraphics-f6d59.firebaseapp.com";
-};
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBcEGAIsdY3l9V3jR_yclhzkvE7gQy-jEU",
-  authDomain: getAuthDomain(),
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "muradgraphics-f6d59.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "muradgraphics-f6d59",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "muradgraphics-f6d59.firebasestorage.app",
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "333295319911",

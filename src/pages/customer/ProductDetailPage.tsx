@@ -156,6 +156,18 @@ export const ProductDetailPage: React.FC = () => {
         displayName: user.displayName || undefined 
       }, product);
       setHasEntitlement(true);
+      // Remove from deleted blacklist if previously deleted
+      try {
+        const delKey = `mg_deleted_product_ids_${user.uid}`;
+        const rawDel = localStorage.getItem(delKey);
+        if (rawDel) {
+          const list = JSON.parse(rawDel);
+          if (Array.isArray(list)) {
+            localStorage.setItem(delKey, JSON.stringify(list.filter(id => id !== product.id)));
+          }
+        }
+      } catch {}
+
       // Immediately cache in localStorage and sessionStorage so Vyrqonix Library displays it instantly without any delay
       try {
         const cacheKey = `mg_user_entitlements_${user.uid}`;

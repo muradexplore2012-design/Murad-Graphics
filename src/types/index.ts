@@ -119,7 +119,10 @@ export interface Order {
   discount: number;
   total: number;
   currency: 'BDT';
+
   paymentStatus: OrderPaymentStatus;
+  status?: string;
+  hiddenByUser?: boolean;
   paymentMethod?: 'bKash' | 'Nagad' | 'Rocket' | 'bank_transfer' | 'manual' | 'free_checkout' | 'Free Download' | string;
   transactionId?: string;
   paymentNote?: string;
@@ -248,4 +251,5 @@ declare global {
     google?: any;
   }
 }
+
 
