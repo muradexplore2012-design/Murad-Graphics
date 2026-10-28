@@ -6,11 +6,15 @@ service cloud.firestore {
     // Helper Functions for Super Admin & Admin Authorization
     // -----------------------------------------------------------------
 
-    // Super Admin: Root authority (AFpFL3xlZTeWPtf89mkeRHVU0sj1 / muradexplore2012@gmail.com)
+    // Super Admin & Owner: Root authority & Owners
     function isSuperAdmin() {
       return request.auth != null && 
         (request.auth.uid == "AFpFL3xlZTeWPtf89mkeRHVU0sj1" || 
-         request.auth.token.email == "muradexplore2012@gmail.com");
+         request.auth.token.email == "muradexplore2012@gmail.com" ||
+         request.auth.token.email == "muradrahman2026@gmail.com" ||
+         (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
+          (get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "owner" ||
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "super_admin")));
     }
 
     // Admin: Either Super Admin, Firebase Custom Claim admin, or verified admin document

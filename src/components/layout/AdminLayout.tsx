@@ -14,12 +14,15 @@ import {
   LogOut, 
   Menu, 
   X, 
-  ExternalLink
+  ExternalLink,
+  Crown,
+  ShieldCheck,
+  Eye
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const AdminLayout: React.FC = () => {
-  const { user, isAdmin, loading, logout } = useAuth();
+  const { user, isAdmin, isOwner, isManager, isViewer, loading, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -108,9 +111,27 @@ export const AdminLayout: React.FC = () => {
                 <span className="font-black text-sm text-slate-900 block tracking-tight leading-tight">
                   Vyr<span className="text-blue-600">qonix</span>
                 </span>
-                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                  ADMIN CONSOLE
-                </span>
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-md inline-block">
+                    ADMIN
+                  </span>
+                  {isOwner ? (
+                    <span className="text-[9px] font-bold text-[#7a00ea] bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1">
+                      <Crown className="w-2.5 h-2.5 fill-purple-100" />
+                      OWNER
+                    </span>
+                  ) : isViewer ? (
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1">
+                      <Eye className="w-2.5 h-2.5" />
+                      VIEWER
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1">
+                      <ShieldCheck className="w-2.5 h-2.5" />
+                      MANAGER
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
             <button
@@ -175,6 +196,17 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Admin Content Body - Light Theme Background */}
       <main className="flex-1 p-3.5 sm:p-6 lg:p-7 xl:p-8 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden bg-slate-50">
+        {isViewer && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900 shadow-xs">
+            <Eye className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-xs">
+              <p className="font-bold">ভিউয়ার মোড (Viewer / Read-Only Mode)</p>
+              <p className="mt-0.5 text-amber-800 leading-relaxed">
+                আপনি একজন ভিউয়ার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনি সকল রিপোর্ট, সেলস অর্ডার এবং প্রোডাক্টের তালিকা দেখতে পারবেন, তবে কোনো তথ্য যোগ, এডিট বা ডিলিট করার অনুমতি নেই।
+              </p>
+            </div>
+          </div>
+        )}
         <Outlet />
       </main>
 

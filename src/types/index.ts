@@ -234,12 +234,14 @@ export interface AuditLog {
   timestamp: string;
 }
 
+export type AdminRole = 'owner' | 'manager' | 'viewer' | 'super_admin' | 'admin';
+
 export interface AdminMember {
   id: string;
   uid: string;
   email: string;
   displayName?: string;
-  role: 'super_admin' | 'admin';
+  role: AdminRole;
   addedBy?: string;
   addedByEmail?: string;
   addedAt: string;

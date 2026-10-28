@@ -5,10 +5,12 @@ import {
   recordAuditLog,
   getAdminList,
   makeAdminByEmail,
-  revokeAdmin 
+  revokeAdmin,
+  updateAdminRole
 } from '../../services/api';
-import { SiteSettings, AdminMember } from '../../types';
+import { SiteSettings, AdminMember, AdminRole } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { SUPER_ADMIN_UID } from '../../lib/firebase';
 import {
   Info,
   Save, 
@@ -23,11 +25,14 @@ import {
   Mail, 
   Calendar, 
   Lock,
-  RefreshCw 
+  RefreshCw,
+  Eye,
+  Check
 } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
-  const { user, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, isOwner } = useAuth();
+  const canManageAdmins = isSuperAdmin || isOwner;
   
   // Tab State
   const [activeTab, setActiveTab] = useState<'general' | 'make-admin'>('general');
@@ -41,6 +46,8 @@ export const AdminSettingsPage: React.FC = () => {
   const [admins, setAdmins] = useState<AdminMember[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [emailInput, setEmailInput] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'owner' | 'manager' | 'viewer'>('manager');
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
   const [submittingAdmin, setSubmittingAdmin] = useState(false);
   const [adminError, setAdminError] = useState('');
   const [adminSuccess, setAdminSuccess] = useState('');
@@ -61,10 +68,10 @@ export const AdminSettingsPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'make-admin' && isSuperAdmin) {
+    if (activeTab === 'make-admin' && canManageAdmins) {
       loadAdmins();
     }
-  }, [activeTab, isSuperAdmin]);
+  }, [activeTab, canManageAdmins]);
 
   const loadAdmins = async () => {
     setLoadingAdmins(true);
@@ -139,18 +146,58 @@ export const AdminSettingsPage: React.FC = () => {
     try {
       if (!user) throw new Error("Authentication required.");
 
-      const newAdmin = await makeAdminByEmail(emailInput, {
+      const newAdmin = await makeAdminByEmail(emailInput, selectedRole, {
         uid: user.uid,
         email: user.email
       });
 
-      setAdminSuccess(`সফল হয়েছে! ${newAdmin.email} কে এডমিন অ্যাক্সেস দেওয়া হয়েছে। তিনি ব্রাউজার রিফ্রেশ করলেই বা পুনরায় লগইন করলেই এডমিন সুবিধা ব্যবহার করতে পারবেন।`);
+      const roleLabels: Record<string, string> = {
+        owner: 'Owner (ওনার - ফুল কন্ট্রোল)',
+        manager: 'Manager (ম্যানেজার - সব কাজ)',
+        viewer: 'Viewer (ভিউয়ার - শুধু দেখতে পারবে)'
+      };
+
+      setAdminSuccess(`সফল হয়েছে! ${newAdmin.email} কে "${roleLabels[selectedRole] || selectedRole}" হিসেবে এডমিন অ্যাক্সেস দেওয়া হয়েছে। তিনি ব্রাউজার রিফ্রেশ করলেই বা পুনরায় লগইন করলেই এডমিন সুবিধা ব্যবহার করতে পারবেন।`);
       setEmailInput('');
       await loadAdmins();
     } catch (err: any) {
       setAdminError(err.message || "এডমিন নিয়োগ করতে ব্যর্থ হয়েছে।");
     } finally {
       setSubmittingAdmin(false);
+    }
+  };
+
+  // Change Admin Role
+  const handleRoleChange = async (targetAdmin: AdminMember, newRole: AdminRole) => {
+    if (targetAdmin.role === newRole) return;
+    if (!user) return;
+    if (targetAdmin.uid === SUPER_ADMIN_UID) {
+      alert("প্রধান রুট সুপার এডমিনের পদবি পরিবর্তন করা সম্ভব নয়।");
+      return;
+    }
+
+    setUpdatingRoleId(targetAdmin.uid);
+    setAdminError('');
+    setAdminSuccess('');
+
+    try {
+      await updateAdminRole(targetAdmin.uid, newRole as 'owner' | 'manager' | 'viewer', {
+        uid: user.uid,
+        email: user.email
+      });
+
+      const roleLabels: Record<string, string> = {
+        owner: 'Owner (ওনার - ফুল কন্ট্রোল)',
+        manager: 'Manager (ম্যানেজার - সব কাজ)',
+        viewer: 'Viewer (ভিউয়ার - শুধু দেখতে পারবে)'
+      };
+
+      setAdminSuccess(`${targetAdmin.email} এর পদবি সফলভাবে "${roleLabels[newRole] || newRole}" হিসেবে আপডেট করা হয়েছে।`);
+      await loadAdmins();
+    } catch (err: any) {
+      setAdminError(err.message || "পদবি পরিবর্তন করতে ব্যর্থ হয়েছে।");
+    } finally {
+      setUpdatingRoleId(null);
     }
   };
 
@@ -205,7 +252,7 @@ export const AdminSettingsPage: React.FC = () => {
             <span>General Settings</span>
           </button>
 
-          {isSuperAdmin && (
+          {canManageAdmins && (
             <button
               type="button"
               onClick={() => setActiveTab('make-admin')}
@@ -217,6 +264,9 @@ export const AdminSettingsPage: React.FC = () => {
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Make Admin</span>
+              <span className="bg-purple-100 text-[#7a00ea] text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">
+                Owner Control
+              </span>
             </button>
           )}
         </div>
@@ -378,9 +428,9 @@ export const AdminSettingsPage: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* TAB 2: MAKE ADMIN (SUPER ADMIN ONLY) */}
+      {/* TAB 2: MAKE ADMIN (OWNER & SUPER ADMIN ONLY) */}
       {/* ========================================================= */}
-      {activeTab === 'make-admin' && isSuperAdmin && (
+      {activeTab === 'make-admin' && canManageAdmins && (
         <div className="space-y-8">
           
           {/* Alerts */}
@@ -411,9 +461,9 @@ export const AdminSettingsPage: React.FC = () => {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">Appoint Administrator (এডমিন নিয়োগ)</h2>
+                <h2 className="text-sm font-bold text-slate-900">Appoint Administrator (এডমিন নিয়োগ ও পদবি নির্ধারণ)</h2>
                 <p className="text-[11px] text-slate-500">
-                  নিবন্ধিত অ্যাকাউন্টকে ওয়েবসাইটের এডমিন এক্সেস ও পরিচালনা সুবিধা দিন
+                  নিবন্ধিত অ্যাকাউন্টকে ওয়েবসাইটের এডমিন এক্সেস দিন এবং তার পদবি (Owner / Manager / Viewer) নির্ধারণ করুন
                 </p>
               </div>
             </div>
@@ -429,18 +479,18 @@ export const AdminSettingsPage: React.FC = () => {
                   <strong className="text-slate-900">১. ওয়েবসাইটে আগে সাইন-ইন/একাউন্ট করতে হবে:</strong> যাকে আপনি এডমিন বানাতে চান, তাকে প্রথমে <a href="/" target="_blank" rel="noreferrer" className="text-[#7a00ea] font-bold underline underline-offset-2">Vyrqonix</a> ওয়েবসাইটে গিয়ে (কাস্টমার হিসেবে) অন্তত একবার গুগল বা ইমেইল দিয়ে লগইন/সাইন-আপ করতে হবে।
                 </li>
                 <li>
-                  <strong className="text-slate-900">২. সঠিক ইমেইল দিন:</strong> ইউজার যে ইমেইল দিয়ে একাউন্ট খুলেছেন, ঠিক সেই ইমেইল এড্রেসটি নিচের ইনপুট বক্সে লিখুন।
+                  <strong className="text-slate-900">২. সঠিক ইমেইল দিন:</strong> ইউজার যে ইমেইল দিয়ে একাউন্ট খুলেছেন, ঠিক সেই ইমেইল এড্রেসটি লিখুন।
                 </li>
                 <li>
-                  <strong className="text-slate-900">৩. Make Admin বাটনে চাপ দিন:</strong> <strong>"Make Admin"</strong> বাটনে ক্লিক করে কনফার্ম করলে তিনি তাৎক্ষণিকভাবে এডমিন তালিকায় যুক্ত হয়ে যাবেন।
+                  <strong className="text-slate-900">৩. পদবি / রোল সিলেক্ট করুন:</strong> Owner (ফুল কন্ট্রোল), Manager (সব অপারেশনাল কাজ), অথবা Viewer (শুধু দেখতে পারবে) অপশন থেকে একটি বেছে নিন।
                 </li>
                 <li>
-                  <strong className="text-slate-900">৪. এডমিন প্যানেল এক্সেস:</strong> এরপর তিনি পেজ রিফ্রেশ করলে কিংবা লগআউট করে পুনরায় লগইন করলেই এডমিন কনসোল ব্যবহার করতে পারবেন।
+                  <strong className="text-slate-900">৪. Make Admin বাটনে চাপ দিন:</strong> কনফার্ম করার সাথে সাথে তিনি নির্বাচিত রোলে এডমিন হিসেবে সক্রিয় হয়ে যাবেন। প্রয়োজনে নিচের তালিকা থেকে পরবর্তীতে যে কোনো সময় পদবি পরিবর্তন করতে পারবেন।
                 </li>
               </ol>
             </div>
 
-            <form onSubmit={handleInitiateMakeAdmin} className="space-y-4">
+            <form onSubmit={handleInitiateMakeAdmin} className="space-y-5">
               <div>
                 <label className="font-bold text-slate-800 block mb-1.5">
                   ইউজারের ইমেইল এড্রেস (User Account Email Address) <span className="text-rose-500">*</span>
@@ -450,7 +500,7 @@ export const AdminSettingsPage: React.FC = () => {
                   <input
                     type="email"
                     required
-                    placeholder="e.g. employee@example.com"
+                    placeholder="e.g. user@gmail.com"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     disabled={submittingAdmin}
@@ -462,6 +512,116 @@ export const AdminSettingsPage: React.FC = () => {
                   <span>
                     <strong>জরুরি নিয়ম:</strong> ইউজারকে অবশ্যই আগে Vyrqonix ওয়েবসাইটে একবার সাইন-ইন করে একাউন্ট তৈরি করতে হবে। একাউন্ট তৈরি না থাকলে ফায়ারবেসে ইউজার খুঁজে পাওয়া যাবে না এবং এডমিন বানানো যাবে না।
                   </span>
+                </div>
+              </div>
+
+              {/* 3 Role Selection Cards */}
+              <div className="space-y-2">
+                <label className="font-bold text-slate-800 block text-xs">
+                  এডমিনের পদবি / রোল বেছে নিন (Select Role) <span className="text-rose-500">*</span>
+                </label>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  
+                  {/* Card 1: Owner */}
+                  <div
+                    onClick={() => setSelectedRole('owner')}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                      selectedRole === 'owner'
+                        ? 'border-[#7a00ea] bg-purple-50/60 shadow-sm'
+                        : 'border-slate-200 bg-white hover:border-purple-200 hover:bg-purple-50/20'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                          <Crown className="w-4 h-4 text-[#7a00ea]" />
+                          <span>Owner (ওনার)</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-[#7a00ea]">
+                          ফুল কন্ট্রোল
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        ওয়েবসাইটের সম্পূর্ণ নিয়ন্ত্রণ থাকবে। নতুন এডমিন নিয়োগ, রোল পরিবর্তন ও সম্পূর্ণ সাইট কন্ট্রোল।
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-purple-100 flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-[#7a00ea]">Full Access</span>
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
+                        selectedRole === 'owner' ? 'bg-[#7a00ea]' : 'border border-slate-300'
+                      }`}>
+                        {selectedRole === 'owner' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Manager */}
+                  <div
+                    onClick={() => setSelectedRole('manager')}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                      selectedRole === 'manager'
+                        ? 'border-blue-600 bg-blue-50/60 shadow-sm'
+                        : 'border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/20'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                          <ShieldCheck className="w-4 h-4 text-blue-600" />
+                          <span>Manager (ম্যানেজার)</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                          সব কাজ
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        সব কাজ করতে পারবে (প্রোডাক্ট, অর্ডার, কুপন, ব্যানার ইত্যাদি), কিন্তু ওনারের মতো কাউকে এডমিন বানাতে পারবে না।
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-blue-100 flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-blue-600">Operational</span>
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
+                        selectedRole === 'manager' ? 'bg-blue-600' : 'border border-slate-300'
+                      }`}>
+                        {selectedRole === 'manager' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Viewer */}
+                  <div
+                    onClick={() => setSelectedRole('viewer')}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                      selectedRole === 'viewer'
+                        ? 'border-emerald-600 bg-emerald-50/60 shadow-sm'
+                        : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/20'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                          <Eye className="w-4 h-4 text-emerald-600" />
+                          <span>Viewer (ভিউয়ার)</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                          রিড-অনলি
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        শুধুমাত্র দেখতে পারবে। ড্যাশবোর্ড, সেলস অর্ডার ও প্রোডাক্টের তালিকা দেখতে পারবে, কোনো কিছু পরিবর্তন করতে পারবে না।
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-emerald-100 flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-emerald-600">View Only</span>
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
+                        selectedRole === 'viewer' ? 'bg-emerald-600' : 'border border-slate-300'
+                      }`}>
+                        {selectedRole === 'viewer' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </span>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -516,7 +676,7 @@ export const AdminSettingsPage: React.FC = () => {
                   <thead>
                     <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <th className="py-3 px-3">Administrator</th>
-                      <th className="py-3 px-3">Role</th>
+                      <th className="py-3 px-3">Role / পদবি</th>
                       <th className="py-3 px-3">Date Added</th>
                       <th className="py-3 px-3">Status</th>
                       <th className="py-3 px-3 text-right">Action</th>
@@ -524,7 +684,7 @@ export const AdminSettingsPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs">
                     {admins.map((adm) => {
-                      const isRootSuper = adm.role === 'super_admin';
+                      const isRootSuper = adm.role === 'super_admin' || adm.id === SUPER_ADMIN_UID;
                       return (
                         <tr key={adm.id} className="hover:bg-slate-50/70 transition-colors">
                           <td className="py-3.5 px-3">
@@ -537,16 +697,50 @@ export const AdminSettingsPage: React.FC = () => {
                             </div>
                           </td>
 
+                          {/* Role Selector or Badge */}
                           <td className="py-3.5 px-3">
                             {isRootSuper ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-[#7a00ea] border border-purple-200">
-                                <Crown className="w-3 h-3" />
-                                Super Admin
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
+                                Root Super Admin
                               </span>
+                            ) : canManageAdmins ? (
+                              <div className="relative inline-flex items-center">
+                                <select
+                                  value={adm.role || 'manager'}
+                                  disabled={updatingRoleId === adm.uid}
+                                  onChange={(e) => handleRoleChange(adm, e.target.value as AdminRole)}
+                                  aria-label="Change administrator role"
+                                  className={`text-[11px] font-bold rounded-xl pl-2.5 pr-7 py-1.5 border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 appearance-none ${
+                                    adm.role === 'owner'
+                                      ? 'bg-purple-50 text-[#7a00ea] border-purple-200 hover:bg-purple-100'
+                                      : adm.role === 'viewer'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                      : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                                  }`}
+                                >
+                                  <option value="owner">👑 Owner (ফুল কন্ট্রোল)</option>
+                                  <option value="manager">🛠️ Manager (সব কাজ)</option>
+                                  <option value="viewer">👁️ Viewer (রিড-অনলি)</option>
+                                </select>
+                                {updatingRoleId === adm.uid ? (
+                                  <RefreshCw className="w-3 h-3 animate-spin text-purple-600 absolute right-2 pointer-events-none" />
+                                ) : (
+                                  <span className="text-[9px] text-slate-400 absolute right-2 pointer-events-none select-none">▼</span>
+                                )}
+                              </div>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                                <Shield className="w-3 h-3" />
-                                Admin
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                                adm.role === 'owner'
+                                  ? 'bg-purple-50 text-[#7a00ea] border-purple-200'
+                                  : adm.role === 'viewer'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}>
+                                {adm.role === 'owner' && <Crown className="w-3 h-3" />}
+                                {adm.role === 'viewer' && <Eye className="w-3 h-3" />}
+                                {(adm.role === 'manager' || !adm.role) && <ShieldCheck className="w-3 h-3" />}
+                                {adm.role ? adm.role.toUpperCase() : 'MANAGER'}
                               </span>
                             )}
                           </td>
@@ -604,17 +798,31 @@ export const AdminSettingsPage: React.FC = () => {
               <ShieldCheck className="w-6 h-6" />
             </div>
 
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-2.5">
               <h3 className="text-base font-bold text-slate-900">এডমিন নিয়োগ নিশ্চিত করুন (Confirm Promotion)</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                আপনি কি নিশ্চিত যে এই ইউজারকে সম্পূর্ণ এডমিন ক্ষমতা দিতে চান?
+                আপনি কি নিশ্চিত যে এই ইউজারকে মনোনীত পদবিতে এডমিন অ্যাক্সেস দিতে চান?
               </p>
               <p className="text-xs font-bold text-[#7a00ea] bg-purple-50 border border-purple-100 py-2 px-3 rounded-xl break-all">
                 {emailInput.trim().toLowerCase()}
               </p>
-              <p className="text-[11px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200 leading-normal">
-                এই ইউজার ওয়েবসাইটটির প্রোডাক্ট, ক্যাটাগরি, সেলস অর্ডার, কুপন এবং ব্যানার ম্যানেজ করতে পারবেন।
-              </p>
+
+              {/* Selected Role Box */}
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-700">মনোনীত রোল (Selected Role):</span>
+                  <span className="text-xs font-extrabold text-[#7a00ea]">
+                    {selectedRole === 'owner' && '👑 Owner (ফুল কন্ট্রোল)'}
+                    {selectedRole === 'manager' && '🛠️ Manager (ম্যানেজার - সব কাজ)'}
+                    {selectedRole === 'viewer' && '👁️ Viewer (ভিউয়ার - রিড-অনলি)'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-normal">
+                  {selectedRole === 'owner' && 'এই ইউজার ওয়েবসাইটের ফুল কন্ট্রোল পাবেন এবং যেকোনো সময় অন্য এডমিনদের নিয়োগ বা পরিবর্তন করতে পারবেন।'}
+                  {selectedRole === 'manager' && 'এই ইউজার প্রোডাক্ট আপলোড, এডিট, অর্ডার স্ট্যাটাস, কুপন ও ব্যানার পরিচালনা করতে পারবেন।'}
+                  {selectedRole === 'viewer' && 'এই ইউজার শুধুমাত্র রিপোর্ট ও তথ্য দেখতে পারবেন, কোনো ডাটা পরিবর্তন করতে পারবেন না।'}
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-2">

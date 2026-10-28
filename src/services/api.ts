@@ -20,7 +20,7 @@ import {
   getDownloadURL, 
   deleteObject 
 } from "firebase/storage";
-import { db, storage, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL, ADMIN_EMAIL } from "../lib/firebase";
+import { db, storage, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL, ADMIN_UID, ADMIN_EMAIL } from "../lib/firebase";
 import { 
   Product, 
   Category, 
@@ -32,7 +32,8 @@ import {
   Banner, 
   SiteSettings, 
   AuditLog,
-  AdminMember 
+  AdminMember,
+  AdminRole 
 } from "../types";
 
 // ==================== DEFAULT SETTINGS ====================
@@ -1411,30 +1412,50 @@ export const getAdminList = async (): Promise<AdminMember[]> => {
     uid: SUPER_ADMIN_UID,
     email: SUPER_ADMIN_EMAIL,
     displayName: "Vyrqonix Super Admin",
-    role: "super_admin",
+    role: "owner",
     addedAt: "2026-01-01T00:00:00.000Z",
     status: "active"
   });
 
   try {
     const snap = await getDocs(collection(db, "admins"));
-    snap.docs.forEach((d) => {
+    for (const d of snap.docs) {
       const data = d.data() as Partial<AdminMember>;
-      // Skip if it duplicates the Super Admin
-      if (d.id !== SUPER_ADMIN_UID && data.email !== SUPER_ADMIN_EMAIL) {
+      // Skip if it duplicates the root Super Admin
+      if (d.id !== SUPER_ADMIN_UID && data.email?.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
+        const emailLower = (data.email || '').toLowerCase();
+        let role: AdminRole = 'manager';
+
+        // Tamim Nur is initially assigned as Manager as requested (allows later change by owner)
+        if (emailLower === 'tamimnur908@gmail.com' && (!data.role || data.role === 'admin')) {
+          role = 'manager';
+          updateDoc(doc(db, "admins", d.id), { role: 'manager' }).catch(() => {});
+        } else if (emailLower === 'muradrahman2026@gmail.com') {
+          role = 'owner';
+          if (data.role !== 'owner') {
+            updateDoc(doc(db, "admins", d.id), { role: 'owner' }).catch(() => {});
+          }
+        } else if (data.role === 'owner' || data.role === 'super_admin') {
+          role = 'owner';
+        } else if (data.role === 'viewer') {
+          role = 'viewer';
+        } else {
+          role = 'manager';
+        }
+
         admins.push({
           id: d.id,
           uid: data.uid || d.id,
           email: data.email || '',
-          displayName: data.displayName || 'Administrator',
-          role: 'admin',
+          displayName: data.displayName || data.email?.split('@')[0] || 'Administrator',
+          role,
           addedBy: data.addedBy || '',
           addedByEmail: data.addedByEmail || '',
           addedAt: data.addedAt || new Date().toISOString(),
           status: 'active'
         });
       }
-    });
+    }
 
     // Background sync active admins to public whitelist document
     const activeEmails = admins.filter(a => a.status === 'active').map(a => a.email);
@@ -1448,22 +1469,38 @@ export const getAdminList = async (): Promise<AdminMember[]> => {
 
 export const makeAdminByEmail = async (
   emailToPromote: string,
+  role: 'owner' | 'manager' | 'viewer',
   caller: { uid: string; email: string | null }
 ): Promise<AdminMember> => {
   const cleanEmail = emailToPromote.trim().toLowerCase();
 
-  // Validate caller authorization: MUST be Super Admin
-  const isCallerSuperAdmin = 
+  // Validate caller authorization: MUST be Super Admin or Owner
+  let isCallerAuthorized = 
     caller.uid === SUPER_ADMIN_UID || 
-    caller.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+    caller.uid === ADMIN_UID || 
+    caller.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
+    caller.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
+    caller.email?.toLowerCase() === 'muradrahman2026@gmail.com';
 
-  if (!isCallerSuperAdmin) {
-    throw new Error("Unauthorized: Only the designated Super Admin has permission to appoint administrators.");
+  if (!isCallerAuthorized && caller.uid) {
+    try {
+      const callerSnap = await getDoc(doc(db, "admins", caller.uid));
+      if (callerSnap.exists() && callerSnap.data().status === 'active') {
+        const callerRole = (callerSnap.data().role || '').toLowerCase();
+        if (callerRole === 'owner' || callerRole === 'super_admin') {
+          isCallerAuthorized = true;
+        }
+      }
+    } catch {}
+  }
+
+  if (!isCallerAuthorized) {
+    throw new Error("অননুমোদিত: শুধুমাত্র ওনার (Owner) নতুন এডমিন নিয়োগ করতে পারবেন।");
   }
 
   // Prevent promoting Super Admin or self
-  if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() || caller.email?.toLowerCase() === cleanEmail) {
-    throw new Error("This account is already the Super Admin.");
+  if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    throw new Error("এই অ্যাকাউন্টটি ইতোমধ্যে প্রধান সুপার এডমিন।");
   }
 
   // Search existing registered account in Firestore `users` collection
@@ -1482,7 +1519,7 @@ export const makeAdminByEmail = async (
   // Check if target user is already in `admins` collection
   const adminDocSnap = await getDoc(doc(db, "admins", targetUid));
   if (adminDocSnap.exists() && adminDocSnap.data().status === 'active') {
-    throw new Error("এই ইউজার ইতোমধ্যে একজন এডমিন হিসেবে যুক্ত আছেন।");
+    throw new Error("এই ইউজার ইতোমধ্যে একজন এডমিন হিসেবে যুক্ত আছেন। তার পদবি পরিবর্তন করতে নিচের এডমিন লিস্ট থেকে রোল পরিবর্তন করুন।");
   }
 
   const newAdminData: AdminMember = {
@@ -1490,7 +1527,7 @@ export const makeAdminByEmail = async (
     uid: targetUid,
     email: cleanEmail,
     displayName: userData.displayName || cleanEmail.split('@')[0],
-    role: "admin",
+    role: role || 'manager',
     addedBy: caller.uid,
     addedByEmail: caller.email || '',
     addedAt: new Date().toISOString(),
@@ -1510,10 +1547,59 @@ export const makeAdminByEmail = async (
     action: 'GRANT_ADMIN_ROLE',
     targetType: 'ADMIN_ROLE',
     targetId: targetUid,
-    details: { promotedEmail: cleanEmail, promotedName: newAdminData.displayName }
+    details: { promotedEmail: cleanEmail, promotedName: newAdminData.displayName, role }
   });
 
   return newAdminData;
+};
+
+export const updateAdminRole = async (
+  targetAdminUid: string,
+  newRole: 'owner' | 'manager' | 'viewer',
+  caller: { uid: string; email: string | null }
+): Promise<void> => {
+  // Validate caller authorization: MUST be Super Admin or Owner
+  let isCallerAuthorized = 
+    caller.uid === SUPER_ADMIN_UID || 
+    caller.uid === ADMIN_UID || 
+    caller.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
+    caller.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
+    caller.email?.toLowerCase() === 'muradrahman2026@gmail.com';
+
+  if (!isCallerAuthorized && caller.uid) {
+    try {
+      const callerSnap = await getDoc(doc(db, "admins", caller.uid));
+      if (callerSnap.exists() && callerSnap.data().status === 'active') {
+        const callerRole = (callerSnap.data().role || '').toLowerCase();
+        if (callerRole === 'owner' || callerRole === 'super_admin') {
+          isCallerAuthorized = true;
+        }
+      }
+    } catch {}
+  }
+
+  if (!isCallerAuthorized) {
+    throw new Error("অননুমোদিত: শুধুমাত্র ওনার (Owner) পদবি পরিবর্তন করতে পারবেন।");
+  }
+
+  if (targetAdminUid === SUPER_ADMIN_UID) {
+    throw new Error("প্রধান রুট সুপার এডমিনের পদবি পরিবর্তন করা সম্ভব নয়।");
+  }
+
+  await updateDoc(doc(db, "admins", targetAdminUid), { role: newRole });
+
+  // Refresh admin list to update whitelist
+  getAdminList().catch(() => {});
+
+  // Record immutable audit log
+  await recordAuditLog({
+    adminUid: caller.uid,
+    adminEmail: caller.email || '',
+    action: 'UPDATE_ADMIN_ROLE',
+    targetType: 'ADMIN_ROLE',
+    targetId: targetAdminUid,
+    details: { newRole }
+  });
 };
 
 export const revokeAdmin = async (

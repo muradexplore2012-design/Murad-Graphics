@@ -17,11 +17,17 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, ADMIN_UID, ADMIN_EMAIL, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL } from '../lib/firebase';
 
+export type AdminRole = 'owner' | 'manager' | 'viewer';
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  adminRole: AdminRole | null;
+  isOwner: boolean;
+  isManager: boolean;
+  isViewer: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -38,38 +44,84 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [isViewer, setIsViewer] = useState(false);
 
   const checkAdminStatus = async (currentUser: User | null) => {
     if (!currentUser) {
       setIsAdmin(false);
       setIsSuperAdmin(false);
+      setAdminRole(null);
+      setIsOwner(false);
+      setIsManager(false);
+      setIsViewer(false);
       return;
     }
 
-    const superAdmin = Boolean(
+    const emailLower = currentUser.email?.toLowerCase() || '';
+
+    // Root Super Admin / Designated Owner authority
+    const isRootOwner = Boolean(
       currentUser.uid === SUPER_ADMIN_UID || 
       currentUser.uid === ADMIN_UID || 
-      (SUPER_ADMIN_EMAIL && currentUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) ||
-      (ADMIN_EMAIL && currentUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase())
+      (SUPER_ADMIN_EMAIL && emailLower === SUPER_ADMIN_EMAIL.toLowerCase()) ||
+      (ADMIN_EMAIL && emailLower === ADMIN_EMAIL.toLowerCase()) ||
+      emailLower === 'muradrahman2026@gmail.com'
     );
 
-    setIsSuperAdmin(superAdmin);
-
-    if (superAdmin) {
+    if (isRootOwner) {
       setIsAdmin(true);
+      setIsSuperAdmin(true);
+      setAdminRole('owner');
+      setIsOwner(true);
+      setIsManager(false);
+      setIsViewer(false);
       return;
     }
 
-    // Check ordinary admin role in Firestore `admins` collection
+    // Check role in Firestore `admins` collection
     try {
       const adminSnap = await getDoc(doc(db, 'admins', currentUser.uid));
       if (adminSnap.exists() && adminSnap.data().status === 'active') {
+        const rawRole = (adminSnap.data().role || 'manager').toLowerCase();
         setIsAdmin(true);
+        if (rawRole === 'owner' || rawRole === 'super_admin') {
+          setIsSuperAdmin(true);
+          setAdminRole('owner');
+          setIsOwner(true);
+          setIsManager(false);
+          setIsViewer(false);
+        } else if (rawRole === 'viewer') {
+          setIsSuperAdmin(false);
+          setAdminRole('viewer');
+          setIsOwner(false);
+          setIsManager(false);
+          setIsViewer(true);
+        } else {
+          // manager or legacy admin
+          setIsSuperAdmin(false);
+          setAdminRole('manager');
+          setIsOwner(false);
+          setIsManager(true);
+          setIsViewer(false);
+        }
       } else {
         setIsAdmin(false);
+        setIsSuperAdmin(false);
+        setAdminRole(null);
+        setIsOwner(false);
+        setIsManager(false);
+        setIsViewer(false);
       }
     } catch {
       setIsAdmin(false);
+      setIsSuperAdmin(false);
+      setAdminRole(null);
+      setIsOwner(false);
+      setIsManager(false);
+      setIsViewer(false);
     }
   };
 
@@ -179,6 +231,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setIsAdmin(false);
     setIsSuperAdmin(false);
+    setAdminRole(null);
+    setIsOwner(false);
+    setIsManager(false);
+    setIsViewer(false);
   };
 
   return (
@@ -187,6 +243,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading, 
       isAdmin, 
       isSuperAdmin, 
+      adminRole,
+      isOwner,
+      isManager,
+      isViewer,
       login, 
       register, 
       loginWithGoogle, 
