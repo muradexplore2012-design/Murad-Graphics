@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Search, 
@@ -520,139 +521,148 @@ export const Header: React.FC = () => {
       </div>
 
       {/* ================= ALL CATEGORIES SIDEBAR DRAWER (Mobile & Desktop) ================= */}
-      {/* Semi-transparent dark background backdrop */}
-      <div 
-        className={`fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 transition-opacity duration-300 ease-in-out ${
-          categoriesDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setCategoriesDrawerOpen(false)}
-      />
-
-      {/* Left Sidebar Drawer Menu Panel with smooth transform ease-out */}
-      <aside 
-        className={`fixed top-0 left-0 bottom-0 w-72 sm:w-80 max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col justify-between border-r border-slate-200 transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          categoriesDrawerOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        {/* Top Header Capsule Button matching screenshot */}
-        <div className="p-3.5 sm:p-4 pb-2 border-b border-slate-100 flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7a00ea] text-white text-sm font-bold shadow-md shadow-purple-600/20">
-            <Menu className="w-4 h-4 stroke-[2.5]" />
-            <span>All Categories</span>
-          </div>
-
-          <button 
-            type="button"
+      {typeof document !== 'undefined' && createPortal(
+        <div>
+          {/* Semi-transparent dark background backdrop */}
+          <div 
+            className={`fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-[999] transition-opacity duration-300 ease-in-out ${
+              categoriesDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
             onClick={() => setCategoriesDrawerOpen(false)}
-            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
-            aria-label="Close"
+            aria-hidden="true"
+          />
+
+          {/* Left Sidebar Drawer Menu Panel with smooth transform ease-out */}
+          <aside 
+            role="dialog"
+            aria-modal="true"
+            aria-label="All Categories"
+            className={`fixed inset-y-0 left-0 w-72 sm:w-80 max-w-[85vw] h-full bg-white z-[1000] shadow-2xl flex flex-col justify-between border-r border-slate-200 rounded-r-2xl sm:rounded-r-3xl transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              categoriesDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
           >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+            {/* Top Header Capsule Button matching screenshot */}
+            <div className="p-3.5 sm:p-4 pb-2 pt-[max(1rem,env(safe-area-inset-top,16px))] border-b border-slate-100 flex items-center justify-between">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7a00ea] text-white text-sm font-bold shadow-md shadow-purple-600/20">
+                <Menu className="w-4 h-4 stroke-[2.5]" />
+                <span>All Categories</span>
+              </div>
 
-        {/* Categories List Links matching screenshot */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 space-y-0.5">
-          {/* 1. All Products (Purple colored link) */}
-          <Link
-            to="/shop"
-            onClick={() => setCategoriesDrawerOpen(false)}
-            className="block px-3 py-2 text-[15px] font-bold text-[#7a00ea] hover:bg-purple-50 rounded-xl transition-colors"
-          >
-            All Products
-          </Link>
-
-          {/* Dynamic or Sample categories matching user's image */}
-          {displayCategories.map((c) => (
-            <Link
-              key={c.id}
-              to={`/category/${c.slug}`}
-              onClick={() => setCategoriesDrawerOpen(false)}
-              className="block px-3 py-2 text-[15px] font-semibold text-slate-800 hover:text-[#7a00ea] hover:bg-slate-50 rounded-xl transition-colors"
-            >
-              {c.name}
-            </Link>
-          ))}
-
-          {/* User Account & Library Quick Links */}
-          <div className="pt-3 mt-3 border-t border-slate-100 space-y-1">
-            {user ? (
-              <>
-                <Link
-                  to="/account"
-                  onClick={() => setCategoriesDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#7a00ea] hover:bg-purple-50 rounded-xl transition-colors"
-                >
-                  <UserIcon className="w-4 h-4 text-purple-600" />
-                  <span>My Profile & Orders</span>
-                </Link>
-                <Link
-                  to="/account/downloads"
-                  onClick={() => setCategoriesDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-slate-800 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
-                >
-                  <Download className="w-4 h-4 text-emerald-600" />
-                  <span>Vyrqonix Library</span>
-                </Link>
-              </>
-            ) : (
-              <Link
-                to="/login"
+              <button 
+                type="button"
                 onClick={() => setCategoriesDrawerOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer active:scale-95"
+                aria-label="Close"
               >
-                <UserIcon className="w-4 h-4 text-blue-600" />
-                <span>Sign In / Register</span>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Categories List Links matching screenshot */}
+            <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 space-y-0.5 overscroll-contain">
+              {/* 1. All Products (Purple colored link) */}
+              <Link
+                to="/shop"
+                onClick={() => setCategoriesDrawerOpen(false)}
+                className="block px-3 py-2 text-[15px] font-bold text-[#7a00ea] hover:bg-purple-50 rounded-xl transition-colors"
+              >
+                All Products
               </Link>
-            )}
-            <Link
-              to="/shop?type=free"
-              onClick={() => setCategoriesDrawerOpen(false)}
-              className="block px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
-            >
-              Free Resources
-            </Link>
-            <Link
-              to="/about"
-              onClick={() => setCategoriesDrawerOpen(false)}
-              className="block px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
-            >
-              About Vyrqonix
-            </Link>
-            <Link
-              to="/contact"
-              onClick={() => setCategoriesDrawerOpen(false)}
-              className="block px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
-            >
-              Our Contacts
-            </Link>
-          </div>
-        </div>
 
-        {/* Bottom Drawer Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/70 space-y-2">
-          {isAdmin && (
-            <Link
-              to="/admin/categories"
-              onClick={() => setCategoriesDrawerOpen(false)}
-              className="block w-full py-2 px-3 text-center text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors mb-2"
-            >
-              + Manage Categories (Admin)
-            </Link>
-          )}
+              {/* Dynamic or Sample categories matching user's image */}
+              {displayCategories.map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/category/${c.slug}`}
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="block px-3 py-2 text-[15px] font-semibold text-slate-800 hover:text-[#7a00ea] hover:bg-slate-50 rounded-xl transition-colors"
+                >
+                  {c.name}
+                </Link>
+              ))}
 
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-medium">Vyrqonix Catalog</span>
-            <Link 
-              to="/shop"
-              onClick={() => setCategoriesDrawerOpen(false)} 
-              className="font-bold text-[#7a00ea] hover:underline"
-            >
-              Explore All →
-            </Link>
-          </div>
-        </div>
-      </aside>
+              {/* User Account & Library Quick Links */}
+              <div className="pt-3 mt-3 border-t border-slate-100 space-y-1">
+                {user ? (
+                  <>
+                    <Link
+                      to="/account"
+                      onClick={() => setCategoriesDrawerOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#7a00ea] hover:bg-purple-50 rounded-xl transition-colors"
+                    >
+                      <UserIcon className="w-4 h-4 text-purple-600" />
+                      <span>My Profile & Orders</span>
+                    </Link>
+                    <Link
+                      to="/account/downloads"
+                      onClick={() => setCategoriesDrawerOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-slate-800 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                    >
+                      <Download className="w-4 h-4 text-emerald-600" />
+                      <span>Vyrqonix Library</span>
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setCategoriesDrawerOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                  >
+                    <UserIcon className="w-4 h-4 text-blue-600" />
+                    <span>Sign In / Register</span>
+                  </Link>
+                )}
+                <Link
+                  to="/shop?type=free"
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="block px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                >
+                  Free Resources
+                </Link>
+                <Link
+                  to="/about"
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="block px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+                >
+                  About Vyrqonix
+                </Link>
+                <Link
+                  to="/contact"
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="block px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+                >
+                  Our Contacts
+                </Link>
+              </div>
+            </div>
+
+            {/* Bottom Drawer Footer */}
+            <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom,16px))] border-t border-slate-100 bg-slate-50/90 backdrop-blur-xs space-y-2 shrink-0">
+              {isAdmin && (
+                <Link
+                  to="/admin/categories"
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="block w-full py-2 px-3 text-center text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors mb-2"
+                >
+                  + Manage Categories (Admin)
+                </Link>
+              )}
+
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-medium">Vyrqonix Catalog</span>
+                <Link 
+                  to="/shop"
+                  onClick={() => setCategoriesDrawerOpen(false)} 
+                  className="font-bold text-[#7a00ea] hover:underline"
+                >
+                  Explore All →
+                </Link>
+              </div>
+            </div>
+          </aside>
+        </div>,
+        document.body
+      )}
 
     </header>
   );
