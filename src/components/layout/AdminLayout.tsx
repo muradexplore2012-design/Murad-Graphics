@@ -55,10 +55,10 @@ export const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <div className="h-screen w-full overflow-hidden bg-slate-50 text-slate-800 flex flex-col lg:flex-row antialiased">
       
       {/* Mobile Admin Header */}
-      <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+      <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-xs">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -97,17 +97,9 @@ export const AdminLayout: React.FC = () => {
 
       {/* Sidebar for Desktop & Mobile drawer - Strictly Fixed & Pinned */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] h-screen h-[100dvh] bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 shadow-2xl lg:shadow-xs transition-transform duration-300 ease-in-out lg:transform-none ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:h-full lg:max-w-none lg:shadow-none lg:transform-none ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
-        style={{
-          position: 'fixed',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          height: '100vh',
-          zIndex: 40
-        }}
       >
         <div className="p-5 space-y-5 flex-1 overflow-y-auto overscroll-contain">
           {/* Logo & Console Badge + Close Button on Mobile */}
@@ -206,7 +198,7 @@ export const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Admin Content Body - Light Theme Background with Left Offset for Fixed Sidebar */}
-      <main className="lg:pl-72 w-full min-w-0 min-h-screen flex flex-col bg-slate-50">
+      <main className="flex-1 h-full overflow-y-auto overflow-x-hidden bg-slate-50 flex flex-col min-w-0">
         <div className="flex-1 p-3.5 sm:p-6 lg:p-7 xl:p-8 max-w-7xl mx-auto w-full min-w-0">
           {isViewer && (
             <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900 shadow-xs">

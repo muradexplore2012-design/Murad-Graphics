@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
 # Proxy Firebase Auth handler to prevent cross-origin cookie loss
 [[redirects]]
   from = "/__/auth/*"
