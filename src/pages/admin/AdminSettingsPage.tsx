@@ -217,9 +217,6 @@ export const AdminSettingsPage: React.FC = () => {
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Make Admin</span>
-              <span className="bg-purple-100 text-[#7a00ea] text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">
-                Super Admin
-              </span>
             </button>
           )}
         </div>
