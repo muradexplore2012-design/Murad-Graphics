@@ -10,6 +10,7 @@ import {
   Tag, 
   Image as ImageIcon, 
   Globe, 
+  Share2, 
   Settings, 
   LogOut, 
   Menu, 
@@ -49,7 +50,8 @@ export const AdminLayout: React.FC = () => {
     { label: 'Coupons', path: '/admin/coupons', icon: Tag },
     { label: 'Reviews', path: '/admin/reviews', icon: MessageSquare },
     { label: 'Homepage Banners', path: '/admin/banners', icon: ImageIcon },
-    { label: 'Footer & Social', path: '/admin/footer', icon: Globe },
+    { label: 'Footer Settings', path: '/admin/footer', icon: Globe },
+    { label: 'Social Media Links', path: '/admin/social', icon: Share2 },
     { label: 'Site Settings', path: '/admin/settings', icon: Settings },
   ];
 

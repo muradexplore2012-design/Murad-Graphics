@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   getSiteSettings, 
   updateSiteSettings,
@@ -41,12 +42,32 @@ import {
 
 export const AdminFooterSocialPage: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Active Tab: 'footer' or 'social'
-  const [activeTab, setActiveTab] = useState<'footer' | 'social'>('footer');
+  // Active Tab: 'footer' or 'social' (sync with route /admin/social or /admin/footer)
+  const isSocial = location.pathname.includes('/social') || location.search.includes('tab=social');
+  const [activeTab, setActiveTab] = useState<'footer' | 'social'>(isSocial ? 'social' : 'footer');
+
+  useEffect(() => {
+    if (location.pathname.includes('/social') || location.search.includes('tab=social')) {
+      setActiveTab('social');
+    } else {
+      setActiveTab('footer');
+    }
+  }, [location.pathname, location.search]);
+
+  const handleTabChange = (tab: 'footer' | 'social') => {
+    setActiveTab(tab);
+    if (tab === 'social') {
+      navigate('/admin/social');
+    } else {
+      navigate('/admin/footer');
+    }
+  };
 
   // New Social Link Form
   const [socialName, setSocialName] = useState('');
@@ -340,34 +361,34 @@ export const AdminFooterSocialPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      {/* High-Contrast Prominent Tab Switcher */}
+      <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center gap-2 border border-slate-200 shadow-2xs">
         <button
           type="button"
-          onClick={() => setActiveTab('footer')}
-          className={`flex items-center gap-2 px-5 py-3 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+          onClick={() => handleTabChange('footer')}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
             activeTab === 'footer'
-              ? 'border-blue-600 text-blue-600 bg-blue-50/50 rounded-t-xl'
-              : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-t-xl'
+              ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
           <Layout className="w-4 h-4" />
-          <span>Footer Customization</span>
+          <span>Footer Settings & Content</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('social')}
-          className={`flex items-center gap-2 px-5 py-3 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+          onClick={() => handleTabChange('social')}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
             activeTab === 'social'
-              ? 'border-blue-600 text-blue-600 bg-blue-50/50 rounded-t-xl'
-              : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-t-xl'
+              ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
           <Share2 className="w-4 h-4" />
           <span>Social Media Links</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-            activeTab === 'social' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
+          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black ${
+            activeTab === 'social' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-200 text-slate-700'
           }`}>
             {settings.socialLinks?.length || 0}
           </span>
