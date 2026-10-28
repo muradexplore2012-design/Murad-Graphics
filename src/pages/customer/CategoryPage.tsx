@@ -71,19 +71,19 @@ export const CategoryPage: React.FC = () => {
     <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Category banner header */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-3xl p-6 sm:p-10 text-white shadow-sm relative overflow-hidden">
-        <div className="relative z-10 max-w-3xl flex items-center gap-4 sm:gap-6">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 text-white shadow-lg">
-            <CategoryIcon image={currentCategory.image} icon={currentCategory.icon} className="w-7 h-7 sm:w-8 sm:h-8 text-blue-200" imgClassName="w-10 h-10 object-contain" />
+        <div className="relative z-10 max-w-3xl flex flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 text-white shadow-lg">
+            <CategoryIcon image={currentCategory.image} icon={currentCategory.icon} className="w-6 h-6 sm:w-8 sm:h-8 text-blue-200" imgClassName="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
           </div>
-          <div>
-            <nav className="text-xs text-blue-200 mb-2 flex items-center gap-1.5 font-medium">
+          <div className="min-w-0">
+            <nav className="text-xs text-blue-200 mb-1.5 flex items-center gap-1.5 font-medium flex-wrap">
               <Link to="/" className="hover:underline">Home</Link>
               <span>/</span>
               <Link to="/shop" className="hover:underline">Categories</Link>
               <span>/</span>
-              <span className="text-white">{currentCategory.name}</span>
+              <span className="text-white truncate">{currentCategory.name}</span>
             </nav>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">{currentCategory.name}</h1>
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight break-words">{currentCategory.name}</h1>
             {currentCategory.description && (
               <p className="text-slate-300 text-xs sm:text-sm mt-1.5 leading-relaxed">{currentCategory.description}</p>
             )}
