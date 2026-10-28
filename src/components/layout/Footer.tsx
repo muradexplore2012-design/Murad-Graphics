@@ -86,19 +86,19 @@ export const Footer: React.FC = () => {
     <>
       {/* ================= STANDALONE VALUE PROPOSITION BADGES ================= */}
       {showBadges && badges.length > 0 && (
-        <section className="hidden md:block py-8 sm:py-10">
+        <section className="py-6 sm:py-8 md:py-10">
           <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(badges.length, 4)} gap-6`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(badges.length, 4)} gap-3.5 sm:gap-6`}>
               {badges.map((badge, idx) => {
                 const style = badgeColorStyles[idx % badgeColorStyles.length];
                 return (
-                  <div key={badge.id || idx} className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className={`w-12 h-12 rounded-xl ${style.bg} ${style.text} flex items-center justify-center shrink-0 border ${style.border}`}>
+                  <div key={badge.id || idx} className="flex items-center gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl ${style.bg} ${style.text} flex items-center justify-center shrink-0 border ${style.border}`}>
                       {renderBadgeIcon(badge.icon, idx)}
                     </div>
-                    <div>
-                      <h4 className="text-slate-900 font-bold text-sm">{badge.title}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">{badge.subtitle}</p>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-slate-900 font-bold text-xs sm:text-sm truncate sm:whitespace-normal">{badge.title}</h4>
+                      <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 line-clamp-1 sm:line-clamp-none">{badge.subtitle}</p>
                     </div>
                   </div>
                 );
