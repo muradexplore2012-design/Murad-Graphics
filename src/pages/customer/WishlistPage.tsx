@@ -1,13 +1,15 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { LoginRequiredModal } from '../../components/ui/LoginRequiredModal';
 import { Heart } from 'lucide-react';
 
 export const WishlistPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const { wishlist, clearWishlist } = useWishlist();
 
@@ -21,7 +23,30 @@ export const WishlistPage: React.FC = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login?redirect=/wishlist" replace state={{ from: location }} />;
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-slate-50/50">
+        <LoginRequiredModal
+          isOpen={true}
+          onClose={() => navigate(-1)}
+          type="wishlist"
+          onCancelNavigateTo="/shop"
+        />
+        <div className="max-w-md mx-auto text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-rose-100 text-rose-500 flex items-center justify-center shadow-inner">
+            <Heart className="w-8 h-8 fill-rose-200" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900">উইশলিস্ট দেখতে আগে লগইন করুন</h2>
+          <p className="text-xs text-slate-500">আপনার পছন্দের সেভ করা ডিজাইন ফাইল ও সফটওয়্যার তালিকা দেখতে অনুগ্রহ করে একাউন্টে লগইন করুন।</p>
+          <button
+            type="button"
+            onClick={() => navigate('/login?redirect=/wishlist')}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#7a00ea] text-white rounded-2xl text-xs font-bold shadow-md hover:bg-[#6c00d4] transition-all cursor-pointer"
+          >
+            লগইন করুন (Log In Now)
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

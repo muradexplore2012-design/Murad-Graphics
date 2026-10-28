@@ -37,6 +37,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { LoginRequiredModal } from '../../components/ui/LoginRequiredModal';
 import confetti from 'canvas-confetti';
 
 export const ProductDetailPage: React.FC = () => {
@@ -53,6 +54,7 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [hasEntitlement, setHasEntitlement] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [downloadSuccessMessage, setDownloadSuccessMessage] = useState('');
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [copiedZipPass, setCopiedZipPass] = useState(false);
@@ -357,7 +359,13 @@ export const ProductDetailPage: React.FC = () => {
               {product.name}
             </h1>
             <button
-              onClick={() => toggleWishlist(product)}
+              onClick={() => {
+                if (!user) {
+                  setAuthModalOpen(true);
+                  return;
+                }
+                toggleWishlist(product);
+              }}
               className={`p-2.5 rounded-2xl border transition-all shrink-0 ${
                 isFavorited ? 'border-rose-200 bg-rose-50 text-rose-500' : 'border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600'
               }`}
@@ -886,6 +894,13 @@ export const ProductDetailPage: React.FC = () => {
         </div>,
         document.body
       )}
+
+      {/* Login Required Modal for Wishlist */}
+      <LoginRequiredModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        type="wishlist"
+      />
 
     </div>
   );

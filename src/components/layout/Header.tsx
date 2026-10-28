@@ -21,6 +21,7 @@ import { useWishlist } from '../../contexts/WishlistContext';
 import { getCategories, getSiteSettings, DEFAULT_SITE_SETTINGS } from '../../services/api';
 import { Category, SiteSettings } from '../../types';
 import { CategoryIcon } from '../ui/CategoryIcon';
+import { LoginRequiredModal } from '../ui/LoginRequiredModal';
 
 // Demo categories matching user reference screenshot when categories are loading or empty
 const sampleCategories: { id: string; name: string; slug: string }[] = [
@@ -62,6 +63,7 @@ export const Header: React.FC = () => {
   const [categoriesDrawerOpen, setCategoriesDrawerOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [authModal, setAuthModal] = useState<{ open: boolean; type: 'cart' | 'wishlist' }>({ open: false, type: 'cart' });
 
   const displayCategories = categories.length > 0 ? categories : sampleCategories;
   const userRef = useRef<HTMLDivElement>(null);
@@ -239,34 +241,66 @@ export const Header: React.FC = () => {
           {/* Right: Circular Purple Cart Button */}
           <div className="flex items-center shrink-0">
             {/* Purple Circular Cart Button with Badge */}
-            <Link
-              to={user ? "/cart" : "/login?redirect=/cart"}
-              className="w-10 h-10 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white flex items-center justify-center relative shadow-md shadow-purple-600/20 active:scale-95 transition-all shrink-0 cursor-pointer"
-              title={user ? "Shopping Cart" : "Sign In to View Cart"}
-              aria-label="View Shopping Cart"
-            >
-              <div className="relative inline-flex items-center justify-center">
-                <svg 
-                  className="w-5 h-5 text-white" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <path d="M8 8V6a4 4 0 0 1 8 0v2" />
-                  <line x1="3" y1="9" x2="21" y2="9" />
-                  <path d="M4.5 9l1.6 8.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 2-1.5L19.5 9" />
-                  <line x1="9.5" y1="12" x2="10" y2="16.5" />
-                  <line x1="12" y1="12" x2="12" y2="16.5" />
-                  <line x1="14.5" y1="12" x2="14" y2="16.5" />
-                </svg>
-                <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
-                  {cart.length}
-                </span>
-              </div>
-            </Link>
+            {user ? (
+              <Link
+                to="/cart"
+                className="w-10 h-10 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white flex items-center justify-center relative shadow-md shadow-purple-600/20 active:scale-95 transition-all shrink-0 cursor-pointer"
+                title="Shopping Cart"
+                aria-label="View Shopping Cart"
+              >
+                <div className="relative inline-flex items-center justify-center">
+                  <svg 
+                    className="w-5 h-5 text-white" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M8 8V6a4 4 0 0 1 8 0v2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <path d="M4.5 9l1.6 8.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 2-1.5L19.5 9" />
+                    <line x1="9.5" y1="12" x2="10" y2="16.5" />
+                    <line x1="12" y1="12" x2="12" y2="16.5" />
+                    <line x1="14.5" y1="12" x2="14" y2="16.5" />
+                  </svg>
+                  <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
+                    {cart.length}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAuthModal({ open: true, type: 'cart' })}
+                className="w-10 h-10 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white flex items-center justify-center relative shadow-md shadow-purple-600/20 active:scale-95 transition-all shrink-0 cursor-pointer"
+                title="Sign In to View Cart"
+                aria-label="View Shopping Cart"
+              >
+                <div className="relative inline-flex items-center justify-center">
+                  <svg 
+                    className="w-5 h-5 text-white" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M8 8V6a4 4 0 0 1 8 0v2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <path d="M4.5 9l1.6 8.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 2-1.5L19.5 9" />
+                    <line x1="9.5" y1="12" x2="10" y2="16.5" />
+                    <line x1="12" y1="12" x2="12" y2="16.5" />
+                    <line x1="14.5" y1="12" x2="14" y2="16.5" />
+                  </svg>
+                  <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
+                    {cart.length}
+                  </span>
+                </div>
+              </button>
+            )}
           </div>
 
         </div>
@@ -376,18 +410,34 @@ export const Header: React.FC = () => {
             <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
               
               {/* Wishlist Circular Icon */}
-              <Link
-                to={user ? "/wishlist" : "/login?redirect=/wishlist"}
-                className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all relative group"
-                title={user ? "Wishlist" : "Sign In to View Wishlist"}
-              >
-                <Heart className={`w-4 h-4 transition-colors ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-blue-600 group-hover:stroke-blue-600'}`} />
-                {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
+              {user ? (
+                <Link
+                  to="/wishlist"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all relative group cursor-pointer"
+                  title="Wishlist"
+                >
+                  <Heart className={`w-4 h-4 transition-colors ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-blue-600 group-hover:stroke-blue-600'}`} />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAuthModal({ open: true, type: 'wishlist' })}
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all relative group cursor-pointer"
+                  title="Sign In to View Wishlist"
+                >
+                  <Heart className={`w-4 h-4 transition-colors ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-blue-600 group-hover:stroke-blue-600'}`} />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </button>
+              )}
 
               {/* Account Circular Icon with Dropdown */}
               <div className="relative" ref={userRef}>
@@ -475,45 +525,88 @@ export const Header: React.FC = () => {
               </div>
 
               {/* 100% Pixel-Perfect Matching Purple Cart Capsule Button */}
-              <Link
-                to={user ? "/cart" : "/login?redirect=/cart"}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white transition-transform active:scale-95 shadow-sm select-none"
-                title={user ? "Shopping Cart" : "Sign In to View Cart"}
-              >
-                <div className="relative inline-flex items-center justify-center">
-                  {/* Shopping Basket Icon matching user image */}
-                  <svg 
-                    className="w-6 h-6 text-white" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  >
-                    {/* Top handle */}
-                    <path d="M8 8V6a4 4 0 0 1 8 0v2" />
-                    {/* Horizontal rim */}
-                    <line x1="3" y1="9" x2="21" y2="9" />
-                    {/* Basket contour */}
-                    <path d="M4.5 9l1.6 8.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 2-1.5L19.5 9" />
-                    {/* Basket 3 vertical lines */}
-                    <line x1="9.5" y1="12" x2="10" y2="16.5" />
-                    <line x1="12" y1="12" x2="12" y2="16.5" />
-                    <line x1="14.5" y1="12" x2="14" y2="16.5" />
-                  </svg>
+              {user ? (
+                <Link
+                  to="/cart"
+                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white transition-transform active:scale-95 shadow-sm select-none cursor-pointer"
+                  title="Shopping Cart"
+                >
+                  <div className="relative inline-flex items-center justify-center">
+                    {/* Shopping Basket Icon matching user image */}
+                    <svg 
+                      className="w-6 h-6 text-white" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      {/* Top handle */}
+                      <path d="M8 8V6a4 4 0 0 1 8 0v2" />
+                      {/* Horizontal rim */}
+                      <line x1="3" y1="9" x2="21" y2="9" />
+                      {/* Basket contour */}
+                      <path d="M4.5 9l1.6 8.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 2-1.5L19.5 9" />
+                      {/* Basket 3 vertical lines */}
+                      <line x1="9.5" y1="12" x2="10" y2="16.5" />
+                      <line x1="12" y1="12" x2="12" y2="16.5" />
+                      <line x1="14.5" y1="12" x2="14" y2="16.5" />
+                    </svg>
 
-                  {/* Black badge on top-right of basket */}
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[11px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
-                    {cart.length}
+                    {/* Black badge on top-right of basket */}
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[11px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
+                      {cart.length}
+                    </span>
+                  </div>
+
+                  {/* Exact 0৳ Text */}
+                  <span className="font-extrabold text-white text-[15px] tracking-tight leading-none">
+                    {totalPrice}৳
                   </span>
-                </div>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAuthModal({ open: true, type: 'cart' })}
+                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white transition-transform active:scale-95 shadow-sm select-none cursor-pointer"
+                  title="Sign In to View Cart"
+                >
+                  <div className="relative inline-flex items-center justify-center">
+                    {/* Shopping Basket Icon matching user image */}
+                    <svg 
+                      className="w-6 h-6 text-white" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      {/* Top handle */}
+                      <path d="M8 8V6a4 4 0 0 1 8 0v2" />
+                      {/* Horizontal rim */}
+                      <line x1="3" y1="9" x2="21" y2="9" />
+                      {/* Basket contour */}
+                      <path d="M4.5 9l1.6 8.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 2-1.5L19.5 9" />
+                      {/* Basket 3 vertical lines */}
+                      <line x1="9.5" y1="12" x2="10" y2="16.5" />
+                      <line x1="12" y1="12" x2="12" y2="16.5" />
+                      <line x1="14.5" y1="12" x2="14" y2="16.5" />
+                    </svg>
 
-                {/* Exact 0৳ Text */}
-                <span className="font-extrabold text-white text-[15px] tracking-tight leading-none">
-                  {totalPrice}৳
-                </span>
-              </Link>
+                    {/* Black badge on top-right of basket */}
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[11px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
+                      {cart.length}
+                    </span>
+                  </div>
+
+                  {/* Exact 0৳ Text */}
+                  <span className="font-extrabold text-white text-[15px] tracking-tight leading-none">
+                    {totalPrice}৳
+                  </span>
+                </button>
+              )}
 
             </div>
 
@@ -664,6 +757,13 @@ export const Header: React.FC = () => {
         </div>,
         document.body
       )}
+
+      {/* Login Required Popup Modal */}
+      <LoginRequiredModal
+        isOpen={authModal.open}
+        onClose={() => setAuthModal((prev) => ({ ...prev, open: false }))}
+        type={authModal.type}
+      />
 
     </header>
   );

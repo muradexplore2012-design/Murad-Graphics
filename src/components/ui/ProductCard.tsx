@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, ShoppingBag, Download } from 'lucide-react';
 import { Product } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { LoginRequiredModal } from './LoginRequiredModal';
 
 interface ProductCardProps {
   product: Product;
@@ -11,8 +13,10 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToCart, isInCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const isFavorited = isInWishlist(product.id);
   const inCart = isInCart(product.id);
@@ -71,6 +75,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (!user) {
+              setShowAuthModal(true);
+              return;
+            }
             toggleWishlist(product);
           }}
           className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white text-purple-600 shadow-md flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20 ${
@@ -150,6 +158,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
         )}
       </div>
+
+      <LoginRequiredModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        type="wishlist"
+      />
 
     </div>
   );

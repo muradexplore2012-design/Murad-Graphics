@@ -12,6 +12,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { validateCouponCode } from '../../services/api';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { LoginRequiredModal } from '../../components/ui/LoginRequiredModal';
 
 export const CartPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -34,7 +35,30 @@ export const CartPage: React.FC = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login?redirect=/cart" replace state={{ from: location }} />;
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-slate-50/50">
+        <LoginRequiredModal
+          isOpen={true}
+          onClose={() => navigate(-1)}
+          type="cart"
+          onCancelNavigateTo="/shop"
+        />
+        <div className="max-w-md mx-auto text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-purple-100 text-[#7a00ea] flex items-center justify-center shadow-inner">
+            <ShoppingBag className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900">কার্ট দেখতে আগে লগইন করুন</h2>
+          <p className="text-xs text-slate-500">আপনার কার্টের ডিজিটাল আইটেমগুলো দেখতে এবং কেনাকাটা সম্পন্ন করতে প্রথমে একাউন্টে লগইন করুন।</p>
+          <button
+            type="button"
+            onClick={() => navigate('/login?redirect=/cart')}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#7a00ea] text-white rounded-2xl text-xs font-bold shadow-md hover:bg-[#6c00d4] transition-all cursor-pointer"
+          >
+            লগইন করুন (Log In Now)
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const handleApplyCoupon = async (e: React.FormEvent) => {

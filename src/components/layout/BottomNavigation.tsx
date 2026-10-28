@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { LoginRequiredModal } from '../ui/LoginRequiredModal';
 
 // 1. Menu Icon (Outline vs Solid Brand Fill)
 const MenuIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, className }) => {
@@ -124,6 +125,7 @@ export const BottomNavigation: React.FC = () => {
   const { cart } = useCart();
   const { user } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     setAvatarError(false);
@@ -180,28 +182,54 @@ export const BottomNavigation: React.FC = () => {
         </Link>
 
         {/* 3. Cart */}
-        <Link
-          to={user ? "/cart" : "/login?redirect=/cart"}
-          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative ${
-            isCartActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <div className="relative flex items-center justify-center w-6 h-6">
-            <CartIcon active={isCartActive} className="w-5 h-5 transition-transform" />
+        {user ? (
+          <Link
+            to="/cart"
+            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative ${
+              isCartActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <div className="relative flex items-center justify-center w-6 h-6">
+              <CartIcon active={isCartActive} className="w-5 h-5 transition-transform" />
 
-            {/* Cart Badge */}
-            {cart.length > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 bg-[#7a00ea] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white pointer-events-none shadow-xs">
-                {cart.length > 99 ? '99+' : cart.length}
-              </span>
-            )}
-          </div>
-          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
-            isCartActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
-          }`}>
-            Cart
-          </span>
-        </Link>
+              {/* Cart Badge */}
+              {cart.length > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 bg-[#7a00ea] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white pointer-events-none shadow-xs">
+                  {cart.length > 99 ? '99+' : cart.length}
+                </span>
+              )}
+            </div>
+            <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
+              isCartActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
+            }`}>
+              Cart
+            </span>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAuthModalOpen(true)}
+            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative w-full ${
+              isCartActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <div className="relative flex items-center justify-center w-6 h-6">
+              <CartIcon active={isCartActive} className="w-5 h-5 transition-transform" />
+
+              {/* Cart Badge */}
+              {cart.length > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 bg-[#7a00ea] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white pointer-events-none shadow-xs">
+                  {cart.length > 99 ? '99+' : cart.length}
+                </span>
+              )}
+            </div>
+            <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
+              isCartActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
+            }`}>
+              Cart
+            </span>
+          </button>
+        )}
 
         {/* 4. Downloads Library */}
         <Link
@@ -252,6 +280,12 @@ export const BottomNavigation: React.FC = () => {
         </Link>
 
       </div>
+
+      <LoginRequiredModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        type="cart"
+      />
     </nav>
   );
 };
