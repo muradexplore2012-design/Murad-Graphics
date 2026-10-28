@@ -97,9 +97,19 @@ export const AdminLayout: React.FC = () => {
       )}
 
       {/* Sidebar for Desktop & Mobile drawer - Strictly Fixed & Pinned */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] h-screen bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 shadow-2xl lg:shadow-xs ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      <aside 
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] h-screen h-[100dvh] bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 shadow-2xl lg:shadow-xs transition-transform duration-300 ease-in-out lg:transform-none ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+        style={{
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          height: '100vh',
+          zIndex: 40
+        }}
+      >
         <div className="p-5 space-y-5 flex-1 overflow-y-auto overscroll-contain">
           {/* Logo & Console Badge + Close Button on Mobile */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
