@@ -500,7 +500,7 @@ export const AdminSettingsPage: React.FC = () => {
           )}
 
           {/* Make Admin Form Card */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+          <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs space-y-6">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
               <div className="w-10 h-10 rounded-2xl bg-purple-100 text-[#7a00ea] flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
@@ -566,37 +566,38 @@ export const AdminSettingsPage: React.FC = () => {
                   এডমিনের পদবি / রোল বেছে নিন (Select Role) <span className="text-rose-500">*</span>
                 </label>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-3 w-full">
                   
                   {/* Card 1: Owner */}
                   <div
                     onClick={() => setSelectedRole('owner')}
-                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`min-w-0 p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                       selectedRole === 'owner'
-                        ? 'border-[#7a00ea] bg-purple-50/60 shadow-sm'
+                        ? 'border-[#7a00ea] bg-purple-50/70 shadow-xs ring-1 ring-[#7a00ea]/20'
                         : 'border-slate-200 bg-white hover:border-purple-200 hover:bg-purple-50/20'
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
-                          <Crown className="w-4 h-4 text-[#7a00ea]" />
-                          <span>Owner (ওনার)</span>
+                    <div className="min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1 min-w-0 font-bold text-slate-900 text-[11px] sm:text-xs">
+                          <Crown className="w-3.5 h-3.5 text-[#7a00ea] shrink-0" />
+                          <span className="truncate">Owner</span>
+                          <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">(ওনার)</span>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-[#7a00ea]">
+                        <span className="text-[8px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-[#7a00ea] self-start sm:self-auto whitespace-nowrap">
                           ফুল কন্ট্রোল
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        ওয়েবসাইটের সম্পূর্ণ নিয়ন্ত্রণ থাকবে। নতুন এডমিন নিয়োগ, রোল পরিবর্তন ও সম্পূর্ণ সাইট কন্ট্রোল।
+                      <p className="text-[9px] sm:text-[11px] text-slate-600 leading-tight sm:leading-relaxed mt-1">
+                        ওয়েবসাইটের সম্পূর্ণ নিয়ন্ত্রণ ও এডমিন নিয়োগ।
                       </p>
                     </div>
-                    <div className="mt-3 pt-2.5 border-t border-purple-100 flex items-center justify-between">
-                      <span className="text-[10px] font-semibold text-[#7a00ea]">Full Access</span>
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
+                    <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-purple-100/80 flex items-center justify-between min-w-0">
+                      <span className="text-[8px] sm:text-[10px] font-semibold text-[#7a00ea] truncate">Full Access</span>
+                      <span className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center text-white shrink-0 ${
                         selectedRole === 'owner' ? 'bg-[#7a00ea]' : 'border border-slate-300'
                       }`}>
-                        {selectedRole === 'owner' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                        {selectedRole === 'owner' && <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 stroke-[3]" />}
                       </span>
                     </div>
                   </div>
@@ -604,32 +605,33 @@ export const AdminSettingsPage: React.FC = () => {
                   {/* Card 2: Manager */}
                   <div
                     onClick={() => setSelectedRole('manager')}
-                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`min-w-0 p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                       selectedRole === 'manager'
-                        ? 'border-blue-600 bg-blue-50/60 shadow-sm'
+                        ? 'border-blue-600 bg-blue-50/70 shadow-xs ring-1 ring-blue-600/20'
                         : 'border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/20'
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
-                          <ShieldCheck className="w-4 h-4 text-blue-600" />
-                          <span>Manager (ম্যানেজার)</span>
+                    <div className="min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1 min-w-0 font-bold text-slate-900 text-[11px] sm:text-xs">
+                          <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                          <span className="truncate">Manager</span>
+                          <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">(ম্যানেজার)</span>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                        <span className="text-[8px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 self-start sm:self-auto whitespace-nowrap">
                           সব কাজ
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        সব কাজ করতে পারবে (প্রোডাক্ট, অর্ডার, কুপন, ব্যানার ইত্যাদি), কিন্তু ওনারের মতো কাউকে এডমিন বানাতে পারবে না।
+                      <p className="text-[9px] sm:text-[11px] text-slate-600 leading-tight sm:leading-relaxed mt-1">
+                        প্রোডাক্ট, অর্ডার ও কুপন ম্যানেজ করতে পারবে।
                       </p>
                     </div>
-                    <div className="mt-3 pt-2.5 border-t border-blue-100 flex items-center justify-between">
-                      <span className="text-[10px] font-semibold text-blue-600">Operational</span>
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
+                    <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-blue-100/80 flex items-center justify-between min-w-0">
+                      <span className="text-[8px] sm:text-[10px] font-semibold text-blue-600 truncate">Operational</span>
+                      <span className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center text-white shrink-0 ${
                         selectedRole === 'manager' ? 'bg-blue-600' : 'border border-slate-300'
                       }`}>
-                        {selectedRole === 'manager' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                        {selectedRole === 'manager' && <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 stroke-[3]" />}
                       </span>
                     </div>
                   </div>
@@ -637,32 +639,33 @@ export const AdminSettingsPage: React.FC = () => {
                   {/* Card 3: Viewer */}
                   <div
                     onClick={() => setSelectedRole('viewer')}
-                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`min-w-0 p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                       selectedRole === 'viewer'
-                        ? 'border-emerald-600 bg-emerald-50/60 shadow-sm'
+                        ? 'border-emerald-600 bg-emerald-50/70 shadow-xs ring-1 ring-emerald-600/20'
                         : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/20'
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
-                          <Eye className="w-4 h-4 text-emerald-600" />
-                          <span>Viewer (ভিউয়ার)</span>
+                    <div className="min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1 min-w-0 font-bold text-slate-900 text-[11px] sm:text-xs">
+                          <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
+                          <span className="truncate">Viewer</span>
+                          <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">(ভিউয়ার)</span>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                        <span className="text-[8px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 self-start sm:self-auto whitespace-nowrap">
                           রিড-অনলি
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        শুধুমাত্র দেখতে পারবে। ড্যাশবোর্ড, সেলস অর্ডার ও প্রোডাক্টের তালিকা দেখতে পারবে, কোনো কিছু পরিবর্তন করতে পারবে না।
+                      <p className="text-[9px] sm:text-[11px] text-slate-600 leading-tight sm:leading-relaxed mt-1">
+                        ড্যাশবোর্ড ও সেলস অর্ডার তালিকা দেখতে পারবে।
                       </p>
                     </div>
-                    <div className="mt-3 pt-2.5 border-t border-emerald-100 flex items-center justify-between">
-                      <span className="text-[10px] font-semibold text-emerald-600">View Only</span>
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
+                    <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-emerald-100/80 flex items-center justify-between min-w-0">
+                      <span className="text-[8px] sm:text-[10px] font-semibold text-emerald-600 truncate">View Only</span>
+                      <span className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center text-white shrink-0 ${
                         selectedRole === 'viewer' ? 'bg-emerald-600' : 'border border-slate-300'
                       }`}>
-                        {selectedRole === 'viewer' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                        {selectedRole === 'viewer' && <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 stroke-[3]" />}
                       </span>
                     </div>
                   </div>
