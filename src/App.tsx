@@ -192,7 +192,7 @@ export function App() {
                   <Route path="downloads" element={<AdminDownloadAuditPage />} />
                   <Route path="banners" element={<AdminBannersPage />} />
                   <Route path="footer" element={<AdminFooterSocialPage />} />
-                  <Route path="social" element={<AdminFooterSocialPage />} />
+                  <Route path="social" element={<Navigate to="/admin/footer?tab=social" replace />} />
                   <Route path="settings" element={<AdminSettingsPage />} />
                 </Route>
 

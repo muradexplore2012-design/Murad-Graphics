@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { 
   getSiteSettings, 
   updateSiteSettings,
@@ -42,31 +42,28 @@ import {
 
 export const AdminFooterSocialPage: React.FC = () => {
   const { user } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Active Tab: 'footer' or 'social' (sync with route /admin/social or /admin/footer)
-  const isSocial = location.pathname.includes('/social') || location.search.includes('tab=social');
-  const [activeTab, setActiveTab] = useState<'footer' | 'social'>(isSocial ? 'social' : 'footer');
+  // Active Tab: 'footer' or 'social'
+  const [activeTab, setActiveTab] = useState<'footer' | 'social'>(() => {
+    return searchParams.get('tab') === 'social' ? 'social' : 'footer';
+  });
 
   useEffect(() => {
-    if (location.pathname.includes('/social') || location.search.includes('tab=social')) {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'social' && activeTab !== 'social') {
       setActiveTab('social');
-    } else {
+    } else if (!tabParam && activeTab !== 'footer') {
       setActiveTab('footer');
     }
-  }, [location.pathname, location.search]);
+  }, [searchParams]);
 
   const handleTabChange = (tab: 'footer' | 'social') => {
     setActiveTab(tab);
-    if (tab === 'social') {
-      navigate('/admin/social');
-    } else {
-      navigate('/admin/footer');
-    }
+    setSearchParams(tab === 'social' ? { tab: 'social' } : {});
   };
 
   // New Social Link Form
