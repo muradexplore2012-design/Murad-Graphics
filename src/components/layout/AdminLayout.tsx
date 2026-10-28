@@ -54,7 +54,7 @@ export const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col lg:flex-row antialiased">
+    <div className="min-h-screen bg-slate-50 text-slate-800 antialiased">
       
       {/* Mobile Admin Header */}
       <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-xs">
@@ -94,11 +94,11 @@ export const AdminLayout: React.FC = () => {
         />
       )}
 
-      {/* Sidebar for Desktop & Mobile drawer - Light Theme & Pinned */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:self-start lg:z-30 shrink-0 shadow-2xl lg:shadow-xs ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      {/* Sidebar for Desktop & Mobile drawer - Strictly Fixed & Pinned */}
+      <aside className={`fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] h-screen bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 shadow-2xl lg:shadow-xs ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+        <div className="p-5 space-y-5 flex-1 overflow-y-auto overscroll-contain">
           {/* Logo & Console Badge + Close Button on Mobile */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
             <Link to="/admin" className="flex items-center gap-2.5 sm:gap-3 group">
@@ -194,20 +194,22 @@ export const AdminLayout: React.FC = () => {
         </div>
       </aside>
 
-      {/* Main Admin Content Body - Light Theme Background */}
-      <main className="flex-1 p-3.5 sm:p-6 lg:p-7 xl:p-8 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden bg-slate-50">
-        {isViewer && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900 shadow-xs">
-            <Eye className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-xs">
-              <p className="font-bold">ভিউয়ার মোড (Viewer / Read-Only Mode)</p>
-              <p className="mt-0.5 text-amber-800 leading-relaxed">
-                আপনি একজন ভিউয়ার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনি সকল রিপোর্ট, সেলস অর্ডার এবং প্রোডাক্টের তালিকা দেখতে পারবেন, তবে কোনো তথ্য যোগ, এডিট বা ডিলিট করার অনুমতি নেই।
-              </p>
+      {/* Main Admin Content Body - Light Theme Background with Left Offset for Fixed Sidebar */}
+      <main className="lg:pl-72 w-full min-w-0 min-h-screen flex flex-col bg-slate-50">
+        <div className="flex-1 p-3.5 sm:p-6 lg:p-7 xl:p-8 max-w-7xl mx-auto w-full min-w-0">
+          {isViewer && (
+            <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900 shadow-xs">
+              <Eye className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-xs">
+                <p className="font-bold">ভিউয়ার মোড (Viewer / Read-Only Mode)</p>
+                <p className="mt-0.5 text-amber-800 leading-relaxed">
+                  আপনি একজন ভিউয়ার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনি সকল রিপোর্ট, সেলস অর্ডার এবং প্রোডাক্টের তালিকা দেখতে পারবেন, তবে কোনো তথ্য যোগ, এডিট বা ডিলিট করার অনুমতি নেই।
+                </p>
+              </div>
             </div>
-          </div>
-        )}
-        <Outlet />
+          )}
+          <Outlet />
+        </div>
       </main>
 
     </div>
