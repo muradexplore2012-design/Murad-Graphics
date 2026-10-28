@@ -99,13 +99,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             Free Download
           </span>
         ) : product.comparePrice && product.comparePrice > product.price ? (
-          <div className="text-xs sm:text-lg font-black text-purple-600 tracking-tight">
+          <div className="text-xs sm:text-base lg:text-lg font-black text-purple-600 tracking-tight flex items-center justify-center gap-0.5 sm:gap-1 flex-wrap">
             <span>{product.price}৳</span>
-            <span className="mx-0.5 sm:mx-1 font-normal text-purple-400">–</span>
+            <span className="font-normal text-purple-400">–</span>
             <span>{product.comparePrice}৳</span>
           </div>
         ) : (
-          <span className="text-xs sm:text-lg font-black text-purple-600 tracking-tight">
+          <span className="text-xs sm:text-base lg:text-lg font-black text-purple-600 tracking-tight">
             {product.price}৳
           </span>
         )}
@@ -117,17 +117,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <button
           type="button"
           onClick={handleBuyNow}
-          className="flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-1.5 transition-all shadow-xs active:scale-95 group/btn"
+          className="flex-1 min-w-0 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-1.5 transition-all shadow-xs active:scale-95 group/btn"
         >
           {product.isFree ? (
             <>
               <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span>Get Free</span>
+              <span className="truncate whitespace-nowrap">Get Free</span>
             </>
           ) : (
             <>
               <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="whitespace-nowrap">Buy Now</span>
+              <span className="truncate whitespace-nowrap">Buy Now</span>
             </>
           )}
         </button>

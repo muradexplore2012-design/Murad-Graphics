@@ -193,6 +193,26 @@ export interface Banner {
   createdAt: string;
 }
 
+export interface FooterFeatureBadge {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon?: string;
+}
+
+export interface FooterLinkItem {
+  id: string;
+  label: string;
+  url: string;
+  isVisible: boolean;
+}
+
+export interface FooterColumn {
+  id: string;
+  title: string;
+  links: FooterLinkItem[];
+}
+
 export interface SocialLink {
   id: string;
   name: string;
@@ -221,6 +241,15 @@ export interface SiteSettings {
   aboutText: string;
   faqList: Array<{ question: string; answer: string }>;
   socialLinks: SocialLink[];
+  // Footer Customization
+  footerBadges?: FooterFeatureBadge[];
+  showFooterBadges?: boolean;
+  footerColumns?: FooterColumn[];
+  footerContactTitle?: string;
+  footerCopyrightText?: string;
+  footerDesignerPrefix?: string;
+  footerDesignerName?: string;
+  footerDesignerUrl?: string;
   updatedAt?: string;
 }
 

@@ -201,9 +201,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.warn("Google popup encounter, checking redirect fallback:", err);
       if (
-        err.code === 'auth/popup-blocked' ||
         err.code === 'auth/cancelled-popup-request' ||
-        err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/popup-closed-by-user'
+      ) {
+        // User closed or cancelled popup intentionally, do not force redirect
+        return;
+      }
+      if (
+        err.code === 'auth/popup-blocked' ||
         err.code === 'auth/operation-not-supported-in-this-environment'
       ) {
         await signInWithRedirect(auth, provider);

@@ -64,7 +64,46 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     { id: "1", name: "YouTube", url: "https://www.youtube.com/channel/UCDP9PD8OEpJkq63hMVNCYSg", icon: "youtube", isVisible: true, order: 1 },
     { id: "2", name: "Facebook", url: "https://www.facebook.com/vyrqonix", icon: "facebook", isVisible: true, order: 2 },
     { id: "3", name: "WhatsApp", url: "https://wa.me/8801566088159", icon: "whatsapp", isVisible: true, order: 3 }
-  ]
+  ],
+  footerBadges: [
+    {
+      id: "badge-1",
+      title: "Instant Digital Delivery",
+      subtitle: "Download source files right after order confirmation",
+      icon: "download"
+    },
+    {
+      id: "badge-2",
+      title: "100% Genuine & Authentic",
+      subtitle: "Verified digital access and premium creative assets",
+      icon: "shield"
+    },
+    {
+      id: "badge-3",
+      title: "100% Editable Files & Working Games",
+      subtitle: "Layered design assets, verified software & tested games",
+      icon: "sparkles"
+    }
+  ],
+  showFooterBadges: true,
+  footerColumns: [
+    {
+      id: "col-support",
+      title: "Support & Info",
+      links: [
+        { id: "link-1", label: "About Us", url: "/about", isVisible: true },
+        { id: "link-2", label: "Contact Support", url: "/contact", isVisible: true },
+        { id: "link-3", label: "Refund Policy", url: "/refund-policy", isVisible: true },
+        { id: "link-4", label: "Privacy Policy", url: "/privacy-policy", isVisible: true },
+        { id: "link-5", label: "Terms of Service", url: "/terms", isVisible: true }
+      ]
+    }
+  ],
+  footerContactTitle: "Direct Contact",
+  footerCopyrightText: "© {year} {siteName}. All rights reserved.",
+  footerDesignerPrefix: "Design by",
+  footerDesignerName: "Murad Rahman",
+  footerDesignerUrl: "https://www.facebook.com/profile.php?id=100085471628384"
 };
 
 // ==================== FAST CLIENT-SIDE CACHE & DEDUPLICATION ====================

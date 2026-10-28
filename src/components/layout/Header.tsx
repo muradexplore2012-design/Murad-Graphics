@@ -298,14 +298,14 @@ export const Header: React.FC = () => {
           <div className="flex items-center justify-between h-14 gap-4">
             
             {/* Left: All Categories Pill Button + Navigation Links */}
-            <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 lg:gap-6 min-w-0">
               
               {/* All Categories Capsule Button with Drawer Toggle */}
-              <div>
+              <div className="shrink-0">
                 <button
                   type="button"
                   onClick={() => setCategoriesDrawerOpen(!categoriesDrawerOpen)}
-                  className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-bold shadow-md shadow-violet-500/20 transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-3.5 lg:px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-xs lg:text-sm font-bold shadow-md shadow-violet-500/20 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                 >
                   <Menu className="w-4 h-4 stroke-[2.5]" />
                   <span>All Categories</span>
@@ -313,7 +313,7 @@ export const Header: React.FC = () => {
               </div>
 
               {/* Navigation Menu Links (Visible on Tablet & Desktop) */}
-              <nav className="hidden md:flex items-center gap-1 lg:gap-2 text-xs lg:text-sm font-bold">
+              <nav className="hidden md:flex items-center gap-1 lg:gap-2 text-xs lg:text-sm font-bold shrink-0">
                 <Link
                   to="/"
                   className={`px-2.5 lg:px-3.5 py-1.5 rounded-full transition-all ${
@@ -373,7 +373,7 @@ export const Header: React.FC = () => {
             </div>
 
             {/* Right: Wishlist Icon + Account Icon + Purple/Blue Cart Capsule Button */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
               
               {/* Wishlist Circular Icon */}
               <Link

@@ -7,14 +7,13 @@ import {
   ShieldCheck, 
   DownloadCloud, 
   Sparkles,
-  MessageCircle,
-  Share2,
-  Globe,
-  ExternalLink,
-  ChevronRight
+  Zap,
+  CheckCircle2,
+  Headphones,
+  ExternalLink
 } from 'lucide-react';
 import { getSiteSettings, DEFAULT_SITE_SETTINGS } from '../../services/api';
-import { SiteSettings } from '../../types';
+import { SiteSettings, FooterFeatureBadge, FooterColumn } from '../../types';
 
 export const Footer: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
@@ -23,58 +22,105 @@ export const Footer: React.FC = () => {
     getSiteSettings().then(setSettings);
   }, []);
 
+  const badges: FooterFeatureBadge[] = (settings.footerBadges && settings.footerBadges.length > 0)
+    ? settings.footerBadges
+    : (DEFAULT_SITE_SETTINGS.footerBadges || []);
+
+  const showBadges = settings.showFooterBadges !== false;
+
+  const footerColumns: FooterColumn[] = (settings.footerColumns && settings.footerColumns.length > 0)
+    ? settings.footerColumns
+    : (DEFAULT_SITE_SETTINGS.footerColumns || []);
+
+  const badgeColorStyles = [
+    { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100' },
+    { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
+    { bg: 'bg-purple-50', text: 'text-[#7a00ea]', border: 'border-purple-100' },
+    { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' },
+    { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
+  ];
+
+  const renderBadgeIcon = (iconName?: string, index: number = 0) => {
+    const norm = (iconName || '').toLowerCase();
+    if (norm.includes('shield') || norm.includes('authentic') || norm.includes('security')) {
+      return <ShieldCheck className="w-6 h-6 stroke-[2.2]" />;
+    }
+    if (norm.includes('sparkle') || norm.includes('star') || norm.includes('edit')) {
+      return <Sparkles className="w-6 h-6 stroke-[2.2]" />;
+    }
+    if (norm.includes('zap') || norm.includes('fast')) {
+      return <Zap className="w-6 h-6 stroke-[2.2]" />;
+    }
+    if (norm.includes('check')) {
+      return <CheckCircle2 className="w-6 h-6 stroke-[2.2]" />;
+    }
+    if (norm.includes('support') || norm.includes('headphone')) {
+      return <Headphones className="w-6 h-6 stroke-[2.2]" />;
+    }
+    if (norm.includes('download') || norm.includes('delivery')) {
+      return <DownloadCloud className="w-6 h-6 stroke-[2.2]" />;
+    }
+
+    if (index === 0) return <DownloadCloud className="w-6 h-6 stroke-[2.2]" />;
+    if (index === 1) return <ShieldCheck className="w-6 h-6 stroke-[2.2]" />;
+    return <Sparkles className="w-6 h-6 stroke-[2.2]" />;
+  };
+
+  const copyrightText = (settings.footerCopyrightText || "© {year} {siteName}. All rights reserved.")
+    .replace('{year}', new Date().getFullYear().toString())
+    .replace('{siteName}', settings.siteName || 'Vyrqonix');
+
+  const designerPrefix = settings.footerDesignerPrefix || "Design by";
+  const designerName = settings.footerDesignerName || "Murad Rahman";
+  const designerUrl = settings.footerDesignerUrl || "https://www.facebook.com/profile.php?id=100085471628384";
+
+  // Compute grid columns based on number of footer link columns
+  // 1 column -> 4 grid columns (Brand spans 2, Links spans 1, Contact spans 1)
+  // 2 columns -> 5 grid columns (Brand spans 2, Links spans 1 each, Contact spans 1)
+  const gridLayoutClass = footerColumns.length > 1 ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
+
+  // All visible links for mobile footer
+  const allVisibleLinks = footerColumns.flatMap(c => c.links.filter(l => l.isVisible));
+
   return (
     <>
-      {/* ================= STANDALONE VALUE PROPOSITION BADGES (SEPARATED FROM FOOTER) ================= */}
-      <section className="hidden md:block py-8 sm:py-10">
-        <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-                <DownloadCloud className="w-6 h-6 stroke-[2.2]" />
-              </div>
-              <div>
-                <h4 className="text-slate-900 font-bold text-sm">Instant Digital Delivery</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Download source files right after order confirmation</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
-              </div>
-              <div>
-                <h4 className="text-slate-900 font-bold text-sm">100% Genuine & Authentic</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Verified digital access and premium creative assets</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0 border border-purple-100">
-                <Sparkles className="w-6 h-6 stroke-[2.2]" />
-              </div>
-              <div>
-                <h4 className="text-slate-900 font-bold text-sm">100% Editable Files & Working Games</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Layered design assets, verified software & tested games</p>
-              </div>
+      {/* ================= STANDALONE VALUE PROPOSITION BADGES ================= */}
+      {showBadges && badges.length > 0 && (
+        <section className="hidden md:block py-8 sm:py-10">
+          <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(badges.length, 4)} gap-6`}>
+              {badges.map((badge, idx) => {
+                const style = badgeColorStyles[idx % badgeColorStyles.length];
+                return (
+                  <div key={badge.id || idx} className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+                    <div className={`w-12 h-12 rounded-xl ${style.bg} ${style.text} flex items-center justify-center shrink-0 border ${style.border}`}>
+                      {renderBadgeIcon(badge.icon, idx)}
+                    </div>
+                    <div>
+                      <h4 className="text-slate-900 font-bold text-sm">{badge.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">{badge.subtitle}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ================= DESKTOP FOOTER (hidden md:block) ================= */}
       <footer className="hidden md:block bg-white text-slate-700 pt-14 pb-8 border-t border-slate-200/80">
         <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Main Footer Links */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12">
+          <div className={`grid grid-cols-1 md:grid-cols-2 ${gridLayoutClass} gap-10 pb-12`}>
             
             {/* Brand Col */}
             <div className="md:col-span-2 lg:col-span-2 space-y-4">
               <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
                 <img 
                   src="/logo.png" 
-                  alt="Vyrqonix Logo" 
+                  alt={settings.siteName || "Vyrqonix"} 
                   className="h-8 sm:h-9 w-auto object-contain drop-shadow-[0_1px_4px_rgba(59,130,246,0.14)]"
                 />
                 <span className="text-2xl font-black tracking-tight text-slate-900 leading-none">
@@ -85,7 +131,7 @@ export const Footer: React.FC = () => {
                 {settings.siteDescription}
               </p>
               
-              {/* Dynamic Social Links: YouTube, Facebook, WhatsApp */}
+              {/* Dynamic Social Links: YouTube, Facebook, WhatsApp, etc. */}
               <div className="pt-2 flex items-center gap-3">
                 {settings.socialLinks?.filter(s => s.isVisible && s.url).map((s) => {
                   const nameLower = s.name.toLowerCase();
@@ -131,50 +177,82 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            {/* Customer Support */}
-            <div className="space-y-3">
-              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Support & Info</h4>
-              <ul className="space-y-2.5 text-sm font-medium text-slate-600">
-                <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
-                <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact Support</Link></li>
-                <li><Link to="/refund-policy" className="hover:text-blue-600 transition-colors">Refund Policy</Link></li>
-                <li><Link to="/privacy-policy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
+            {/* Dynamic Link Columns */}
+            {footerColumns.map((col) => (
+              <div key={col.id} className="space-y-3">
+                <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">
+                  {col.title}
+                </h4>
+                <ul className="space-y-2.5 text-sm font-medium text-slate-600">
+                  {col.links.filter(l => l.isVisible).map((link) => {
+                    const isExternal = link.url.startsWith('http://') || link.url.startsWith('https://');
+                    return (
+                      <li key={link.id}>
+                        {isExternal ? (
+                          <a 
+                            href={link.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="hover:text-blue-600 transition-colors"
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          <Link 
+                            to={link.url} 
+                            className="hover:text-blue-600 transition-colors"
+                          >
+                            {link.label}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
 
-            {/* Contact Details */}
+            {/* Direct Contact */}
             <div className="space-y-3">
-              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Direct Contact</h4>
+              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">
+                {settings.footerContactTitle || "Direct Contact"}
+              </h4>
               <div className="space-y-2.5 text-xs text-slate-600 font-medium">
-                <div className="flex items-start gap-2.5">
-                  <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                  <span>{settings.address}</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Phone className="w-4 h-4 text-blue-600 shrink-0" />
-                  <a href={`tel:${settings.phone}`} className="hover:text-blue-600 transition-colors">{settings.phone}</a>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Mail className="w-4 h-4 text-blue-600 shrink-0" />
-                  <a href={`mailto:${settings.email}`} className="hover:text-blue-600 transition-colors">{settings.email}</a>
-                </div>
+                {settings.address && (
+                  <div className="flex items-start gap-2.5">
+                    <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                    <span>{settings.address}</span>
+                  </div>
+                )}
+                {settings.phone && (
+                  <div className="flex items-center gap-2.5">
+                    <Phone className="w-4 h-4 text-blue-600 shrink-0" />
+                    <a href={`tel:${settings.phone}`} className="hover:text-blue-600 transition-colors">{settings.phone}</a>
+                  </div>
+                )}
+                {settings.email && (
+                  <div className="flex items-center gap-2.5">
+                    <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                    <a href={`mailto:${settings.email}`} className="hover:text-blue-600 transition-colors">{settings.email}</a>
+                  </div>
+                )}
               </div>
             </div>
+
           </div>
 
           {/* Bottom copyright line */}
           <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
+            <p>{copyrightText}</p>
             <p className="text-xs text-slate-500 font-medium">
-              <span>Design by </span>
+              <span>{designerPrefix} </span>
               <a 
-                href="https://www.facebook.com/profile.php?id=100085471628384"
+                href={designerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-slate-700 hover:text-blue-600 hover:underline underline-offset-4 decoration-blue-600 transition-colors"
               >
-                Murad Rahman
+                {designerName}
               </a>
             </p>
           </div>
@@ -190,7 +268,7 @@ export const Footer: React.FC = () => {
           <Link to="/" className="inline-flex items-center gap-2">
             <img 
               src="/logo.png" 
-              alt={settings.siteName} 
+              alt={settings.siteName || "Vyrqonix"} 
               className="h-7 w-auto object-contain drop-shadow-[0_1px_3px_rgba(59,130,246,0.14)]"
             />
             <span className="font-black text-xl tracking-tight text-slate-900 leading-none">
@@ -199,44 +277,51 @@ export const Footer: React.FC = () => {
           </Link>
 
           {/* 2. Direct Contact hotline & email in one neat line */}
-          <div className="flex items-center justify-center gap-3 text-xs font-semibold text-slate-600">
-            <a 
-              href={`tel:${settings.phone}`} 
-              className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5 text-blue-600" />
-              <span>{settings.phone}</span>
-            </a>
-            <span className="text-slate-300">•</span>
-            <a 
-              href={`mailto:${settings.email}`} 
-              className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5 text-blue-600" />
-              <span>{settings.email}</span>
-            </a>
-          </div>
+          {(settings.phone || settings.email) && (
+            <div className="flex items-center justify-center gap-3 text-xs font-semibold text-slate-600">
+              {settings.phone && (
+                <a 
+                  href={`tel:${settings.phone}`} 
+                  className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{settings.phone}</span>
+                </a>
+              )}
+              {settings.phone && settings.email && <span className="text-slate-300">•</span>}
+              {settings.email && (
+                <a 
+                  href={`mailto:${settings.email}`} 
+                  className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{settings.email}</span>
+                </a>
+              )}
+            </div>
+          )}
 
           {/* 3. Essential Quick Links */}
-          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs font-medium text-slate-500">
-            <Link to="/shop" className="hover:text-blue-600 transition-colors">Shop</Link>
-            <span className="text-slate-300">•</span>
-            <Link to="/about" className="hover:text-blue-600 transition-colors">About</Link>
-            <span className="text-slate-300">•</span>
-            <Link to="/contact" className="hover:text-blue-600 transition-colors">Contact</Link>
-            <span className="text-slate-300">•</span>
-            <Link to="/terms" className="hover:text-blue-600 transition-colors">Terms</Link>
-            <span className="text-slate-300">•</span>
-            <Link to="/privacy-policy" className="hover:text-blue-600 transition-colors">Privacy</Link>
-            <span className="text-slate-300">•</span>
-            <Link to="/refund-policy" className="hover:text-blue-600 transition-colors">Refund</Link>
-          </div>
+          {allVisibleLinks.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs font-medium text-slate-500">
+              {allVisibleLinks.map((link, idx) => (
+                <React.Fragment key={link.id || idx}>
+                  {idx > 0 && <span className="text-slate-300">•</span>}
+                  {link.url.startsWith('http') ? (
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">{link.label}</a>
+                  ) : (
+                    <Link to={link.url} className="hover:text-blue-600 transition-colors">{link.label}</Link>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
 
           {/* 4. Compact Social Channels */}
           <div className="flex items-center justify-center gap-3 pt-0.5">
             {/* WhatsApp */}
             <a
-              href={`https://wa.me/88${(settings.whatsapp || "01566088159").replace(/[^0-9]/g, '')}`}
+              href={`https://wa.me/88${(settings.whatsapp || settings.phone || "01566088159").replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition-transform"
@@ -250,7 +335,7 @@ export const Footer: React.FC = () => {
 
             {/* Facebook */}
             <a
-              href={`${settings.socialLinks?.find(s => s.name.toLowerCase().includes('facebook'))?.url || "https://facebook.com/Vyrqonix"}`}
+              href={`${settings.socialLinks?.find(s => s.name.toLowerCase().includes('facebook'))?.url || "https://facebook.com/vyrqonix"}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-7 h-7 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition-transform"
@@ -279,16 +364,16 @@ export const Footer: React.FC = () => {
 
           {/* 5. Copyright */}
           <div className="text-[11px] text-slate-400 space-y-0.5">
-            <div>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</div>
+            <div>{copyrightText}</div>
             <div>
-              <span>Design by </span>
+              <span>{designerPrefix} </span>
               <a 
-                href="https://www.facebook.com/profile.php?id=100085471628384"
+                href={designerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-slate-600 hover:text-blue-600 hover:underline underline-offset-2 transition-colors"
               >
-                Murad Rahman
+                {designerName}
               </a>
             </div>
           </div>

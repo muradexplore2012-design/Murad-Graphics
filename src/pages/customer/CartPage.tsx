@@ -77,46 +77,47 @@ export const CartPage: React.FC = () => {
           {cart.map((item) => (
             <div 
               key={item.id} 
-              className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 shadow-sm"
+              className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 flex flex-row items-center gap-3 sm:gap-6 shadow-sm"
             >
               <img
                 src={item.thumbnail || '/logo.png'}
                 alt={item.name}
-                className="w-24 h-24 object-cover rounded-xl bg-slate-100 shrink-0"
+                className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-xl bg-slate-100 shrink-0"
               />
 
-              <div className="flex-1 text-center sm:text-left space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
+              <div className="flex-1 text-left space-y-1 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 block truncate">
                   {item.categoryName}
                 </span>
                 <Link to={`/product/${item.slug}`}>
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base hover:text-blue-600 line-clamp-1">
+                  <h3 className="font-bold text-slate-900 text-xs sm:text-base hover:text-blue-600 line-clamp-2">
                     {item.name}
                   </h3>
                 </Link>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1 pt-1">
-                  {item.formats?.map((fmt, i) => (
-                    <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                  {item.formats?.slice(0, 3).map((fmt, i) => (
+                    <span key={i} className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                       {fmt}
                     </span>
                   ))}
-                  <span className="text-[10px] text-slate-400 font-medium ml-1">
-                    • Instant Digital Download
+                  <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium">
+                    • Direct Download
                   </span>
                 </div>
               </div>
 
-              <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
-                <span className="font-black text-slate-900 text-base sm:text-lg">
-                  {item.isFree ? 'FREE' : `৳${item.price}`}
-                </span>
+              <div className="flex flex-col items-end justify-between self-stretch shrink-0 gap-2">
                 <button
                   onClick={() => removeFromCart(item.id)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                   title="Remove item"
+                  aria-label="Remove item"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+                <span className="font-black text-slate-900 text-sm sm:text-lg">
+                  {item.isFree ? 'FREE' : `৳${item.price}`}
+                </span>
               </div>
             </div>
           ))}

@@ -302,7 +302,7 @@ export const ProductDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
         {/* ================= LEFT COLUMN: MAIN PRODUCT POSTER & GALLERY ================= */}
-        <div className="lg:col-span-6 space-y-4">
+        <div className="lg:col-span-6 space-y-4 max-w-lg lg:max-w-none mx-auto w-full">
           
           {/* Main Poster Container (Exact 1080:1080 Square 1:1 Aspect Ratio Matching Photo 2) */}
           <div className="relative group rounded-3xl border border-slate-200/90 overflow-hidden bg-slate-900 shadow-sm aspect-square w-full flex items-center justify-center">
@@ -419,7 +419,7 @@ export const ProductDetailPage: React.FC = () => {
                 <span>{downloading ? "Processing..." : (product.customButtonText || (product.productType === 'game' ? 'Download Free Game' : product.productType === 'software' ? 'Download Free Software' : product.productType === 'template' ? 'Download Free Template' : 'Download Free Resource'))}</span>
               </button>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-3 w-full">
+              <div className="flex flex-wrap xs:flex-nowrap items-center gap-2 sm:gap-3 w-full">
                 {/* Quantity Stepper: [-] 1 [+] */}
                 <div className="flex items-center border border-slate-200 rounded-xl bg-white shadow-xs overflow-hidden h-11 sm:h-12 shrink-0">
                   <button
@@ -447,7 +447,7 @@ export const ProductDetailPage: React.FC = () => {
                 <button
                   onClick={() => addToCart(product)}
                   disabled={inCart}
-                  className={`flex-1 h-11 sm:h-12 px-2.5 sm:px-6 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95 cursor-pointer whitespace-nowrap min-w-0 ${
+                  className={`flex-1 min-w-[105px] h-11 sm:h-12 px-2.5 sm:px-6 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95 cursor-pointer whitespace-nowrap ${
                     inCart 
                       ? 'bg-slate-200 text-slate-500 cursor-not-allowed' 
                       : 'bg-[#7a00ea] hover:bg-[#6c00d4] text-white shadow-purple-600/20'
@@ -463,7 +463,7 @@ export const ProductDetailPage: React.FC = () => {
                     addToCart(product);
                     navigate('/checkout');
                   }}
-                  className="flex-1 h-11 sm:h-12 px-3 sm:px-6 rounded-xl bg-black hover:bg-slate-900 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center active:scale-95 cursor-pointer whitespace-nowrap min-w-0"
+                  className="flex-1 min-w-[90px] h-11 sm:h-12 px-3 sm:px-6 rounded-xl bg-black hover:bg-slate-900 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center active:scale-95 cursor-pointer whitespace-nowrap"
                 >
                   <span className="truncate">Buy Now</span>
                 </button>
@@ -518,11 +518,11 @@ export const ProductDetailPage: React.FC = () => {
       <div className="space-y-6 pt-4">
         
         {/* Tab Buttons (Description | Additional information | Reviews) */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-3 flex-wrap">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto no-scrollbar scroll-smooth">
           <button
             type="button"
             onClick={() => setActiveTab('description')}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === 'description'
                 ? 'bg-[#7a00ea] text-white shadow-md shadow-purple-600/20'
                 : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
@@ -534,7 +534,7 @@ export const ProductDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('additional')}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === 'additional'
                 ? 'bg-[#7a00ea] text-white shadow-md shadow-purple-600/20'
                 : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
@@ -546,7 +546,7 @@ export const ProductDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('reviews')}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === 'reviews'
                 ? 'bg-[#7a00ea] text-white shadow-md shadow-purple-600/20'
                 : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'

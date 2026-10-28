@@ -428,41 +428,68 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* ================= MOBILE VIEW: TRUST BADGES BAR ================= */}
-          <div className="lg:hidden col-span-1 mt-4 sm:mt-5 mb-1">
-            <div className="flex items-center justify-between py-3.5 px-2.5 sm:px-4 rounded-2xl bg-white border border-purple-100/70 shadow-xs divide-x divide-slate-100">
+          <div className="lg:hidden col-span-1 mt-3 sm:mt-5 mb-1">
+            <div className="grid grid-cols-3 py-2.5 sm:py-3.5 px-1 sm:px-4 rounded-2xl bg-white border border-purple-100/70 shadow-xs divide-x divide-slate-100">
               
               {/* 100% Genuine */}
-              <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
-                <div className="w-7 h-7 rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center sm:text-left min-w-0">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 </div>
-                <span className="font-bold text-[11px] sm:text-xs text-slate-800 whitespace-nowrap">
+                <span className="font-bold text-[10px] sm:text-xs text-slate-800 truncate sm:whitespace-nowrap">
                   100% Genuine
                 </span>
               </div>
 
               {/* Fast Delivery */}
-              <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
-                <div className="w-7 h-7 rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
-                  <Mail className="w-4 h-4 stroke-[2.5]" />
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center sm:text-left min-w-0">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
+                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 </div>
-                <span className="font-bold text-[11px] sm:text-xs text-slate-800 whitespace-nowrap">
+                <span className="font-bold text-[10px] sm:text-xs text-slate-800 truncate sm:whitespace-nowrap">
                   Fast Delivery
                 </span>
               </div>
 
               {/* Live Support */}
-              <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
-                <div className="w-7 h-7 rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
-                  <MessageSquare className="w-4 h-4 stroke-[2.5]" />
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center sm:text-left min-w-0">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 </div>
-                <span className="font-bold text-[11px] sm:text-xs text-slate-800 whitespace-nowrap">
+                <span className="font-bold text-[10px] sm:text-xs text-slate-800 truncate sm:whitespace-nowrap">
                   Live Support
                 </span>
               </div>
 
             </div>
           </div>
+
+          {/* ================= MOBILE VIEW: PROMO BANNER ================= */}
+          {sideTopPoster && (
+            <div className="md:hidden col-span-1 mt-1 mb-2">
+              <div className="w-full aspect-[16/7] rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs bg-slate-950">
+                {sideTopPoster.ctaLink?.startsWith('http') ? (
+                  <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                    <img
+                      src={sideTopPoster.imageUrl}
+                      alt={sideTopPoster.title || 'Special Promotion'}
+                      loading="lazy"
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </a>
+                ) : (
+                  <Link to={sideTopPoster.ctaLink || '/shop'} className="block w-full h-full">
+                    <img
+                      src={sideTopPoster.imageUrl}
+                      alt={sideTopPoster.title || 'Special Promotion'}
+                      loading="lazy"
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ================= TABLET & DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
           <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-5 xl:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 lg:h-[360px] xl:h-[390px] 2xl:h-[430px]">
@@ -577,17 +604,17 @@ export const HomePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => scrollCategories('left')}
-                className="absolute -left-1.5 sm:-left-4 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-black/95 hover:bg-purple-600 text-white border border-white/30 backdrop-blur-md flex items-center justify-center shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+                className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/95 hover:bg-purple-600 text-white border border-white/30 backdrop-blur-md items-center justify-center shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                 aria-label="Previous Category"
               >
-                <ChevronLeft className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
             )}
 
             {/* Scrollable Categories Row */}
             <div
               ref={categoriesScrollRef}
-              className="flex items-center gap-2.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth px-0.5 py-1 sm:py-2.5"
+              className="flex items-center gap-2.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth px-0.5 py-1 sm:py-2.5 touch-pan-x overscroll-x-contain"
             >
               {/* All Products First Card */}
               <Link
@@ -641,10 +668,10 @@ export const HomePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => scrollCategories('right')}
-                className="absolute -right-1.5 sm:-right-4 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-black/95 hover:bg-purple-600 text-white border border-white/30 backdrop-blur-md flex items-center justify-center shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+                className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/95 hover:bg-purple-600 text-white border border-white/30 backdrop-blur-md items-center justify-center shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                 aria-label="Next Category"
               >
-                <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             )}
           </div>
