@@ -15,7 +15,8 @@ import {
 import { 
   getProducts, 
   getCategories, 
-  getBanners 
+  getBanners,
+  getSiteSettings 
 } from '../../services/api';
 import { Product, Category, Banner } from '../../types';
 import { ProductCard } from '../../components/ui/ProductCard';
@@ -133,6 +134,16 @@ export const HomePage: React.FC = () => {
     } catch {}
     return SAMPLE_SIDE_BOTTOM_RIGHT;
   });
+  const [allProductsCardImage, setAllProductsCardImage] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('mg_site_settings_cache');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s.allProductsImage) return s.allProductsImage;
+      }
+    } catch {}
+    return '/categories/all-products.png';
+  });
   const [loading, setLoading] = useState<boolean>(() => {
     try {
       const saved = sessionStorage.getItem('mg_cache_home_products') || localStorage.getItem('mg_cache_home_products') || sessionStorage.getItem('mg_cache_home_featured');
@@ -149,16 +160,31 @@ export const HomePage: React.FC = () => {
   const [hasCategoriesOverflow, setHasCategoriesOverflow] = useState(false);
 
   useEffect(() => {
+    const handleSettingsUpdate = (e: any) => {
+      if (e.detail?.allProductsImage) {
+        setAllProductsCardImage(e.detail.allProductsImage);
+      }
+    };
+    window.addEventListener('mg_site_settings_updated', handleSettingsUpdate);
+    return () => window.removeEventListener('mg_site_settings_updated', handleSettingsUpdate);
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const [activeProducts, cats, bannerList] = await Promise.all([
+        const [activeProducts, cats, bannerList, siteSet] = await Promise.all([
           getProducts({ onlyActive: true }),
           getCategories(true),
-          getBanners(true)
+          getBanners(true),
+          getSiteSettings().catch(() => null)
         ]);
 
         if (!isMounted) return;
+
+        if (siteSet?.allProductsImage) {
+          setAllProductsCardImage(siteSet.allProductsImage);
+        }
 
         const sliders: Banner[] = [];
         let topPoster: Banner | null = null;
@@ -569,7 +595,7 @@ export const HomePage: React.FC = () => {
                 className="shrink-0 w-28 sm:w-44 md:w-48 lg:w-52 aspect-[4/3] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden border sm:border-2 border-purple-500/50 hover:border-purple-400 shadow-sm sm:shadow-[0_0_18px_rgba(147,51,234,0.25)] hover:shadow-[0_0_28px_rgba(168,85,247,0.55)] transition-all duration-300 hover:scale-105 active:scale-95 group/card relative bg-[#0d0524]"
               >
                 <img
-                  src="/categories/all-products.png"
+                  src={allProductsCardImage || "/categories/all-products.png"}
                   alt="All Products"
                   className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
                 />

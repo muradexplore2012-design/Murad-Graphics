@@ -5,6 +5,8 @@ import {
   updateCategory, 
   deleteCategory,
   uploadImageWithFallback,
+  getSiteSettings,
+  updateSiteSettings,
   recordAuditLog 
 } from '../../services/api';
 import { Category } from '../../types';
@@ -46,12 +48,25 @@ export const AdminCategoriesPage: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  // All Products Card Image State
+  const [allProductsImg, setAllProductsImg] = useState<string>('/categories/all-products.png');
+  const [uploadingAllProducts, setUploadingAllProducts] = useState(false);
+  const [savingAllProducts, setSavingAllProducts] = useState(false);
+  const [allProductsSuccess, setAllProductsSuccess] = useState(false);
+  const allProductsFileInputRef = useRef<HTMLInputElement>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadData = async () => {
     try {
-      const cats = await getCategories(false);
+      const [cats, settings] = await Promise.all([
+        getCategories(false),
+        getSiteSettings(true).catch(() => null)
+      ]);
       setCategories(cats);
+      if (settings?.allProductsImage) {
+        setAllProductsImg(settings.allProductsImage);
+      }
       try {
         localStorage.setItem(ADMIN_CATEGORIES_CACHE_KEY, JSON.stringify(cats));
       } catch {}
@@ -63,6 +78,73 @@ export const AdminCategoriesPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleAllProductsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAllProducts(true);
+    try {
+      const path = `categories/all_products_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const url = await uploadImageWithFallback(file, path);
+      setAllProductsImg(url);
+      
+      setSavingAllProducts(true);
+      await updateSiteSettings({ allProductsImage: url });
+      
+      try {
+        const cachedRaw = localStorage.getItem('mg_site_settings_cache');
+        const cachedSettings = cachedRaw ? JSON.parse(cachedRaw) : {};
+        cachedSettings.allProductsImage = url;
+        localStorage.setItem('mg_site_settings_cache', JSON.stringify(cachedSettings));
+        window.dispatchEvent(new CustomEvent('mg_site_settings_updated', { detail: cachedSettings }));
+      } catch {}
+
+      await recordAuditLog({
+        adminUid: user?.uid || '',
+        adminEmail: user?.email || '',
+        action: 'UPDATE_ALL_PRODUCTS_IMAGE',
+        targetType: 'SETTINGS',
+        targetId: 'allProductsImage',
+        details: { imageUrl: url }
+      });
+
+      setAllProductsSuccess(true);
+      setTimeout(() => setAllProductsSuccess(false), 3000);
+    } catch (err: any) {
+      alert("Failed to upload image: " + err.message);
+    } finally {
+      setUploadingAllProducts(false);
+      setSavingAllProducts(false);
+      if (allProductsFileInputRef.current) {
+        allProductsFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleResetAllProductsImg = async () => {
+    if (!window.confirm("All Products কার্ডের ছবিটি ডিফল্ট ছবিতে রিসেট করতে চান?")) return;
+    
+    setSavingAllProducts(true);
+    try {
+      const defaultImg = '/categories/all-products.png';
+      setAllProductsImg(defaultImg);
+      await updateSiteSettings({ allProductsImage: defaultImg });
+      try {
+        const cachedRaw = localStorage.getItem('mg_site_settings_cache');
+        const cachedSettings = cachedRaw ? JSON.parse(cachedRaw) : {};
+        cachedSettings.allProductsImage = defaultImg;
+        localStorage.setItem('mg_site_settings_cache', JSON.stringify(cachedSettings));
+        window.dispatchEvent(new CustomEvent('mg_site_settings_updated', { detail: cachedSettings }));
+      } catch {}
+      setAllProductsSuccess(true);
+      setTimeout(() => setAllProductsSuccess(false), 3000);
+    } catch (err: any) {
+      alert("Failed to reset: " + err.message);
+    } finally {
+      setSavingAllProducts(false);
+    }
+  };
 
   const handleNameChange = (val: string) => {
     setName(val);
@@ -183,6 +265,74 @@ export const AdminCategoriesPage: React.FC = () => {
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Categories Management</h1>
         <p className="text-xs text-slate-500 mt-1">Organize graphic resources, templates, and apps with custom icons</p>
+      </div>
+
+      {/* ================= ALL PRODUCTS 1ST CARD CUSTOMIZER ================= */}
+      <div className="bg-gradient-to-r from-slate-900 via-[#180a33] to-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-md border border-purple-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        <div className="flex items-center gap-4 sm:gap-5">
+          <div className="w-24 sm:w-32 aspect-[4/3] rounded-2xl overflow-hidden border-2 border-purple-400/50 shadow-lg shrink-0 relative bg-black/60 group">
+            <img
+              src={allProductsImg || '/categories/all-products.png'}
+              alt="All Products Card"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+            <span className="absolute bottom-1.5 left-1.5 right-1.5 text-center text-[9px] font-black uppercase tracking-wider bg-black/75 backdrop-blur-xs text-purple-300 py-0.5 rounded">
+              Current Card
+            </span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2.5 py-0.5 rounded-full border border-purple-400/30">
+                Home Collections 1st Card
+              </span>
+              {allProductsSuccess && (
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 animate-in fade-in">
+                  <Check className="w-3 h-3" /> Saved Live!
+                </span>
+              )}
+            </div>
+            <h2 className="text-base sm:text-lg font-black text-white mt-1.5">
+              All Products Card Picture (প্রথম কার্ডের ছবি)
+            </h2>
+            <p className="text-xs text-purple-200/80 mt-0.5 max-w-xl leading-relaxed">
+              হোমপেজের Collections সেকশনের একদম প্রথম কার্ড ("All Products")-এর ছবি ও আইকন এখান থেকে সরাসরি পরিবর্তন করতে পারবেন।
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/10">
+          <input
+            ref={allProductsFileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAllProductsUpload}
+            disabled={uploadingAllProducts || savingAllProducts}
+            className="hidden"
+            id="all-products-file-input"
+          />
+          <button
+            type="button"
+            onClick={() => allProductsFileInputRef.current?.click()}
+            disabled={uploadingAllProducts || savingAllProducts}
+            className="flex-1 md:flex-initial px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+          >
+            <Upload className="w-4 h-4" />
+            <span>{uploadingAllProducts ? "Uploading..." : savingAllProducts ? "Saving..." : "Change Image (ছবি পরিবর্তন)"}</span>
+          </button>
+
+          {allProductsImg && allProductsImg !== '/categories/all-products.png' && (
+            <button
+              type="button"
+              onClick={handleResetAllProductsImg}
+              disabled={savingAllProducts}
+              className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-bold text-xs rounded-xl transition-all border border-white/10 cursor-pointer"
+              title="ডিফল্ট ছবিতে রিসেট করুন"
+            >
+              Reset Default
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

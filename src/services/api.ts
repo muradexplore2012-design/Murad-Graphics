@@ -42,6 +42,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   siteSubtitle: "Your Digital World",
   siteTitle: "Vyrqonix | Graphic Resources, Software & Game",
   siteDescription: "A digital marketplace for graphic design resources, editable design files, software and apps.",
+  allProductsImage: "/categories/all-products.png",
   phone: "01566088159",
   email: "muradrahman2026@gmail.com",
   address: "Dhaka, Bangladesh",

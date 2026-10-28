@@ -327,6 +327,51 @@ export const AdminSettingsPage: React.FC = () => {
                 </p>
               </div>
 
+              {/* All Products Card Image Setting */}
+              <div className="sm:col-span-2 p-4 bg-purple-50/60 border border-purple-200/80 rounded-2xl space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <label className="font-bold text-slate-900 block text-sm">
+                      Home Collections: "All Products" Card Image (প্রথম কার্ডের ছবি)
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      হোমপেজের Collections সেকশনের প্রথম কার্ড ("All Products")-এর ছবি ও আইকন।
+                    </p>
+                  </div>
+                  {settings.allProductsImage && settings.allProductsImage !== '/categories/all-products.png' && (
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, allProductsImage: '/categories/all-products.png' })}
+                      className="text-xs text-purple-700 hover:underline font-semibold cursor-pointer"
+                    >
+                      Reset Default
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-20 aspect-[4/3] rounded-xl overflow-hidden border border-purple-300 bg-black/40 shrink-0">
+                    <img
+                      src={settings.allProductsImage || '/categories/all-products.png'}
+                      alt="All Products Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={settings.allProductsImage || ''}
+                      placeholder="/categories/all-products.png or Image URL"
+                      onChange={(e) => setSettings({ ...settings, allProductsImage: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      ছবি আপলোড করতে <strong className="text-purple-700">Admin &gt; Categories</strong> পেজে গিয়ে সরাসরি ফাইল নির্বাচন করতে পারেন।
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="font-semibold block mb-1 text-slate-800">Support Phone (Bangladesh)</label>
                 <input
