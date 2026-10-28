@@ -114,6 +114,19 @@ export const CheckoutPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
+        {/* Mobile Quick Order Summary Header */}
+        <div className="lg:hidden col-span-1 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-2xl p-4 flex items-center justify-between text-xs shadow-xs">
+          <div>
+            <span className="font-extrabold text-slate-900 block">
+              Order Total ({cart.length} item{cart.length > 1 ? 's' : ''}):
+            </span>
+            <span className="text-slate-500 text-[11px]">Instant Lifetime Digital Access</span>
+          </div>
+          <span className="text-xl font-black text-blue-600">
+            {isFreeCheckout ? 'FREE' : `৳${finalTotal}`}
+          </span>
+        </div>
+        
         {/* Left Form: Customer Details & Payment instructions */}
         <div className="lg:col-span-7 space-y-6">
           <form onSubmit={handlePlaceOrder} id="checkout-form" className="space-y-6">
