@@ -67,10 +67,10 @@ export const Footer: React.FC = () => {
         <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Main Footer Links */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12">
             
             {/* Brand Col */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="md:col-span-2 lg:col-span-2 space-y-4">
               <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
                 <img 
                   src="/logo.png" 
@@ -131,25 +131,12 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="space-y-3">
-              <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Marketplace</h4>
-              <ul className="space-y-2.5 text-sm font-medium text-slate-600">
-                <li><Link to="/shop" className="hover:text-blue-600 transition-colors">All Products</Link></li>
-                <li><Link to="/shop?type=free" className="hover:text-emerald-600 transition-colors">Free Resources</Link></li>
-                <li><Link to="/shop?type=paid" className="hover:text-blue-600 transition-colors">Premium Assets</Link></li>
-                <li><Link to="/cart" className="hover:text-blue-600 transition-colors">Cart</Link></li>
-                <li><Link to="/wishlist" className="hover:text-blue-600 transition-colors">Wishlist</Link></li>
-              </ul>
-            </div>
-
             {/* Customer Support */}
             <div className="space-y-3">
               <h4 className="text-slate-900 font-bold text-sm tracking-wider uppercase">Support & Info</h4>
               <ul className="space-y-2.5 text-sm font-medium text-slate-600">
                 <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
                 <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact Support</Link></li>
-                <li><Link to="/faq" className="hover:text-blue-600 transition-colors">FAQs & Help</Link></li>
                 <li><Link to="/refund-policy" className="hover:text-blue-600 transition-colors">Refund Policy</Link></li>
                 <li><Link to="/privacy-policy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>
