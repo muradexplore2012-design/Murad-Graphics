@@ -1,11 +1,28 @@
 import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Heart } from 'lucide-react';
 
 export const WishlistPage: React.FC = () => {
+  const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
   const { wishlist, clearWishlist } = useWishlist();
+
+  // Require user authentication to access wishlist
+  if (authLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-rose-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login?redirect=/wishlist" replace state={{ from: location }} />;
+  }
 
   return (
     <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

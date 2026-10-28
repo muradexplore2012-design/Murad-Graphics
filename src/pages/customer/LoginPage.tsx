@@ -33,7 +33,7 @@ export const LoginPage: React.FC = () => {
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
-  const redirectPath = searchParams.get('redirect') || '/account';
+  const redirectPath = searchParams.get('redirect') || (location.state as any)?.from?.pathname || '/account';
 
   // Detect In-App Browsers (WhatsApp, Facebook, Messenger, Instagram, etc.)
   useEffect(() => {

@@ -181,7 +181,7 @@ export const BottomNavigation: React.FC = () => {
 
         {/* 3. Cart */}
         <Link
-          to="/cart"
+          to={user ? "/cart" : "/login?redirect=/cart"}
           className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative ${
             isCartActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
           }`}

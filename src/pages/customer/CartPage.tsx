@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { 
   Trash2, 
   ArrowRight, 
@@ -9,10 +9,13 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { validateCouponCode } from '../../services/api';
 import { EmptyState } from '../../components/ui/EmptyState';
 
 export const CartPage: React.FC = () => {
+  const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
   const { cart, removeFromCart, clearCart, totalPrice } = useCart();
   const navigate = useNavigate();
 
@@ -20,6 +23,19 @@ export const CartPage: React.FC = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponMessage, setCouponMessage] = useState<{ text: string; isError: boolean } | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  // Require user authentication to access cart
+  if (authLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login?redirect=/cart" replace state={{ from: location }} />;
+  }
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
