@@ -245,8 +245,43 @@ export const Header: React.FC = () => {
             </div>
           </Link>
 
-          {/* Right: Circular Purple Cart Button */}
-          <div className="flex items-center shrink-0">
+          {/* Right: Wishlist + Circular Purple Cart Button */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Wishlist Button with Badge */}
+            {user ? (
+              <Link
+                to="/wishlist"
+                className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95 shrink-0"
+                title="Wishlist"
+                aria-label="View Wishlist"
+              >
+                <div className="relative inline-flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-slate-700 group-hover:text-rose-600 transition-colors" />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAuthModal({ open: true, type: 'wishlist' })}
+                className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95 shrink-0"
+                title="Sign In to View Wishlist"
+                aria-label="View Wishlist"
+              >
+                <div className="relative inline-flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-slate-700 group-hover:text-rose-600 transition-colors" />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+            )}
             {/* Purple Circular Cart Button with Badge */}
             {user ? (
               <Link
