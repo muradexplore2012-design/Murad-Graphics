@@ -25,6 +25,11 @@ export const AccountPage: React.FC = () => {
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.photoURL]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -198,11 +203,12 @@ export const AccountPage: React.FC = () => {
       {/* Account Profile Header */}
       <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-5 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6 shadow-sm">
         <div className="flex items-center gap-3.5 sm:gap-4 text-left w-full sm:w-auto">
-          {user.photoURL ? (
+          {user.photoURL && !avatarError ? (
             <img 
               src={user.photoURL} 
               alt={user.displayName || "User"} 
               referrerPolicy="no-referrer"
+              onError={() => setAvatarError(true)}
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover shadow-md border-2 border-slate-100 shrink-0"
             />
           ) : (

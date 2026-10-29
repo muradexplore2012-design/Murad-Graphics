@@ -41,21 +41,57 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper: Ensure Google/Gmail avatar URL always bypasses browser HTTP cache when photo changes
-const wrapUserWithFreshPhoto = (u: User | null, v: number): User | null => {
-  if (!u) return null;
-  const rawPhoto = u.photoURL;
-  if (!rawPhoto) return u;
+// LocalStorage keys to guarantee user avatar permanently persists across page reloads & browser restarts
+export const AVATAR_CACHE_KEY = (uid: string) => `mg_user_avatar_${uid}`;
+export const AVATAR_VER_KEY = (uid: string) => `mg_user_avatar_ver_${uid}`;
 
-  // Format with cache-busting query parameter so the browser immediately fetches updated picture
-  const cleanBase = rawPhoto.replace(/[?&]t=\d+/, '');
-  const separator = cleanBase.includes('?') ? '&' : '?';
-  const freshPhoto = `${cleanBase}${separator}t=${v}`;
+/**
+ * Returns the permanent fresh avatar URL for a user.
+ * - Respects manual overrides if given.
+ * - Synchronously uses localStorage so on F5 / page reload the fresh picture appears instantly.
+ * - Preserves version timestamp `?t=...` so Google CDN never returns stale disk-cached image.
+ */
+export const getPersistentPhotoURL = (u: User | null, forcedUrl?: string): string | null => {
+  if (!u) return null;
+  if (forcedUrl) return forcedUrl;
+
+  try {
+    const cached = localStorage.getItem(AVATAR_CACHE_KEY(u.uid));
+    if (cached) return cached;
+  } catch {}
+
+  const rawPhoto = u.providerData?.[0]?.photoURL || u.photoURL;
+  if (!rawPhoto) return null;
+
+  try {
+    let ver = localStorage.getItem(AVATAR_VER_KEY(u.uid));
+    if (!ver) {
+      ver = String(Date.now());
+      localStorage.setItem(AVATAR_VER_KEY(u.uid), ver);
+    }
+    const cleanBase = rawPhoto.replace(/[?&]t=\d+/, '');
+    const separator = cleanBase.includes('?') ? '&' : '?';
+    const versionedUrl = `${cleanBase}${separator}t=${ver}`;
+    localStorage.setItem(AVATAR_CACHE_KEY(u.uid), versionedUrl);
+    return versionedUrl;
+  } catch {
+    return rawPhoto;
+  }
+};
+
+/**
+ * Wraps User object with a Proxy so that `user.photoURL` returns the persistent, latest avatar.
+ */
+export const wrapUserWithPersistentPhoto = (u: User | null, forcedUrl?: string): User | null => {
+  if (!u) return null;
+
+  const persistentPhoto = getPersistentPhotoURL(u, forcedUrl);
+  if (!persistentPhoto) return u;
 
   return new Proxy(u, {
     get(target, prop, receiver) {
       if (prop === 'photoURL') {
-        return freshPhoto;
+        return persistentPhoto;
       }
       const val = Reflect.get(target, prop, receiver);
       if (typeof val === 'function') {
@@ -91,19 +127,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (fresh) {
         const v = Date.now();
         setPhotoVersion(v);
-        setUser(wrapUserWithFreshPhoto(fresh, v));
+
+        // Fetch newest photo from providerData (Google IdP) or user photoURL
+        const rawPhoto = fresh.providerData?.[0]?.photoURL || fresh.photoURL;
+        let freshUrl: string | null = null;
+
+        if (rawPhoto) {
+          const cleanBase = rawPhoto.replace(/[?&]t=\d+/, '');
+          const separator = cleanBase.includes('?') ? '&' : '?';
+          freshUrl = `${cleanBase}${separator}t=${v}`;
+
+          // Persist in localStorage so it survives page reloads permanently
+          try {
+            localStorage.setItem(AVATAR_VER_KEY(fresh.uid), String(v));
+            localStorage.setItem(AVATAR_CACHE_KEY(fresh.uid), freshUrl);
+          } catch (e) {
+            console.warn("Could not save avatar to localStorage:", e);
+          }
+
+          // Update Firebase Auth user object directly in IndexedDB / Firebase backend
+          try {
+            await updateProfile(fresh, { photoURL: freshUrl });
+          } catch (e) {
+            console.warn("Could not update Firebase Auth user profile photoURL:", e);
+          }
+        }
+
+        // Set wrapped user in state
+        setUser(wrapUserWithPersistentPhoto(fresh, freshUrl || undefined));
 
         // 3. Sync the latest photoURL to Firestore users collection
-        if (fresh.photoURL) {
-          try {
-            await setDoc(doc(db, 'users', fresh.uid), {
-              photoURL: fresh.photoURL,
-              displayName: fresh.displayName || '',
-              lastPhotoSync: new Date().toISOString()
-            }, { merge: true });
-          } catch (e) {
-            console.warn("Could not sync photo to Firestore:", e);
-          }
+        try {
+          await setDoc(doc(db, 'users', fresh.uid), {
+            photoURL: freshUrl || fresh.photoURL || '',
+            displayName: fresh.displayName || '',
+            photoVersion: v,
+            lastPhotoSync: new Date().toISOString()
+          }, { merge: true });
+        } catch (e) {
+          console.warn("Could not sync photo to Firestore:", e);
         }
       }
     } catch (err) {
@@ -192,7 +254,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getRedirectResult(auth)
       .then((cred) => {
         if (cred?.user) {
-          setUser(cred.user);
+          setUser(wrapUserWithPersistentPhoto(cred.user));
+          refreshUserProfile().catch(() => {});
         }
       })
       .catch((err) => {
@@ -200,22 +263,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+      // 1. Immediately wrap and set the user using persisted localStorage avatar
+      // This guarantees the new photo is visible from the very first frame on page reload!
+      const initialWrapped = wrapUserWithPersistentPhoto(currentUser);
+      setUser(initialWrapped);
 
       if (currentUser) {
-        // Automatically sync registered user document to Firestore for user tracking & identification
+        let activePhoto = getPersistentPhotoURL(currentUser);
+
+        // Automatically sync registered user document to Firestore
         try {
           const userDocRef = doc(db, 'users', currentUser.uid);
+
+          // Check if Firestore already has an updated photoURL
+          const userSnap = await getDoc(userDocRef);
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            if (typeof data?.photoURL === 'string' && data.photoURL.includes('t=')) {
+              if (!activePhoto || !activePhoto.includes('t=')) {
+                const firestorePhoto: string = data.photoURL;
+                activePhoto = firestorePhoto;
+                try {
+                  localStorage.setItem(AVATAR_CACHE_KEY(currentUser.uid), firestorePhoto);
+                } catch {}
+                setUser(wrapUserWithPersistentPhoto(currentUser, firestorePhoto));
+              }
+            }
+          }
+
+          // Write to Firestore - NEVER overwrite with old bare photoURL
           await setDoc(userDocRef, {
             uid: currentUser.uid,
             email: currentUser.email?.toLowerCase() || '',
             displayName: currentUser.displayName || '',
-            photoURL: currentUser.photoURL || '',
+            photoURL: activePhoto || currentUser.photoURL || '',
             lastLoginAt: new Date().toISOString()
           }, { merge: true });
         } catch (err) {
           console.warn("Could not sync user profile to Firestore:", err);
         }
+
+        // If this client hasn't cached an avatar version yet, silently refresh in background once
+        try {
+          const hasCachedVer = localStorage.getItem(AVATAR_VER_KEY(currentUser.uid));
+          if (!hasCachedVer) {
+            refreshUserProfile().catch(() => {});
+          }
+        } catch {}
       }
 
       await checkAdminStatus(currentUser);
@@ -258,7 +352,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const userCred = await signInWithPopup(auth, provider);
       if (userCred?.user) {
-        setUser(userCred.user);
+        setUser(wrapUserWithPersistentPhoto(userCred.user));
+        refreshUserProfile().catch(() => {});
       }
     } catch (err: any) {
       console.warn("Google popup encounter, checking redirect fallback:", err);
@@ -284,7 +379,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const credential = GoogleAuthProvider.credential(idToken);
     const userCredential = await signInWithCredential(auth, credential);
     if (userCredential.user) {
-      setUser(userCredential.user);
+      setUser(wrapUserWithPersistentPhoto(userCredential.user));
+      refreshUserProfile().catch(() => {});
     }
     return userCredential;
   };

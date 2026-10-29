@@ -39,10 +39,15 @@ const sampleCategories: { id: string; name: string; slug: string }[] = [
 export const Header: React.FC = () => {
   const { user, isAdmin, logout, refreshUserProfile } = useAuth();
   const [syncingPhoto, setSyncingPhoto] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const { cart, totalPrice } = useCart();
   const { wishlist } = useWishlist();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.photoURL]);
 
   const [categories, setCategories] = useState<Category[]>(() => {
     try {
@@ -527,11 +532,12 @@ export const Header: React.FC = () => {
                   className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all duration-300 overflow-hidden cursor-pointer active:scale-95 group"
                   title="My Account"
                 >
-                  {user?.photoURL ? (
+                  {user?.photoURL && !avatarError ? (
                     <img 
                       src={user.photoURL} 
                       alt={user.displayName || "User"} 
                       referrerPolicy="no-referrer"
+                      onError={() => setAvatarError(true)}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   ) : (
