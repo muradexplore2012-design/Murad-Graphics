@@ -464,33 +464,6 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* ================= MOBILE VIEW: PROMO BANNER ================= */}
-          {sideTopPoster && (
-            <div className="md:hidden col-span-1 mt-1 mb-2">
-              <div className="w-full aspect-[16/7] rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs bg-slate-950">
-                {sideTopPoster.ctaLink?.startsWith('http') ? (
-                  <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-                    <img
-                      src={sideTopPoster.imageUrl}
-                      alt={sideTopPoster.title || 'Special Promotion'}
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </a>
-                ) : (
-                  <Link to={sideTopPoster.ctaLink || '/shop'} className="block w-full h-full">
-                    <img
-                      src={sideTopPoster.imageUrl}
-                      alt={sideTopPoster.title || 'Special Promotion'}
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* ================= TABLET & DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
           <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-5 xl:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 lg:h-[360px] xl:h-[390px] 2xl:h-[430px]">
             
