@@ -192,9 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getRedirectResult(auth)
       .then((cred) => {
         if (cred?.user) {
-          const v = Date.now();
-          setPhotoVersion(v);
-          setUser(wrapUserWithFreshPhoto(cred.user, v));
+          setUser(cred.user);
         }
       })
       .catch((err) => {
@@ -202,9 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      const v = Date.now();
-      setPhotoVersion(v);
-      setUser(wrapUserWithFreshPhoto(currentUser, v));
+      setUser(currentUser);
 
       if (currentUser) {
         // Automatically sync registered user document to Firestore for user tracking & identification
@@ -226,49 +222,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    // 1. Instant sync when user switches back to this tab (e.g. after changing Gmail photo in another tab or window)
-    const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible' && auth.currentUser) {
-        refreshUserProfile();
-      }
-    };
-
-    window.addEventListener('focus', handleVisibilityOrFocus);
-    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-
-    // 2. Periodic gentle background sync every 25 seconds while tab is active
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible' && auth.currentUser) {
-        refreshUserProfile();
-      }
-    }, 25000);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener('focus', handleVisibilityOrFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-      clearInterval(interval);
-    };
+    return () => unsubscribe();
   }, []);
-
-  // 3. Realtime Firestore sync for cross-device/instant profile updates
-  useEffect(() => {
-    if (!auth.currentUser?.uid) return;
-    const unsubDoc = onSnapshot(doc(db, 'users', auth.currentUser.uid), (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.photoURL && auth.currentUser && data.photoURL !== auth.currentUser.photoURL) {
-          const v = Date.now();
-          setPhotoVersion(v);
-          setUser(wrapUserWithFreshPhoto(auth.currentUser, v));
-        }
-      }
-    }, (err) => {
-      console.warn("User doc snapshot error:", err);
-    });
-
-    return () => unsubDoc();
-  }, [user?.uid]);
 
   const refreshAdminStatus = async () => {
     await checkAdminStatus(auth.currentUser);

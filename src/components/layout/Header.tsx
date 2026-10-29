@@ -523,19 +523,12 @@ export const Header: React.FC = () => {
               <div className="relative" ref={userRef}>
                 <button
                   type="button"
-                  onClick={() => {
-                    const next = !userDropdownOpen;
-                    setUserDropdownOpen(next);
-                    if (next && user) {
-                      refreshUserProfile();
-                    }
-                  }}
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                   className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all duration-300 overflow-hidden cursor-pointer active:scale-95 group"
                   title="My Account"
                 >
                   {user?.photoURL ? (
                     <img 
-                      key={user.photoURL}
                       src={user.photoURL} 
                       alt={user.displayName || "User"} 
                       referrerPolicy="no-referrer"
@@ -557,12 +550,13 @@ export const Header: React.FC = () => {
                           </div>
                           <button
                             type="button"
-                            onClick={async () => {
+                            onClick={async (e) => {
+                              e.stopPropagation();
                               setSyncingPhoto(true);
                               await refreshUserProfile();
                               setTimeout(() => setSyncingPhoto(false), 800);
                             }}
-                            className={`p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0 ${syncingPhoto ? 'animate-spin text-blue-600' : ''}`}
+                            className={`p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0 cursor-pointer ${syncingPhoto ? 'animate-spin text-blue-600' : ''}`}
                             title="Sync latest Gmail profile picture"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />

@@ -258,7 +258,6 @@ export const BottomNavigation: React.FC = () => {
           <div className="relative flex items-center justify-center w-6 h-6">
             {user?.photoURL && !avatarError ? (
               <img
-                key={user.photoURL}
                 src={user.photoURL}
                 alt={user.displayName || "Account"}
                 onError={() => setAvatarError(true)}
