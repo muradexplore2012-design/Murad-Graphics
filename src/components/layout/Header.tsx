@@ -406,19 +406,19 @@ export const Header: React.FC = () => {
 
             </div>
 
-            {/* Right: Wishlist + Cart (Together) + Account (Rightmost / Dan Pase) */}
+            {/* Right: Wishlist + Cart (Matching Circular Style) + Account (Rightmost) */}
             <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
               
-              {/* Wishlist Circular Icon */}
+              {/* 1. Wishlist Circular Icon Button with Dynamic Hover Animation */}
               {user ? (
                 <Link
                   to="/wishlist"
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all relative group cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
                   title="Wishlist"
                 >
-                  <Heart className={`w-4 h-4 transition-colors ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-blue-600 group-hover:stroke-blue-600'}`} />
+                  <Heart className={`w-5 h-5 transition-all duration-300 ease-out group-hover:scale-115 ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-rose-600 group-hover:stroke-rose-600'}`} />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm pointer-events-none ring-1 ring-white">
                       {wishlist.length}
                     </span>
                   )}
@@ -427,29 +427,29 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setAuthModal({ open: true, type: 'wishlist' })}
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all relative group cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
                   title="Sign In to View Wishlist"
                 >
-                  <Heart className={`w-4 h-4 transition-colors ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-blue-600 group-hover:stroke-blue-600'}`} />
+                  <Heart className={`w-5 h-5 transition-all duration-300 ease-out group-hover:scale-115 ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-rose-600 group-hover:stroke-rose-600'}`} />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm pointer-events-none ring-1 ring-white">
                       {wishlist.length}
                     </span>
                   )}
                 </button>
               )}
 
-              {/* 100% Pixel-Perfect Matching Purple Cart Capsule Button (Together with Wishlist) */}
+              {/* 2. Cart Circular Icon Button Matching Heart (No Solid Background, No 0৳, Dynamic Hover Animation) */}
               {user ? (
                 <Link
                   to="/cart"
-                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white transition-transform active:scale-95 shadow-sm select-none cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
                   title="Shopping Cart"
                 >
                   <div className="relative inline-flex items-center justify-center">
-                    {/* Shopping Basket Icon matching user image */}
+                    {/* Shopping Basket Icon with Hover Tilt & Zoom Animation */}
                     <svg 
-                      className="w-6 h-6 text-white" 
+                      className="w-5 h-5 text-slate-700 group-hover:text-[#7a00ea] transition-all duration-300 ease-out group-hover:scale-115 group-hover:-rotate-6" 
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="currentColor" 
@@ -469,28 +469,25 @@ export const Header: React.FC = () => {
                       <line x1="14.5" y1="12" x2="14" y2="16.5" />
                     </svg>
 
-                    {/* Black badge on top-right of basket */}
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[11px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
-                      {cart.length}
-                    </span>
+                    {/* Badge only visible when items exist in cart */}
+                    {cart.length > 0 && (
+                      <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-[#7a00ea] text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white shadow-xs">
+                        {cart.length}
+                      </span>
+                    )}
                   </div>
-
-                  {/* Exact 0৳ Text */}
-                  <span className="font-extrabold text-white text-[15px] tracking-tight leading-none">
-                    {totalPrice}৳
-                  </span>
                 </Link>
               ) : (
                 <button
                   type="button"
                   onClick={() => setAuthModal({ open: true, type: 'cart' })}
-                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#7a00ea] hover:bg-[#6c00d4] text-white transition-transform active:scale-95 shadow-sm select-none cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
                   title="Sign In to View Cart"
                 >
                   <div className="relative inline-flex items-center justify-center">
-                    {/* Shopping Basket Icon matching user image */}
+                    {/* Shopping Basket Icon with Hover Tilt & Zoom Animation */}
                     <svg 
-                      className="w-6 h-6 text-white" 
+                      className="w-5 h-5 text-slate-700 group-hover:text-[#7a00ea] transition-all duration-300 ease-out group-hover:scale-115 group-hover:-rotate-6" 
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="currentColor" 
@@ -510,25 +507,22 @@ export const Header: React.FC = () => {
                       <line x1="14.5" y1="12" x2="14" y2="16.5" />
                     </svg>
 
-                    {/* Black badge on top-right of basket */}
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[11px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-black">
-                      {cart.length}
-                    </span>
+                    {/* Badge only visible when items exist in cart */}
+                    {cart.length > 0 && (
+                      <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-[#7a00ea] text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white shadow-xs">
+                        {cart.length}
+                      </span>
+                    )}
                   </div>
-
-                  {/* Exact 0৳ Text */}
-                  <span className="font-extrabold text-white text-[15px] tracking-tight leading-none">
-                    {totalPrice}৳
-                  </span>
                 </button>
               )}
 
-              {/* Account Circular Icon with Dropdown (Dan Pase / Far Right) */}
+              {/* 3. Account Circular Icon with Dropdown (Dan Pase / Far Right) */}
               <div className="relative" ref={userRef}>
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all overflow-hidden cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all duration-300 overflow-hidden cursor-pointer active:scale-95 group"
                   title="My Account"
                 >
                   {user?.photoURL ? (
@@ -536,10 +530,10 @@ export const Header: React.FC = () => {
                       src={user.photoURL} 
                       alt={user.displayName || "User"} 
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   ) : (
-                    <UserIcon className="w-4 h-4" />
+                    <UserIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-115" />
                   )}
                 </button>
 
