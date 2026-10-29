@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCart } from '../../contexts/CartContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoginRequiredModal } from '../ui/LoginRequiredModal';
 
@@ -64,22 +64,18 @@ const HomeIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, 
   );
 };
 
-// 4. Cart Icon (Outline vs Solid Cart)
-const CartIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, className }) => {
+// 4. Wishlist Icon (Outline vs Solid Heart)
+const WishlistIcon: React.FC<{ active?: boolean; className?: string }> = ({ active, className }) => {
   if (active) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12z" />
-        <circle cx="8" cy="20.5" r="2" fill="currentColor" />
-        <circle cx="19" cy="20.5" r="2" fill="currentColor" />
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="8" cy="21" r="1.5" />
-      <circle cx="19" cy="21" r="1.5" />
-      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
 };
@@ -122,7 +118,7 @@ const AccountIcon: React.FC<{ active?: boolean; className?: string }> = ({ activ
 
 export const BottomNavigation: React.FC = () => {
   const location = useLocation();
-  const { cart } = useCart();
+  const { wishlist } = useWishlist();
   const { user } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -136,7 +132,7 @@ export const BottomNavigation: React.FC = () => {
   // Active status checks based on current route
   const isHomeActive = pathname === '/';
   const isShopActive = pathname.startsWith('/shop') || pathname.startsWith('/category') || pathname.startsWith('/product');
-  const isCartActive = pathname.startsWith('/cart') || pathname.startsWith('/checkout');
+  const isWishlistActive = pathname.startsWith('/wishlist');
   const isDownloadsActive = pathname.startsWith('/account/downloads') || pathname === '/downloads';
   const isAccountActive = (pathname.startsWith('/account') && !isDownloadsActive) || pathname === '/login';
 
@@ -181,28 +177,28 @@ export const BottomNavigation: React.FC = () => {
           </span>
         </Link>
 
-        {/* 3. Cart */}
+        {/* 3. Wishlist */}
         {user ? (
           <Link
-            to="/cart"
+            to="/wishlist"
             className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative ${
-              isCartActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
+              isWishlistActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             <div className="relative flex items-center justify-center w-6 h-6">
-              <CartIcon active={isCartActive} className="w-5 h-5 transition-transform" />
+              <WishlistIcon active={isWishlistActive} className="w-5 h-5 transition-transform" />
 
-              {/* Cart Badge */}
-              {cart.length > 0 && (
+              {/* Wishlist Badge */}
+              {wishlist.length > 0 && (
                 <span className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 bg-[#7a00ea] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white pointer-events-none shadow-xs">
-                  {cart.length > 99 ? '99+' : cart.length}
+                  {wishlist.length > 99 ? '99+' : wishlist.length}
                 </span>
               )}
             </div>
             <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
-              isCartActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
+              isWishlistActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
             }`}>
-              Cart
+              Wishlist
             </span>
           </Link>
         ) : (
@@ -210,23 +206,23 @@ export const BottomNavigation: React.FC = () => {
             type="button"
             onClick={() => setAuthModalOpen(true)}
             className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative w-full ${
-              isCartActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
+              isWishlistActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             <div className="relative flex items-center justify-center w-6 h-6">
-              <CartIcon active={isCartActive} className="w-5 h-5 transition-transform" />
+              <WishlistIcon active={isWishlistActive} className="w-5 h-5 transition-transform" />
 
-              {/* Cart Badge */}
-              {cart.length > 0 && (
+              {/* Wishlist Badge */}
+              {wishlist.length > 0 && (
                 <span className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 bg-[#7a00ea] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white pointer-events-none shadow-xs">
-                  {cart.length > 99 ? '99+' : cart.length}
+                  {wishlist.length > 99 ? '99+' : wishlist.length}
                 </span>
               )}
             </div>
             <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
-              isCartActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
+              isWishlistActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-500'
             }`}>
-              Cart
+              Wishlist
             </span>
           </button>
         )}
@@ -258,6 +254,7 @@ export const BottomNavigation: React.FC = () => {
           <div className="relative flex items-center justify-center w-6 h-6">
             {user?.photoURL && !avatarError ? (
               <img
+                key={user.photoURL}
                 src={user.photoURL}
                 alt={user.displayName || "Account"}
                 onError={() => setAvatarError(true)}
@@ -284,7 +281,7 @@ export const BottomNavigation: React.FC = () => {
       <LoginRequiredModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        type="cart"
+        type="wishlist"
       />
     </nav>
   );
