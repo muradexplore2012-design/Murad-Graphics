@@ -40,30 +40,30 @@ export const Footer: React.FC = () => {
     { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
   ];
 
-  const renderBadgeIcon = (iconName?: string, index: number = 0) => {
+  const renderBadgeIcon = (iconName?: string, index: number = 0, iconClass: string = "w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]") => {
     const norm = (iconName || '').toLowerCase();
     if (norm.includes('shield') || norm.includes('authentic') || norm.includes('security')) {
-      return <ShieldCheck className="w-6 h-6 stroke-[2.2]" />;
+      return <ShieldCheck className={iconClass} />;
     }
     if (norm.includes('sparkle') || norm.includes('star') || norm.includes('edit')) {
-      return <Sparkles className="w-6 h-6 stroke-[2.2]" />;
+      return <Sparkles className={iconClass} />;
     }
     if (norm.includes('zap') || norm.includes('fast')) {
-      return <Zap className="w-6 h-6 stroke-[2.2]" />;
+      return <Zap className={iconClass} />;
     }
     if (norm.includes('check')) {
-      return <CheckCircle2 className="w-6 h-6 stroke-[2.2]" />;
+      return <CheckCircle2 className={iconClass} />;
     }
     if (norm.includes('support') || norm.includes('headphone')) {
-      return <Headphones className="w-6 h-6 stroke-[2.2]" />;
+      return <Headphones className={iconClass} />;
     }
     if (norm.includes('download') || norm.includes('delivery')) {
-      return <DownloadCloud className="w-6 h-6 stroke-[2.2]" />;
+      return <DownloadCloud className={iconClass} />;
     }
 
-    if (index === 0) return <DownloadCloud className="w-6 h-6 stroke-[2.2]" />;
-    if (index === 1) return <ShieldCheck className="w-6 h-6 stroke-[2.2]" />;
-    return <Sparkles className="w-6 h-6 stroke-[2.2]" />;
+    if (index === 0) return <DownloadCloud className={iconClass} />;
+    if (index === 1) return <ShieldCheck className={iconClass} />;
+    return <Sparkles className={iconClass} />;
   };
 
   const copyrightText = (settings.footerCopyrightText || "© {year} {siteName}. All rights reserved.")
@@ -86,19 +86,26 @@ export const Footer: React.FC = () => {
     <>
       {/* ================= STANDALONE VALUE PROPOSITION BADGES ================= */}
       {showBadges && badges.length > 0 && (
-        <section className="py-6 sm:py-8 md:py-10">
-          <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(badges.length, 4)} gap-3.5 sm:gap-6`}>
+        <section className="py-4 sm:py-8 md:py-10">
+          <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-2.5 sm:px-6 lg:px-8">
+            <div className={`grid ${badges.length <= 2 ? 'grid-cols-2' : badges.length === 3 ? 'grid-cols-3' : 'grid-cols-3 sm:grid-cols-2 lg:grid-cols-4'} gap-2 sm:gap-4 lg:gap-6`}>
               {badges.map((badge, idx) => {
                 const style = badgeColorStyles[idx % badgeColorStyles.length];
                 return (
-                  <div key={badge.id || idx} className="flex items-center gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl ${style.bg} ${style.text} flex items-center justify-center shrink-0 border ${style.border}`}>
-                      {renderBadgeIcon(badge.icon, idx)}
+                  <div 
+                    key={badge.id || idx} 
+                    className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left gap-2 sm:gap-4 p-2.5 sm:p-5 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-xs transition-all hover:shadow-sm"
+                  >
+                    <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${style.bg} ${style.text} flex items-center justify-center shrink-0 border ${style.border}`}>
+                      {renderBadgeIcon(badge.icon, idx, "w-4.5 h-4.5 sm:w-6 sm:h-6 stroke-[2.2]")}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-slate-900 font-bold text-xs sm:text-sm truncate sm:whitespace-normal">{badge.title}</h4>
-                      <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 line-clamp-1 sm:line-clamp-none">{badge.subtitle}</p>
+                    <div className="min-w-0 w-full flex-1">
+                      <h4 className="text-slate-900 font-bold text-[10px] xs:text-[11px] sm:text-sm leading-tight line-clamp-2 sm:line-clamp-1">
+                        {badge.title}
+                      </h4>
+                      <p className="text-[9px] xs:text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 leading-tight line-clamp-2 sm:line-clamp-none">
+                        {badge.subtitle}
+                      </p>
                     </div>
                   </div>
                 );
