@@ -406,8 +406,8 @@ export const Header: React.FC = () => {
 
             </div>
 
-            {/* Right: Wishlist Icon + Account Icon + Purple/Blue Cart Capsule Button */}
-            <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+            {/* Right: Wishlist + Cart (Together) + Account (Rightmost / Dan Pase) */}
+            <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
               
               {/* Wishlist Circular Icon */}
               {user ? (
@@ -439,92 +439,7 @@ export const Header: React.FC = () => {
                 </button>
               )}
 
-              {/* Account Circular Icon with Dropdown */}
-              <div className="relative" ref={userRef}>
-                <button
-                  type="button"
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all overflow-hidden"
-                  title="My Account"
-                >
-                  {user?.photoURL ? (
-                    <img 
-                      src={user.photoURL} 
-                      alt={user.displayName || "User"} 
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="w-4 h-4" />
-                  )}
-                </button>
-
-                {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    {user ? (
-                      <>
-                        <div className="px-4 py-2 border-b border-slate-100">
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Signed in as</p>
-                          <p className="text-xs font-bold text-slate-800 truncate">{user.email}</p>
-                        </div>
-
-                        {isAdmin && (
-                          <Link 
-                            to="/admin" 
-                            onClick={() => setUserDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-blue-700 bg-blue-50/70 hover:bg-blue-100/70 transition-colors"
-                          >
-                            <LayoutDashboard className="w-4 h-4 text-blue-600" />
-                            Admin Console
-                          </Link>
-                        )}
-
-                        <Link 
-                          to="/account" 
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-                        >
-                          <UserIcon className="w-4 h-4 text-slate-400" />
-                          My Profile & Orders
-                        </Link>
-
-                        <Link 
-                          to="/account/downloads" 
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-                        >
-                          <Download className="w-4 h-4 text-slate-400" />
-                          Vyrqonix Library
-                        </Link>
-
-                        <button
-                          onClick={() => {
-                            setUserDropdownOpen(false);
-                            logout();
-                          }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left border-t border-slate-100 mt-1"
-                        >
-                          <LogOut className="w-4 h-4 text-rose-500" />
-                          Sign Out
-                        </button>
-                      </>
-                    ) : (
-                      <div className="p-3 space-y-2">
-                        <p className="text-xs text-slate-600 font-medium">Sign in to access your downloads and purchases.</p>
-                        <Link
-                          to="/login"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="block w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold text-center shadow-sm"
-                        >
-                          Login / Register
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* 100% Pixel-Perfect Matching Purple Cart Capsule Button */}
+              {/* 100% Pixel-Perfect Matching Purple Cart Capsule Button (Together with Wishlist) */}
               {user ? (
                 <Link
                   to="/cart"
@@ -607,6 +522,91 @@ export const Header: React.FC = () => {
                   </span>
                 </button>
               )}
+
+              {/* Account Circular Icon with Dropdown (Dan Pase / Far Right) */}
+              <div className="relative" ref={userRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all overflow-hidden cursor-pointer"
+                  title="My Account"
+                >
+                  {user?.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={user.displayName || "User"} 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-4 h-4" />
+                  )}
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    {user ? (
+                      <>
+                        <div className="px-4 py-2 border-b border-slate-100">
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Signed in as</p>
+                          <p className="text-xs font-bold text-slate-800 truncate">{user.email}</p>
+                        </div>
+
+                        {isAdmin && (
+                          <Link 
+                            to="/admin" 
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-blue-700 bg-blue-50/70 hover:bg-blue-100/70 transition-colors"
+                          >
+                            <LayoutDashboard className="w-4 h-4 text-blue-600" />
+                            Admin Console
+                          </Link>
+                        )}
+
+                        <Link 
+                          to="/account" 
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <UserIcon className="w-4 h-4 text-slate-400" />
+                          My Profile & Orders
+                        </Link>
+
+                        <Link 
+                          to="/account/downloads" 
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <Download className="w-4 h-4 text-slate-400" />
+                          Vyrqonix Library
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left border-t border-slate-100 mt-1 cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4 text-rose-500" />
+                          Sign Out
+                        </button>
+                      </>
+                    ) : (
+                      <div className="p-3 space-y-2">
+                        <p className="text-xs text-slate-600 font-medium">Sign in to access your downloads and purchases.</p>
+                        <Link
+                          to="/login"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="block w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold text-center shadow-sm"
+                        >
+                          Login / Register
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
             </div>
 
