@@ -200,6 +200,7 @@ export const AccountPage: React.FC = () => {
         <div className="flex items-center gap-3.5 sm:gap-4 text-left w-full sm:w-auto">
           {user.photoURL ? (
             <img 
+              key={user.photoURL}
               src={user.photoURL} 
               alt={user.displayName || "User"} 
               referrerPolicy="no-referrer"

@@ -14,7 +14,7 @@ import {
   sendPasswordResetEmail,
   UserCredential
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, ADMIN_UID, ADMIN_EMAIL, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL } from '../lib/firebase';
 
 export type AdminRole = 'owner' | 'manager' | 'viewer';
@@ -28,6 +28,7 @@ interface AuthContextType {
   isOwner: boolean;
   isManager: boolean;
   isViewer: boolean;
+  photoVersion: number;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -35,12 +36,39 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAdminStatus: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper: Ensure Google/Gmail avatar URL always bypasses browser HTTP cache when photo changes
+const wrapUserWithFreshPhoto = (u: User | null, v: number): User | null => {
+  if (!u) return null;
+  const rawPhoto = u.photoURL;
+  if (!rawPhoto) return u;
+
+  // Format with cache-busting query parameter so the browser immediately fetches updated picture
+  const cleanBase = rawPhoto.replace(/[?&]t=\d+/, '');
+  const separator = cleanBase.includes('?') ? '&' : '?';
+  const freshPhoto = `${cleanBase}${separator}t=${v}`;
+
+  return new Proxy(u, {
+    get(target, prop, receiver) {
+      if (prop === 'photoURL') {
+        return freshPhoto;
+      }
+      const val = Reflect.get(target, prop, receiver);
+      if (typeof val === 'function') {
+        return val.bind(target);
+      }
+      return val;
+    }
+  });
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [photoVersion, setPhotoVersion] = useState<number>(() => Date.now());
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -48,6 +76,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isOwner, setIsOwner] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
+
+  // Instant real-time Google/Gmail profile refresher
+  const refreshUserProfile = async () => {
+    const current = auth.currentUser;
+    if (!current) return;
+    try {
+      // 1. Force ID token refresh from Google OAuth provider to fetch fresh IdP claims & photo
+      await current.getIdToken(true);
+      // 2. Reload Firebase User profile
+      await current.reload();
+
+      const fresh = auth.currentUser;
+      if (fresh) {
+        const v = Date.now();
+        setPhotoVersion(v);
+        setUser(wrapUserWithFreshPhoto(fresh, v));
+
+        // 3. Sync the latest photoURL to Firestore users collection
+        if (fresh.photoURL) {
+          try {
+            await setDoc(doc(db, 'users', fresh.uid), {
+              photoURL: fresh.photoURL,
+              displayName: fresh.displayName || '',
+              lastPhotoSync: new Date().toISOString()
+            }, { merge: true });
+          } catch (e) {
+            console.warn("Could not sync photo to Firestore:", e);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Could not refresh user profile from Google:", err);
+    }
+  };
 
   const checkAdminStatus = async (currentUser: User | null) => {
     if (!currentUser) {
@@ -130,7 +192,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getRedirectResult(auth)
       .then((cred) => {
         if (cred?.user) {
-          setUser(cred.user);
+          const v = Date.now();
+          setPhotoVersion(v);
+          setUser(wrapUserWithFreshPhoto(cred.user, v));
         }
       })
       .catch((err) => {
@@ -138,7 +202,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+      const v = Date.now();
+      setPhotoVersion(v);
+      setUser(wrapUserWithFreshPhoto(currentUser, v));
 
       if (currentUser) {
         // Automatically sync registered user document to Firestore for user tracking & identification
@@ -160,8 +226,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // 1. Instant sync when user switches back to this tab (e.g. after changing Gmail photo in another tab or window)
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible' && auth.currentUser) {
+        refreshUserProfile();
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    // 2. Periodic gentle background sync every 25 seconds while tab is active
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible' && auth.currentUser) {
+        refreshUserProfile();
+      }
+    }, 25000);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      clearInterval(interval);
+    };
   }, []);
+
+  // 3. Realtime Firestore sync for cross-device/instant profile updates
+  useEffect(() => {
+    if (!auth.currentUser?.uid) return;
+    const unsubDoc = onSnapshot(doc(db, 'users', auth.currentUser.uid), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.photoURL && auth.currentUser && data.photoURL !== auth.currentUser.photoURL) {
+          const v = Date.now();
+          setPhotoVersion(v);
+          setUser(wrapUserWithFreshPhoto(auth.currentUser, v));
+        }
+      }
+    }, (err) => {
+      console.warn("User doc snapshot error:", err);
+    });
+
+    return () => unsubDoc();
+  }, [user?.uid]);
 
   const refreshAdminStatus = async () => {
     await checkAdminStatus(auth.currentUser);
@@ -252,13 +359,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isOwner,
       isManager,
       isViewer,
+      photoVersion,
       login, 
       register, 
       loginWithGoogle, 
       loginWithGoogleCredential,
       resetPassword, 
       logout,
-      refreshAdminStatus 
+      refreshAdminStatus,
+      refreshUserProfile
     }}>
       {children}
     </AuthContext.Provider>
