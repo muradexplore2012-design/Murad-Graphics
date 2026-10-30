@@ -28,34 +28,36 @@ export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Session-based Role Notification (shows once on initial entry, then fades away after 6 seconds)
+  // Permanent Role Welcome Banner (shows ONLY ONCE upon initial role assignment, never again on reload or re-entering)
   const [roleNoticeVisible, setRoleNoticeVisible] = useState(false);
   const [roleNoticeExiting, setRoleNoticeExiting] = useState(false);
 
   const currentRole = isOwner ? 'owner' : isViewer ? 'viewer' : 'manager';
 
   useEffect(() => {
-    if (!user) return;
-    const sessionKey = `admin_role_announced_${user.uid}_${currentRole}`;
-    const alreadyAnnounced = sessionStorage.getItem(sessionKey);
+    if (!user || !isAdmin) return;
 
-    if (!alreadyAnnounced) {
+    const storageKey = `admin_role_welcomed_${user.uid}_${currentRole}`;
+    const alreadySeen = localStorage.getItem(storageKey);
+
+    if (!alreadySeen) {
+      // Mark as seen immediately in localStorage so ANY reload or closing tab will NEVER show it again
+      localStorage.setItem(storageKey, 'true');
+
       setRoleNoticeVisible(true);
       setRoleNoticeExiting(false);
 
+      // Auto fade-out after 6 seconds (5 to 8 seconds range)
       const timer = setTimeout(() => {
         handleDismissNotice();
       }, 6000);
 
       return () => clearTimeout(timer);
     }
-  }, [user?.uid, currentRole]);
+  }, [user?.uid, currentRole, isAdmin]);
 
   const handleDismissNotice = () => {
     setRoleNoticeExiting(true);
-    if (user) {
-      sessionStorage.setItem(`admin_role_announced_${user.uid}_${currentRole}`, 'true');
-    }
     setTimeout(() => {
       setRoleNoticeVisible(false);
     }, 700);
