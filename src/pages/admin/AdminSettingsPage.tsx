@@ -180,8 +180,11 @@ export const AdminSettingsPage: React.FC = () => {
     setAdminError('');
     setAdminSuccess('');
 
+    // Optimistic UI update so the dropdown immediately reflects the chosen role
+    setAdmins(prev => prev.map(a => (a.uid === targetAdmin.uid || a.id === targetAdmin.id) ? { ...a, role: newRole } : a));
+
     try {
-      await updateAdminRole(targetAdmin.uid, newRole as 'owner' | 'manager' | 'viewer', {
+      await updateAdminRole(targetAdmin.id || targetAdmin.uid, newRole as 'owner' | 'manager' | 'viewer', {
         uid: user.uid,
         email: user.email
       });
@@ -195,6 +198,7 @@ export const AdminSettingsPage: React.FC = () => {
       setAdminSuccess(`${targetAdmin.email} এর পদবি সফলভাবে "${roleLabels[newRole] || newRole}" হিসেবে আপডেট করা হয়েছে।`);
       await loadAdmins();
     } catch (err: any) {
+      await loadAdmins();
       setAdminError(err.message || "পদবি পরিবর্তন করতে ব্যর্থ হয়েছে।");
     } finally {
       setUpdatingRoleId(null);

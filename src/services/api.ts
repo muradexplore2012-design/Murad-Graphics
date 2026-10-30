@@ -1466,19 +1466,13 @@ export const getAdminList = async (): Promise<AdminMember[]> => {
         const emailLower = (data.email || '').toLowerCase();
         let role: AdminRole = 'manager';
 
-        // Tamim Nur is initially assigned as Manager as requested (allows later change by owner)
-        if (emailLower === 'tamimnur908@gmail.com' && (!data.role || data.role === 'admin')) {
-          role = 'manager';
-          updateDoc(doc(db, "admins", d.id), { role: 'manager' }).catch(() => {});
-        } else if (emailLower === 'muradrahman2026@gmail.com') {
-          role = 'owner';
-          if (data.role !== 'owner') {
-            updateDoc(doc(db, "admins", d.id), { role: 'owner' }).catch(() => {});
-          }
-        } else if (data.role === 'owner' || data.role === 'super_admin') {
+        // Respect the role stored in Firestore
+        if (data.role === 'owner' || data.role === 'super_admin') {
           role = 'owner';
         } else if (data.role === 'viewer') {
           role = 'viewer';
+        } else if (data.role === 'manager') {
+          role = 'manager';
         } else {
           role = 'manager';
         }
@@ -1603,8 +1597,7 @@ export const updateAdminRole = async (
     caller.uid === SUPER_ADMIN_UID || 
     caller.uid === ADMIN_UID || 
     caller.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
-    caller.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
-    caller.email?.toLowerCase() === 'muradrahman2026@gmail.com';
+    caller.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
   if (!isCallerAuthorized && caller.uid) {
     try {
@@ -1626,7 +1619,35 @@ export const updateAdminRole = async (
     throw new Error("প্রধান রুট সুপার এডমিনের পদবি পরিবর্তন করা সম্ভব নয়।");
   }
 
-  await updateDoc(doc(db, "admins", targetAdminUid), { role: newRole });
+  // Update in Firestore: handle both direct doc ID and query by uid or email
+  let updated = false;
+  try {
+    const directDocRef = doc(db, "admins", targetAdminUid);
+    const directSnap = await getDoc(directDocRef);
+    if (directSnap.exists()) {
+      await updateDoc(directDocRef, { role: newRole });
+      updated = true;
+    }
+  } catch (e) {
+    console.warn("Direct doc update failed:", e);
+  }
+
+  if (!updated) {
+    try {
+      const q = query(collection(db, "admins"), where("uid", "==", targetAdminUid), limit(1));
+      const qSnap = await getDocs(q);
+      if (!qSnap.empty) {
+        await updateDoc(qSnap.docs[0].ref, { role: newRole });
+        updated = true;
+      }
+    } catch (e) {
+      console.warn("Query by uid failed:", e);
+    }
+  }
+
+  if (!updated) {
+    await setDoc(doc(db, "admins", targetAdminUid), { role: newRole }, { merge: true });
+  }
 
   // Refresh admin list to update whitelist
   getAdminList().catch(() => {});

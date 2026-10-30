@@ -14,7 +14,7 @@ import {
   sendPasswordResetEmail,
   UserCredential
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, query, collection, where, getDocs, limit } from 'firebase/firestore';
 import { auth, db, ADMIN_UID, ADMIN_EMAIL, SUPER_ADMIN_UID, SUPER_ADMIN_EMAIL } from '../lib/firebase';
 
 export type AdminRole = 'owner' | 'manager' | 'viewer';
@@ -186,16 +186,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const emailLower = currentUser.email?.toLowerCase() || '';
 
-    // Root Super Admin / Designated Owner authority
-    const isRootOwner = Boolean(
+    // Designated Root Super Admin authority
+    const isRootSuperAdmin = Boolean(
       currentUser.uid === SUPER_ADMIN_UID || 
       currentUser.uid === ADMIN_UID || 
       (SUPER_ADMIN_EMAIL && emailLower === SUPER_ADMIN_EMAIL.toLowerCase()) ||
-      (ADMIN_EMAIL && emailLower === ADMIN_EMAIL.toLowerCase()) ||
-      emailLower === 'muradrahman2026@gmail.com'
+      (ADMIN_EMAIL && emailLower === ADMIN_EMAIL.toLowerCase())
     );
 
-    if (isRootOwner) {
+    if (isRootSuperAdmin) {
       setIsAdmin(true);
       setIsSuperAdmin(true);
       setAdminRole('owner');
@@ -224,7 +223,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsManager(false);
           setIsViewer(true);
         } else {
-          // manager or legacy admin
           setIsSuperAdmin(false);
           setAdminRole('manager');
           setIsOwner(false);
@@ -232,12 +230,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsViewer(false);
         }
       } else {
-        setIsAdmin(false);
-        setIsSuperAdmin(false);
-        setAdminRole(null);
-        setIsOwner(false);
-        setIsManager(false);
-        setIsViewer(false);
+        // Query by email in case doc ID was different
+        const q = query(collection(db, 'admins'), where('email', '==', emailLower), limit(1));
+        const qSnap = await getDocs(q);
+        if (!qSnap.empty && qSnap.docs[0].data().status === 'active') {
+          const rawRole = (qSnap.docs[0].data().role || 'manager').toLowerCase();
+          setIsAdmin(true);
+          if (rawRole === 'owner' || rawRole === 'super_admin') {
+            setIsSuperAdmin(true);
+            setAdminRole('owner');
+            setIsOwner(true);
+            setIsManager(false);
+            setIsViewer(false);
+          } else if (rawRole === 'viewer') {
+            setIsSuperAdmin(false);
+            setAdminRole('viewer');
+            setIsOwner(false);
+            setIsManager(false);
+            setIsViewer(true);
+          } else {
+            setIsSuperAdmin(false);
+            setAdminRole('manager');
+            setIsOwner(false);
+            setIsManager(true);
+            setIsViewer(false);
+          }
+        } else {
+          setIsAdmin(false);
+          setIsSuperAdmin(false);
+          setAdminRole(null);
+          setIsOwner(false);
+          setIsManager(false);
+          setIsViewer(false);
+        }
       }
     } catch {
       setIsAdmin(false);
