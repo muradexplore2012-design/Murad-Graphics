@@ -257,7 +257,7 @@ export const Footer: React.FC = () => {
                 href={designerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-slate-700 hover:text-blue-600 hover:underline underline-offset-4 decoration-blue-600 transition-colors"
+                className="font-semibold text-slate-700 hover:text-blue-600 underline underline-offset-4 decoration-slate-400 hover:decoration-blue-600 transition-colors"
               >
                 {designerName}
               </a>
@@ -378,7 +378,7 @@ export const Footer: React.FC = () => {
                 href={designerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-slate-600 hover:text-blue-600 hover:underline underline-offset-2 transition-colors"
+                className="font-semibold text-slate-600 hover:text-blue-600 underline underline-offset-2 decoration-slate-400 hover:decoration-blue-600 transition-colors"
               >
                 {designerName}
               </a>
