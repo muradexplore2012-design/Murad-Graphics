@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -27,6 +27,39 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Session-based Role Notification (shows once on initial entry, then fades away after 6 seconds)
+  const [roleNoticeVisible, setRoleNoticeVisible] = useState(false);
+  const [roleNoticeExiting, setRoleNoticeExiting] = useState(false);
+
+  const currentRole = isOwner ? 'owner' : isViewer ? 'viewer' : 'manager';
+
+  useEffect(() => {
+    if (!user) return;
+    const sessionKey = `admin_role_announced_${user.uid}_${currentRole}`;
+    const alreadyAnnounced = sessionStorage.getItem(sessionKey);
+
+    if (!alreadyAnnounced) {
+      setRoleNoticeVisible(true);
+      setRoleNoticeExiting(false);
+
+      const timer = setTimeout(() => {
+        handleDismissNotice();
+      }, 6000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user?.uid, currentRole]);
+
+  const handleDismissNotice = () => {
+    setRoleNoticeExiting(true);
+    if (user) {
+      sessionStorage.setItem(`admin_role_announced_${user.uid}_${currentRole}`, 'true');
+    }
+    setTimeout(() => {
+      setRoleNoticeVisible(false);
+    }, 700);
+  };
 
   if (loading) {
     return (
@@ -200,14 +233,83 @@ export const AdminLayout: React.FC = () => {
       {/* Main Admin Content Body - Light Theme Background with Left Offset for Fixed Sidebar */}
       <main className="flex-1 h-full overflow-y-auto overflow-x-hidden bg-slate-50 flex flex-col min-w-0">
         <div className="flex-1 p-3.5 sm:p-6 lg:p-7 xl:p-8 max-w-7xl mx-auto w-full min-w-0">
-          {isViewer && (
-            <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900 shadow-xs">
-              <Eye className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-xs">
-                <p className="font-bold">ভিউয়ার মোড (Viewer / Read-Only Mode)</p>
-                <p className="mt-0.5 text-amber-800 leading-relaxed">
-                  আপনি একজন ভিউয়ার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনি সকল রিপোর্ট, সেলস অর্ডার এবং প্রোডাক্টের তালিকা দেখতে পারবেন, তবে কোনো তথ্য যোগ, এডিট বা ডিলিট করার অনুমতি নেই।
-                </p>
+          {/* Role Announcement Banner (Appears on first entry, then fades away smoothly) */}
+          {roleNoticeVisible && (
+            <div 
+              className={`mb-6 transition-all duration-700 ease-in-out ${
+                roleNoticeExiting 
+                  ? 'opacity-0 -translate-y-3 max-h-0 py-0 mb-0 overflow-hidden pointer-events-none' 
+                  : 'opacity-100 translate-y-0 max-h-48'
+              }`}
+            >
+              <div 
+                className={`p-4 sm:p-4.5 rounded-2xl border flex items-start justify-between gap-3 shadow-xs relative overflow-hidden transition-all ${
+                  isViewer
+                    ? 'bg-amber-50/95 border-amber-200 text-amber-950'
+                    : isManager
+                    ? 'bg-blue-50/95 border-blue-200 text-blue-950'
+                    : 'bg-purple-50/95 border-purple-200 text-purple-950'
+                }`}
+              >
+                <div className="flex items-start gap-3 sm:gap-3.5 min-w-0 flex-1">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                    isViewer
+                      ? 'bg-amber-100 text-amber-700'
+                      : isManager
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-purple-100 text-[#7a00ea]'
+                  }`}>
+                    {isViewer && <Eye className="w-4.5 h-4.5" />}
+                    {isManager && <ShieldCheck className="w-4.5 h-4.5" />}
+                    {isOwner && <Crown className="w-4.5 h-4.5" />}
+                  </div>
+
+                  <div className="min-w-0 flex-1 text-xs">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-sm">
+                        {isViewer && 'ভিউয়ার মোড (Viewer / Read-Only Mode)'}
+                        {isManager && 'ম্যানেজার মোড (Manager Mode)'}
+                        {isOwner && 'ওনার মোড (Owner / Full Access)'}
+                      </p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                        isViewer
+                          ? 'bg-amber-200/60 text-amber-800'
+                          : isManager
+                          ? 'bg-blue-200/60 text-blue-800'
+                          : 'bg-purple-200/60 text-purple-800'
+                      }`}>
+                        {currentRole}
+                      </span>
+                    </div>
+                    <p className={`mt-1 leading-relaxed text-[11px] sm:text-xs ${
+                      isViewer
+                        ? 'text-amber-800/90'
+                        : isManager
+                        ? 'text-blue-800/90'
+                        : 'text-purple-800/90'
+                    }`}>
+                      {isViewer && 'আপনি একজন ভিউয়ার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনি সকল রিপোর্ট, সেলস অর্ডার এবং প্রোডাক্টের তালিকা দেখতে পারবেন, তবে কোনো তথ্য যোগ, এডিট বা ডিলিট করার অনুমতি নেই।'}
+                      {isManager && 'আপনি ম্যানেজার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনি প্রোডাক্ট, অর্ডার, ব্যানার ও কুপন ম্যানেজ করতে পারবেন।'}
+                      {isOwner && 'আপনি ওনার হিসেবে অ্যাডমিন প্যানেলে লগইন আছেন। আপনার কাছে নতুন অ্যাডমিন নিয়োগসহ সম্পূর্ণ সাইটের পূর্ণ নিয়ন্ত্রণ রয়েছে।'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleDismissNotice}
+                  className={`p-1 rounded-lg transition-colors shrink-0 cursor-pointer ${
+                    isViewer
+                      ? 'text-amber-600 hover:text-amber-900 hover:bg-amber-100/60'
+                      : isManager
+                      ? 'text-blue-600 hover:text-blue-900 hover:bg-blue-100/60'
+                      : 'text-purple-600 hover:text-purple-900 hover:bg-purple-100/60'
+                  }`}
+                  title="বন্ধ করুন"
+                  aria-label="Dismiss role notification"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
