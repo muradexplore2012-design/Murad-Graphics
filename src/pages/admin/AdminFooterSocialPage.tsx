@@ -37,8 +37,21 @@ import {
   Layers, 
   FileText, 
   Info,
-  Layout
+  Layout,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
+
+export type FooterTabType = 'badges' | 'brand' | 'links' | 'contact' | 'copyright' | 'social';
+
+const parseTab = (param: string | null): FooterTabType => {
+  if (param === 'social') return 'social';
+  if (param === 'brand') return 'brand';
+  if (param === 'links' || param === 'columns') return 'links';
+  if (param === 'contact') return 'contact';
+  if (param === 'copyright' || param === 'credits') return 'copyright';
+  return 'badges';
+};
 
 export const AdminFooterSocialPage: React.FC = () => {
   const { user } = useAuth();
@@ -47,23 +60,22 @@ export const AdminFooterSocialPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Active Tab: 'footer' or 'social'
-  const [activeTab, setActiveTab] = useState<'footer' | 'social'>(() => {
-    return searchParams.get('tab') === 'social' ? 'social' : 'footer';
+  // Active Tab: individual tabs for each distinct footer/social section
+  const [activeTab, setActiveTab] = useState<FooterTabType>(() => {
+    return parseTab(searchParams.get('tab'));
   });
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam === 'social' && activeTab !== 'social') {
-      setActiveTab('social');
-    } else if (!tabParam && activeTab !== 'footer') {
-      setActiveTab('footer');
+    const resolved = parseTab(tabParam);
+    if (resolved !== activeTab) {
+      setActiveTab(resolved);
     }
   }, [searchParams]);
 
-  const handleTabChange = (tab: 'footer' | 'social') => {
+  const handleTabChange = (tab: FooterTabType) => {
     setActiveTab(tab);
-    setSearchParams(tab === 'social' ? { tab: 'social' } : {});
+    setSearchParams(tab === 'badges' ? {} : { tab });
   };
 
   // New Social Link Form
@@ -359,41 +371,103 @@ export const AdminFooterSocialPage: React.FC = () => {
       </div>
 
       {/* High-Contrast Prominent Tab Switcher */}
-      <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center gap-2 border border-slate-200 shadow-2xs">
+      <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-200 shadow-2xs overflow-x-auto no-scrollbar">
         <button
           type="button"
-          onClick={() => handleTabChange('footer')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-            activeTab === 'footer'
+          onClick={() => handleTabChange('badges')}
+          className={`flex-1 min-w-[130px] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            activeTab === 'badges'
               ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <Layout className="w-4 h-4" />
-          <span>Footer Settings & Content</span>
+          <Layers className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'badges' ? 'text-blue-600' : 'text-slate-400'}`} />
+          <span>Feature Badges</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+            activeTab === 'badges' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-600'
+          }`}>
+            {settings.footerBadges?.length || 0}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange('brand')}
+          className={`flex-1 min-w-[130px] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            activeTab === 'brand'
+              ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <Info className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'brand' ? 'text-blue-600' : 'text-slate-400'}`} />
+          <span>Brand & Description</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange('links')}
+          className={`flex-1 min-w-[130px] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            activeTab === 'links'
+              ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <Columns className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'links' ? 'text-blue-600' : 'text-slate-400'}`} />
+          <span>Link Columns</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+            activeTab === 'links' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-600'
+          }`}>
+            {settings.footerColumns?.length || 0}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange('contact')}
+          className={`flex-1 min-w-[120px] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            activeTab === 'contact'
+              ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <Phone className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'contact' ? 'text-blue-600' : 'text-slate-400'}`} />
+          <span>Direct Contact</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange('copyright')}
+          className={`flex-1 min-w-[130px] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            activeTab === 'copyright'
+              ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <FileText className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'copyright' ? 'text-blue-600' : 'text-slate-400'}`} />
+          <span>Copyright & Credits</span>
         </button>
 
         <button
           type="button"
           onClick={() => handleTabChange('social')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+          className={`flex-1 min-w-[120px] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'social'
               ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80 ring-1 ring-blue-500/10'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <Share2 className="w-4 h-4" />
-          <span>Social Media Links</span>
-          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black ${
-            activeTab === 'social' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-200 text-slate-700'
+          <Share2 className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'social' ? 'text-blue-600' : 'text-slate-400'}`} />
+          <span>Social Media</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+            activeTab === 'social' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-600'
           }`}>
             {settings.socialLinks?.length || 0}
           </span>
         </button>
       </div>
 
-      {/* ================= TAB 1: FOOTER CUSTOMIZATION ================= */}
-      {activeTab === 'footer' && (
+      {/* ================= TAB 1: FEATURE BADGES ================= */}
+      {activeTab === 'badges' && (
         <div className="space-y-6">
           {/* 1. TOP VALUE PROPOSITION BADGES */}
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
@@ -512,9 +586,25 @@ export const AdminFooterSocialPage: React.FC = () => {
                 ))
               )}
             </div>
-          </div>
 
-          {/* 2. BRAND & SUMMARY INFO */}
+            {/* Quick Next Tab Navigation */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => handleTabChange('brand')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <span>Next: Brand & Description</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 2: BRAND & DESCRIPTION ================= */}
+      {activeTab === 'brand' && (
+        <div className="space-y-6">
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
             <div className="pb-3 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -531,16 +621,40 @@ export const AdminFooterSocialPage: React.FC = () => {
                 Footer Site Description
               </label>
               <textarea
-                rows={2}
+                rows={3}
                 value={settings.siteDescription || ''}
                 onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
                 placeholder="A digital marketplace for graphic design resources, editable design files, software and apps."
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all leading-relaxed"
               />
             </div>
-          </div>
 
-          {/* 3. FOOTER NAVIGATION COLUMNS & LINKS */}
+            {/* Quick Navigation Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleTabChange('badges')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Feature Badges</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('links')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <span>Next: Link Columns</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 3: FOOTER LINK COLUMNS ================= */}
+      {activeTab === 'links' && (
+        <div className="space-y-6">
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div>
@@ -685,9 +799,33 @@ export const AdminFooterSocialPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* 4. DIRECT CONTACT DETAILS */}
+            {/* Quick Navigation Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleTabChange('brand')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Brand & Description</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('contact')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <span>Next: Direct Contact</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 4: DIRECT CONTACT ================= */}
+      {activeTab === 'contact' && (
+        <div className="space-y-6">
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
             <div className="pb-3 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -754,9 +892,33 @@ export const AdminFooterSocialPage: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
 
-          {/* 5. BOTTOM COPYRIGHT & DESIGNER CREDITS */}
+            {/* Quick Navigation Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleTabChange('links')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Link Columns</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('copyright')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <span>Next: Copyright & Credits</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 5: COPYRIGHT & CREDITS ================= */}
+      {activeTab === 'copyright' && (
+        <div className="space-y-6">
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
             <div className="pb-3 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -824,11 +986,31 @@ export const AdminFooterSocialPage: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* Quick Navigation Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleTabChange('contact')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Direct Contact</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('social')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <span>Next: Social Media</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ================= TAB 2: SOCIAL MEDIA LINKS ================= */}
+      {/* ================= TAB 6: SOCIAL MEDIA LINKS ================= */}
       {activeTab === 'social' && (
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -958,6 +1140,18 @@ export const AdminFooterSocialPage: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* Quick Navigation Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-start">
+              <button
+                type="button"
+                onClick={() => handleTabChange('copyright')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Previous: Copyright & Credits</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -984,7 +1178,7 @@ export const AdminFooterSocialPage: React.FC = () => {
           className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-md active:scale-95 disabled:opacity-50 text-xs cursor-pointer"
         >
           <Save className="w-4 h-4" />
-          <span>{saving ? "Saving Changes..." : activeTab === 'social' ? "Save Social Links" : "Save Footer Settings"}</span>
+          <span>{saving ? "Saving Changes..." : "Save All Settings"}</span>
         </button>
       </div>
 
