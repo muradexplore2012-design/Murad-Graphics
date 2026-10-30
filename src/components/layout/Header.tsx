@@ -251,14 +251,14 @@ export const Header: React.FC = () => {
             {user ? (
               <Link
                 to="/wishlist"
-                className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95 shrink-0"
+                className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95 shrink-0"
                 title="Wishlist"
                 aria-label="View Wishlist"
               >
                 <div className="relative inline-flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-slate-700 group-hover:text-rose-600 transition-colors" />
+                  <Heart className="w-5 h-5 text-slate-700 group-hover:text-[#7a00ea] transition-colors" />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white">
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-[#7a00ea] text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white">
                       {wishlist.length}
                     </span>
                   )}
@@ -268,14 +268,14 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setAuthModal({ open: true, type: 'wishlist' })}
-                className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95 shrink-0"
+                className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95 shrink-0"
                 title="Sign In to View Wishlist"
                 aria-label="View Wishlist"
               >
                 <div className="relative inline-flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-slate-700 group-hover:text-rose-600 transition-colors" />
+                  <Heart className="w-5 h-5 text-slate-700 group-hover:text-[#7a00ea] transition-colors" />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white">
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-[#7a00ea] text-white text-[10px] font-black rounded-full flex items-center justify-center pointer-events-none ring-1 ring-white">
                       {wishlist.length}
                     </span>
                   )}
@@ -455,12 +455,12 @@ export const Header: React.FC = () => {
               {user ? (
                 <Link
                   to="/wishlist"
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
                   title="Wishlist"
                 >
-                  <Heart className={`w-5 h-5 transition-all duration-300 ease-out group-hover:scale-115 ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-rose-600 group-hover:stroke-rose-600'}`} />
+                  <Heart className={`w-5 h-5 transition-all duration-300 ease-out group-hover:scale-115 ${wishlist.length > 0 ? 'fill-[#7a00ea] stroke-[#7a00ea] text-[#7a00ea]' : 'group-hover:text-[#7a00ea] group-hover:stroke-[#7a00ea]'}`} />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm pointer-events-none ring-1 ring-white">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#7a00ea] text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm pointer-events-none ring-1 ring-white">
                       {wishlist.length}
                     </span>
                   )}
@@ -469,12 +469,12 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setAuthModal({ open: true, type: 'wishlist' })}
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-rose-400 text-slate-700 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 relative group cursor-pointer active:scale-95"
                   title="Sign In to View Wishlist"
                 >
-                  <Heart className={`w-5 h-5 transition-all duration-300 ease-out group-hover:scale-115 ${wishlist.length > 0 ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'group-hover:text-rose-600 group-hover:stroke-rose-600'}`} />
+                  <Heart className={`w-5 h-5 transition-all duration-300 ease-out group-hover:scale-115 ${wishlist.length > 0 ? 'fill-[#7a00ea] stroke-[#7a00ea] text-[#7a00ea]' : 'group-hover:text-[#7a00ea] group-hover:stroke-[#7a00ea]'}`} />
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm pointer-events-none ring-1 ring-white">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#7a00ea] text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm pointer-events-none ring-1 ring-white">
                       {wishlist.length}
                     </span>
                   )}
@@ -564,7 +564,7 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all duration-300 overflow-hidden cursor-pointer active:scale-95 group"
+                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 overflow-hidden cursor-pointer active:scale-95 group"
                   title="My Account"
                 >
                   {user?.photoURL && !avatarError ? (
