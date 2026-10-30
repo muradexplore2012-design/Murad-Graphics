@@ -85,6 +85,21 @@ const SiteTitleSync: React.FC = () => {
       const appleTitleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
       if (appleTitleMeta) appleTitleMeta.setAttribute('content', siteName);
 
+      // Sync SEO Keywords & Google Search Console verification token
+      if (s.seoKeywords) {
+        const kwMeta = document.querySelector('meta[name="keywords"]');
+        if (kwMeta) kwMeta.setAttribute('content', s.seoKeywords);
+      }
+      if (s.googleVerification) {
+        let gvMeta = document.querySelector('meta[name="google-site-verification"]');
+        if (!gvMeta) {
+          gvMeta = document.createElement('meta');
+          gvMeta.setAttribute('name', 'google-site-verification');
+          document.head.appendChild(gvMeta);
+        }
+        gvMeta.setAttribute('content', s.googleVerification);
+      }
+
       // Notify active Service Worker to dynamically serve updated manifest
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({

@@ -39,6 +39,7 @@ import { ProductCard } from '../../components/ui/ProductCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LoginRequiredModal } from '../../components/ui/LoginRequiredModal';
 import confetti from 'canvas-confetti';
+import { useSEO } from '../../hooks/useSEO';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -48,6 +49,37 @@ export const ProductDetailPage: React.FC = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
+
+  useSEO({
+    title: product ? `${product.name} - Free Download & Resources` : 'Product Details',
+    description: product ? (product.shortDescription || product.description?.replace(/<[^>]+>/g, '').slice(0, 160)) : undefined,
+    keywords: product ? `${product.tags?.join(', ') || ''}, ${product.name}, Free Download, Vyrqonix, ${product.formats?.join(', ') || ''}` : undefined,
+    canonical: product ? `/product/${product.slug || product.id}` : undefined,
+    ogImage: product?.thumbnail || (product?.previews && product.previews[0]),
+    ogType: 'product',
+    schema: product ? {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: product.shortDescription || product.description?.replace(/<[^>]+>/g, '').slice(0, 200),
+      image: [product.thumbnail, ...(product.previews || [])].filter(Boolean),
+      brand: {
+        '@type': 'Brand',
+        name: 'Vyrqonix'
+      },
+      offers: {
+        '@type': 'Offer',
+        url: `https://vyrqonix.netlify.app/product/${product.slug || product.id}`,
+        priceCurrency: 'BDT',
+        price: product.isFree ? '0' : (product.price || 0).toString(),
+        availability: 'https://schema.org/InStock',
+        seller: {
+          '@type': 'Organization',
+          name: 'Vyrqonix'
+        }
+      }
+    } : undefined
+  });
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);

@@ -7,10 +7,18 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 import { Layers } from 'lucide-react';
 import { CategoryIcon } from '../../components/ui/CategoryIcon';
+import { useSEO } from '../../hooks/useSEO';
 
 export const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+
+  useSEO({
+    title: currentCategory ? `${currentCategory.name} - Free Downloads & Templates` : 'Category',
+    description: currentCategory?.description || `Explore and download all ${currentCategory?.name || 'digital'} items, templates, software, and resources at Vyrqonix.`,
+    keywords: currentCategory ? `${currentCategory.name}, ${currentCategory.name} download, free ${currentCategory.name}, Vyrqonix` : undefined,
+    canonical: slug ? `/category/${slug}` : undefined
+  });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 

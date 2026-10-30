@@ -227,6 +227,8 @@ export interface SiteSettings {
   siteSubtitle?: string;
   siteTitle?: string;
   siteDescription: string;
+  seoKeywords?: string;
+  googleVerification?: string;
   allProductsImage?: string;
   phone: string;
   email: string;

@@ -23,6 +23,7 @@ import { ProductCard } from '../../components/ui/ProductCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 import { CategoryIcon } from '../../components/ui/CategoryIcon';
+import { useSEO } from '../../hooks/useSEO';
 
 // Demo sample banners if admin has not uploaded any banners yet
 const SAMPLE_SLIDERS: Banner[] = [
@@ -92,6 +93,12 @@ const SAMPLE_SIDE_BOTTOM_RIGHT: Banner = {
 };
 
 export const HomePage: React.FC = () => {
+  useSEO({
+    title: 'Vyrqonix | Graphic Resources, Software & Game - Free Download',
+    description: 'Download free games, graphic design templates, PC software, Adobe Illustrator files, mockups, vectors, and digital assets at Vyrqonix.',
+    keywords: 'vyrqonix, Free Game Download, Free Design, PC Software, Free Software Download, Adobe Illustrator, Graphic Resources, Game Download, Templates, Bangladesh',
+    canonical: '/'
+  });
   const [allProducts, setAllProducts] = useState<Product[]>(() => {
     try {
       const saved = sessionStorage.getItem('mg_cache_home_products') || localStorage.getItem('mg_cache_home_products') || sessionStorage.getItem('mg_cache_home_featured');

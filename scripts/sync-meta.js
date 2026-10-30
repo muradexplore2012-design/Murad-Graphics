@@ -30,6 +30,9 @@ async function syncMeta() {
     const siteSubtitle = (data.siteSubtitle || 'YOUR DIGITAL WORLD').trim();
     const siteTitle = data.siteTitle || `${siteName} | ${siteSubtitle}`;
     const siteDescription = data.siteDescription || 'A digital marketplace for graphic design resources, editable design files, software and apps.';
+    const defaultKeywords = 'vyrqonix, Vyrqonix, Free Game Download, Free PC Games, Free Design, Free Graphic Design, softwer, pc softwe, PC Software, Free Software Download, admibe illustetor, Adobe Illustrator, Adobe Photoshop, Graphic Templates, Vector, PSD, Mockups, Software Download, Digital Marketplace, Murad Graphics, Bangladesh';
+    const seoKeywords = (data.seoKeywords || defaultKeywords).trim();
+    const googleVerification = (data.googleVerification || '').trim();
     const appFullName = `${siteName} - ${siteSubtitle}`;
 
     // 1. Sync public/manifest.json
@@ -55,6 +58,13 @@ async function syncMeta() {
       // Replace meta description
       html = html.replace(/<meta name="description" content=".*?" \/>/i, `<meta name="description" content="${siteDescription}" />`);
 
+      // Replace meta keywords
+      if (html.includes('name="keywords"')) {
+        html = html.replace(/<meta name="keywords" content=".*?" \/>/i, `<meta name="keywords" content="${seoKeywords}" />`);
+      } else {
+        html = html.replace(/<meta name="description" content=".*?" \/>/i, `<meta name="description" content="${siteDescription}" />\n    <meta name="keywords" content="${seoKeywords}" />`);
+      }
+
       // Replace application-name
       html = html.replace(/<meta name="application-name" content=".*?" \/>/i, `<meta name="application-name" content="${appFullName}" />`);
 
@@ -74,6 +84,15 @@ async function syncMeta() {
       html = html.replace(/<meta property="og:image" content=".*?" \/>/i, `<meta property="og:image" content="https://vyrqonix.netlify.app/og-image.png" />`);
       html = html.replace(/<meta property="og:image:secure_url" content=".*?" \/>/i, `<meta property="og:image:secure_url" content="https://vyrqonix.netlify.app/og-image.png" />`);
       html = html.replace(/<meta name="twitter:image" content=".*?" \/>/i, `<meta name="twitter:image" content="https://vyrqonix.netlify.app/og-image.png" />`);
+
+      // Google verification tag
+      if (googleVerification) {
+        if (html.includes('name="google-site-verification"')) {
+          html = html.replace(/<meta name="google-site-verification" content=".*?" \/>/i, `<meta name="google-site-verification" content="${googleVerification}" />`);
+        } else {
+          html = html.replace('</head>', `    <meta name="google-site-verification" content="${googleVerification}" />\n  </head>`);
+        }
+      }
 
       fs.writeFileSync(indexPath, html, 'utf8');
       console.log(`Successfully synced metadata to index.html with title: "${siteTitle}"`);

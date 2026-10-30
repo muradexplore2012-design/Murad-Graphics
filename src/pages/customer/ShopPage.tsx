@@ -15,10 +15,17 @@ import { Product, Category } from '../../types';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
+import { useSEO } from '../../hooks/useSEO';
 
 const FORMAT_OPTIONS = ['AI', 'EPS', 'PSD', 'SVG', 'PNG', 'PDF', 'ZIP', 'APK', 'EXE'];
 
 export const ShopPage: React.FC = () => {
+  useSEO({
+    title: 'Shop All Digital Resources, Software & Games | Vyrqonix',
+    description: 'Browse and download digital graphic resources, PC software, games, editable templates, vector arts and files at Vyrqonix.',
+    keywords: 'vyrqonix shop, Free Game Download, Free Design, PC Software, Free Software Download, Adobe Illustrator, Graphic Templates',
+    canonical: '/shop'
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

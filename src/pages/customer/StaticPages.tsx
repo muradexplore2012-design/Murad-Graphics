@@ -2,8 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { getSiteSettings, DEFAULT_SITE_SETTINGS } from '../../services/api';
 import { SiteSettings } from '../../types';
 import { ShieldCheck, Phone, Mail, MapPin } from 'lucide-react';
+import { useSEO } from '../../hooks/useSEO';
 
 export const AboutPage: React.FC = () => {
+  useSEO({
+    title: 'About Us | Vyrqonix Digital Marketplace',
+    description: 'Learn about Vyrqonix, our mission, digital graphic resources, software solutions and creative tools.',
+    canonical: '/about'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 
@@ -18,6 +24,11 @@ export const AboutPage: React.FC = () => {
 };
 
 export const ContactPage: React.FC = () => {
+  useSEO({
+    title: 'Contact Support & Helpdesk | Vyrqonix',
+    description: 'Get in touch with Vyrqonix support team via Phone, WhatsApp or Email for instant assistance with orders and files.',
+    canonical: '/contact'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 
@@ -67,6 +78,11 @@ export const ContactPage: React.FC = () => {
 };
 
 export const LicensePolicyPage: React.FC = () => {
+  useSEO({
+    title: 'Commercial & Digital License Policy | Vyrqonix',
+    description: 'Understand license terms for templates, digital downloads, software and creative assets on Vyrqonix.',
+    canonical: '/license-policy'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 
@@ -81,6 +97,11 @@ export const LicensePolicyPage: React.FC = () => {
 };
 
 export const RefundPolicyPage: React.FC = () => {
+  useSEO({
+    title: 'Digital Refund Policy | Vyrqonix',
+    description: 'Review the digital refund and customer satisfaction policy of Vyrqonix digital marketplace.',
+    canonical: '/refund-policy'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 
@@ -95,6 +116,11 @@ export const RefundPolicyPage: React.FC = () => {
 };
 
 export const TermsPage: React.FC = () => {
+  useSEO({
+    title: 'Terms of Service | Vyrqonix',
+    description: 'Read the terms of service, conditions and acceptable usage guidelines for Vyrqonix marketplace.',
+    canonical: '/terms'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 
@@ -109,6 +135,11 @@ export const TermsPage: React.FC = () => {
 };
 
 export const PrivacyPage: React.FC = () => {
+  useSEO({
+    title: 'Privacy Policy | Vyrqonix',
+    description: 'Learn how Vyrqonix handles and protects your digital privacy, personal data, and account information.',
+    canonical: '/privacy'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 
@@ -123,6 +154,11 @@ export const PrivacyPage: React.FC = () => {
 };
 
 export const FaqPage: React.FC = () => {
+  useSEO({
+    title: 'Frequently Asked Questions (FAQ) | Vyrqonix',
+    description: 'Find answers to common questions about downloads, payments, licenses, file formats, and software installation at Vyrqonix.',
+    canonical: '/faq'
+  });
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   useEffect(() => { getSiteSettings().then(setSettings); }, []);
 

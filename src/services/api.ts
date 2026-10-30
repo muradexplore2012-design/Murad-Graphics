@@ -42,6 +42,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   siteSubtitle: "Your Digital World",
   siteTitle: "Vyrqonix | Graphic Resources, Software & Game",
   siteDescription: "A digital marketplace for graphic design resources, editable design files, software and apps.",
+  seoKeywords: "vyrqonix, Vyrqonix, Free Game Download, Free PC Games, Free Design, Free Graphic Design, softwer, pc softwe, PC Software, Free Software Download, admibe illustetor, Adobe Illustrator, Adobe Photoshop, Graphic Templates, Vector, PSD, Mockups, Software Download, Digital Marketplace, Murad Graphics, Bangladesh",
+  googleVerification: "",
   allProductsImage: "/categories/all-products.png",
   phone: "01566088159",
   email: "muradrahman2026@gmail.com",

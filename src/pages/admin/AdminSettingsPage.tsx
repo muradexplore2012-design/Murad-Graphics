@@ -27,7 +27,11 @@ import {
   Lock,
   RefreshCw,
   Eye,
-  Check
+  Check,
+  Globe,
+  Search,
+  ExternalLink,
+  Copy
 } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
@@ -410,6 +414,114 @@ export const AdminSettingsPage: React.FC = () => {
                   onChange={(e) => setSettings({ ...settings, defaultRefundPolicy: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                 />
+              </div>
+            </div>
+          </div>
+
+
+          {/* SEO & Google Search Console */}
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <Search className="w-4 h-4 text-blue-600" />
+                <span>3. Search Engine Optimization (SEO) & Google Ranking</span>
+              </h2>
+              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                Google & Bing Ready
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              গুগল বা ক্রোমে সার্চ করলে আপনার ওয়েবসাইট যেন সবার আগে পাওয়া যায়, তার জন্য প্রয়োজনীয় কিওয়ার্ড এবং গুগল সার্চ কনসোল ভেরিফিকেশন কোড এখান থেকে নিয়ন্ত্রণ করুন।
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="font-semibold block mb-1 text-slate-800">
+                  Target Search Keywords (সার্চ ইঞ্জিন কিওয়ার্ডস - কমা দিয়ে লিখুন)
+                </label>
+                <textarea
+                  rows={3}
+                  value={settings.seoKeywords ?? 'vyrqonix, Vyrqonix, Free Game Download, Free PC Games, Free Design, Free Graphic Design, softwer, pc softwe, PC Software, Free Software Download, admibe illustetor, Adobe Illustrator, Adobe Photoshop, Graphic Templates, Vector, PSD, Mockups, Software Download, Digital Marketplace, Murad Graphics, Bangladesh'}
+                  onChange={(e) => setSettings({ ...settings, seoKeywords: e.target.value })}
+                  placeholder="vyrqonix, Free Game Download, Free Design, PC Software, Adobe Illustrator..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-xs font-mono leading-relaxed"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  মানুষ গুগল বা ক্রোমে যে শব্দগুলো লিখে খুঁজবে (যেমন: vyrqonix, Free Game Download, Free Design, PC Software, Adobe Illustrator) সেগুলো কমা দিয়ে লিখুন।
+                </p>
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1 text-slate-800">
+                  Google Search Console Verification Token (গুগল সাইট ভেরিফিকেশন কোড)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={settings.googleVerification ?? ''}
+                    onChange={(e) => setSettings({ ...settings, googleVerification: e.target.value })}
+                    placeholder="e.g. google-site-verification=abc123xyz... অথবা ভেরিফিকেশন টোকেন"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-xs font-mono"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Google Search Console-এ সাইট যোগ করার পর যে HTML Tag ভেরিফিকেশন কোড পাওয়া যায়, তা এখানে পেস্ট করুন।
+                </p>
+              </div>
+
+              {/* Crawlers & Sitemap Information Box */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <span className="font-bold text-xs text-slate-800 block">গুগল ইন্ডেক্সিং টুলস ও সরাসরি লিংক:</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div className="min-w-0 pr-2">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">XML Sitemap URL</span>
+                      <span className="text-xs font-semibold text-blue-600 truncate block">https://vyrqonix.netlify.app/sitemap.xml</span>
+                    </div>
+                    <a
+                      href="https://vyrqonix.netlify.app/sitemap.xml"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+                      title="ভিউ সাইটম্যাপ"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div className="min-w-0 pr-2">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Robots.txt URL</span>
+                      <span className="text-xs font-semibold text-blue-600 truncate block">https://vyrqonix.netlify.app/robots.txt</span>
+                    </div>
+                    <a
+                      href="https://vyrqonix.netlify.app/robots.txt"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+                      title="ভিউ রোবটস.txt"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[11px] text-slate-600">
+                    গুগলে আপনার সাইট জমা দিতে Google Search Console ব্যবহার করুন:
+                  </span>
+                  <a
+                    href="https://search.google.com/search-console"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg font-bold text-xs transition-colors"
+                  >
+                    <span>Google Search Console খুলুন</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
