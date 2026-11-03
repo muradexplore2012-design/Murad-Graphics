@@ -190,6 +190,7 @@ export interface Banner {
   isActive: boolean;
   order: number;
   placement?: 'slider' | 'side_top' | 'side_bottom_left' | 'side_bottom_right' | 'poster';
+  enableHoverZoom?: boolean;
   createdAt: string;
 }
 

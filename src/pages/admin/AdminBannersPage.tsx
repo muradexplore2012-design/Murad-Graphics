@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   getBanners, 
-  createBanner, 
+  createBanner,
+  updateBanner, 
   deleteBanner, 
   uploadImageWithFallback,
   recordAuditLog 
@@ -42,6 +43,9 @@ export const AdminBannersPage: React.FC = () => {
   const [posterSlot, setPosterSlot] = useState<'side_top' | 'side_bottom_left' | 'side_bottom_right'>('side_top');
   const [posterUploadProgress, setPosterUploadProgress] = useState<number | null>(null);
   const [submittingPoster, setSubmittingPoster] = useState(false);
+  const [sliderHoverZoom, setSliderHoverZoom] = useState(false);
+  const [posterHoverZoom, setPosterHoverZoom] = useState(false);
+  const [updatingZoomId, setUpdatingZoomId] = useState<string | null>(null);
 
   const loadBanners = async () => {
     setLoading(true);
@@ -66,6 +70,31 @@ export const AdminBannersPage: React.FC = () => {
   const topPoster = banners.find(b => b.placement === 'side_top');
   const blPoster = banners.find(b => b.placement === 'side_bottom_left');
   const brPoster = banners.find(b => b.placement === 'side_bottom_right');
+
+
+  // Toggle Hover Zoom on an existing banner
+  const handleToggleZoom = async (id: string, currentZoom: boolean | undefined) => {
+    setUpdatingZoomId(id);
+    try {
+      const newZoom = !currentZoom;
+      await updateBanner(id, { enableHoverZoom: newZoom });
+      setBanners(prev => prev.map(b => b.id === id ? { ...b, enableHoverZoom: newZoom } : b));
+      try {
+        sessionStorage.removeItem('mg_cache_home_sliders');
+        sessionStorage.removeItem('mg_cache_home_top_poster');
+        sessionStorage.removeItem('mg_cache_home_bl_poster');
+        sessionStorage.removeItem('mg_cache_home_br_poster');
+        localStorage.removeItem('mg_cache_home_sliders');
+        localStorage.removeItem('mg_cache_home_top_poster');
+        localStorage.removeItem('mg_cache_home_bl_poster');
+        localStorage.removeItem('mg_cache_home_br_poster');
+      } catch {}
+    } catch (err: any) {
+      alert("হোভার জুম সেটিং পরিবর্তন করতে ব্যর্থ হয়েছে: " + err.message);
+    } finally {
+      setUpdatingZoomId(null);
+    }
+  };
 
   // Handle Slider Image Upload
   const handleSliderFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

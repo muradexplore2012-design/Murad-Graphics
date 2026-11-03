@@ -373,7 +373,7 @@ export const HomePage: React.FC = () => {
                           alt={slide.title || 'Vyrqonix Banner'}
                           loading={index === 0 ? "eager" : "lazy"}
                           decoding="async"
-                          className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                          className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${slide.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                         />
                       </a>
                     ) : (
@@ -383,7 +383,7 @@ export const HomePage: React.FC = () => {
                           alt={slide.title || 'Vyrqonix Banner'}
                           loading={index === 0 ? "eager" : "lazy"}
                           decoding="async"
-                          className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                          className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${slide.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                         />
                       </Link>
                     )}
@@ -472,11 +472,11 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* ================= TABLET & DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
-          <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-5 xl:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 lg:h-[360px] xl:h-[390px] 2xl:h-[430px]">
+          <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 h-full">
             
             {/* Top Poster (Wide banner) */}
             {sideTopPoster && (
-              <div className="w-full h-[140px] md:h-[155px] lg:h-[195px] xl:h-[210px] 2xl:h-[230px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950 shrink-0">
+              <div className="w-full flex-[1.18] min-h-[135px] lg:min-h-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
                 {sideTopPoster.ctaLink?.startsWith('http') ? (
                   <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                     <img
@@ -484,7 +484,7 @@ export const HomePage: React.FC = () => {
                       alt={sideTopPoster.title || 'Special Promotion'}
                       loading="eager"
                       decoding="async"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideTopPoster.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                     />
                   </a>
                 ) : (
@@ -494,7 +494,7 @@ export const HomePage: React.FC = () => {
                       alt={sideTopPoster.title || 'Special Promotion'}
                       loading="eager"
                       decoding="async"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideTopPoster.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                     />
                   </Link>
                 )}
@@ -502,7 +502,7 @@ export const HomePage: React.FC = () => {
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
-            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 h-[140px] md:h-[155px] lg:h-[150px] xl:h-[165px] 2xl:h-[185px]`}>
+            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 flex-1 min-h-[110px] lg:min-h-0`}>
               
               {/* Bottom Left Poster */}
               {sideBottomLeftPoster && (
@@ -514,7 +514,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomLeftPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                       />
                     </a>
                   ) : (
@@ -524,7 +524,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomLeftPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                       />
                     </Link>
                   )}
@@ -541,7 +541,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomRightPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                       />
                     </a>
                   ) : (
@@ -551,7 +551,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomRightPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                       />
                     </Link>
                   )}
