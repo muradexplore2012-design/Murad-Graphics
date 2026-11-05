@@ -345,12 +345,12 @@ export const HomePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch">
           
           {/* ================= LEFT: MAIN HERO SLIDER (Circled Section - ONLY THIS SLIDES) ================= */}
-          <div className="lg:col-span-7 xl:col-span-8">
+          <div className="lg:col-span-8">
             <div 
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className="relative w-full aspect-[1024/440] min-h-[145px] lg:aspect-auto lg:h-[360px] xl:h-[390px] 2xl:h-[430px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group"
+              className="relative w-full aspect-[1024/440] min-h-[145px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group"
             >
               
               {/* Slider Slides with Smooth Fade/Slide */}
@@ -524,7 +524,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomLeftPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                       />
                     </Link>
                   )}
@@ -541,7 +541,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomRightPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
                       />
                     </a>
                   ) : (

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { 
   getBanners, 
-  createBanner,
+  createBanner, 
   updateBanner, 
   deleteBanner, 
-  uploadImageWithFallback,
-  recordAuditLog 
+  uploadImageWithFallback, 
+  recordAuditLog,
+  fastCacheInvalidate
 } from '../../services/api';
 import { Banner } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
@@ -19,7 +20,13 @@ import {
   LayoutTemplate,
   CheckCircle2,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  ArrowUp,
+  ArrowDown,
+  Star,
+  ZoomIn,
+  Check,
+  X
 } from 'lucide-react';
 import { TableSkeleton } from '../../components/ui/Skeletons';
 
@@ -33,6 +40,7 @@ export const AdminBannersPage: React.FC = () => {
   const [sliderTitle, setSliderTitle] = useState('');
   const [sliderLink, setSliderLink] = useState('/shop');
   const [sliderImage, setSliderImage] = useState('');
+  const [sliderHoverZoom, setSliderHoverZoom] = useState(false);
   const [sliderUploadProgress, setSliderUploadProgress] = useState<number | null>(null);
   const [submittingSlider, setSubmittingSlider] = useState(false);
 
@@ -41,11 +49,13 @@ export const AdminBannersPage: React.FC = () => {
   const [posterLink, setPosterLink] = useState('/shop');
   const [posterImage, setPosterImage] = useState('');
   const [posterSlot, setPosterSlot] = useState<'side_top' | 'side_bottom_left' | 'side_bottom_right'>('side_top');
+  const [posterHoverZoom, setPosterHoverZoom] = useState(false);
   const [posterUploadProgress, setPosterUploadProgress] = useState<number | null>(null);
   const [submittingPoster, setSubmittingPoster] = useState(false);
-  const [sliderHoverZoom, setSliderHoverZoom] = useState(false);
-  const [posterHoverZoom, setPosterHoverZoom] = useState(false);
+
+  // Reorder & Zoom Action State
   const [updatingZoomId, setUpdatingZoomId] = useState<string | null>(null);
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
 
   const loadBanners = async () => {
     setLoading(true);
@@ -53,7 +63,7 @@ export const AdminBannersPage: React.FC = () => {
       const data = await getBanners(false);
       setBanners(data);
     } catch (e) {
-      console.error("Error loading banners:", e);
+      console.error('Error loading banners:', e);
     } finally {
       setLoading(false);
     }
@@ -64,35 +74,96 @@ export const AdminBannersPage: React.FC = () => {
   }, []);
 
   // Filter sliders vs posters
-  const sliderBanners = banners.filter(b => !b.placement || b.placement === 'slider');
+  const sliderBanners = banners
+    .filter(b => !b.placement || b.placement === 'slider')
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
   const posterBanners = banners.filter(b => b.placement && b.placement !== 'slider');
 
   const topPoster = banners.find(b => b.placement === 'side_top');
   const blPoster = banners.find(b => b.placement === 'side_bottom_left');
   const brPoster = banners.find(b => b.placement === 'side_bottom_right');
 
-
-  // Toggle Hover Zoom on an existing banner
+  // Toggle Hover Zoom on an existing banner (slider or poster)
   const handleToggleZoom = async (id: string, currentZoom: boolean | undefined) => {
     setUpdatingZoomId(id);
     try {
       const newZoom = !currentZoom;
       await updateBanner(id, { enableHoverZoom: newZoom });
+      fastCacheInvalidate('banners_');
       setBanners(prev => prev.map(b => b.id === id ? { ...b, enableHoverZoom: newZoom } : b));
-      try {
-        sessionStorage.removeItem('mg_cache_home_sliders');
-        sessionStorage.removeItem('mg_cache_home_top_poster');
-        sessionStorage.removeItem('mg_cache_home_bl_poster');
-        sessionStorage.removeItem('mg_cache_home_br_poster');
-        localStorage.removeItem('mg_cache_home_sliders');
-        localStorage.removeItem('mg_cache_home_top_poster');
-        localStorage.removeItem('mg_cache_home_bl_poster');
-        localStorage.removeItem('mg_cache_home_br_poster');
-      } catch {}
     } catch (err: any) {
-      alert("হোভার জুম সেটিং পরিবর্তন করতে ব্যর্থ হয়েছে: " + err.message);
+      alert('হোভার জুম সেটিং পরিবর্তন করতে ব্যর্থ হয়েছে: ' + err.message);
     } finally {
       setUpdatingZoomId(null);
+    }
+  };
+
+  // Set selected banner as #1 (Cover slide)
+  const handleSetFirst = async (id: string) => {
+    const targetIndex = sliderBanners.findIndex(b => b.id === id);
+    if (targetIndex <= 0) return; // already first or not found
+
+    setReorderingId(id);
+    const reordered = [
+      sliderBanners[targetIndex],
+      ...sliderBanners.slice(0, targetIndex),
+      ...sliderBanners.slice(targetIndex + 1)
+    ];
+
+    // Optimistic UI update
+    setBanners(prev => {
+      const nonSliders = prev.filter(b => b.placement && b.placement !== 'slider');
+      const updatedSliders = reordered.map((b, idx) => ({ ...b, order: idx + 1 }));
+      return [...updatedSliders, ...nonSliders];
+    });
+
+    try {
+      await Promise.all(
+        reordered.map((b, idx) => updateBanner(b.id, { order: idx + 1 }))
+      );
+      fastCacheInvalidate('banners_');
+      await loadBanners();
+    } catch (err: any) {
+      alert('১ম ব্যানার হিসেবে সেট করতে সমস্যা হয়েছে: ' + err.message);
+      await loadBanners();
+    } finally {
+      setReorderingId(null);
+    }
+  };
+
+  // Move slide up or down by 1 step
+  const handleMoveOrder = async (id: string, direction: 'up' | 'down') => {
+    const index = sliderBanners.findIndex(b => b.id === id);
+    if (index === -1) return;
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= sliderBanners.length) return;
+
+    setReorderingId(id);
+    const reordered = [...sliderBanners];
+    const temp = reordered[index];
+    reordered[index] = reordered[targetIdx];
+    reordered[targetIdx] = temp;
+
+    // Optimistic UI update
+    setBanners(prev => {
+      const nonSliders = prev.filter(b => b.placement && b.placement !== 'slider');
+      const updatedSliders = reordered.map((b, idx) => ({ ...b, order: idx + 1 }));
+      return [...updatedSliders, ...nonSliders];
+    });
+
+    try {
+      await Promise.all([
+        updateBanner(reordered[index].id, { order: index + 1 }),
+        updateBanner(reordered[targetIdx].id, { order: targetIdx + 1 })
+      ]);
+      fastCacheInvalidate('banners_');
+      await loadBanners();
+    } catch (err: any) {
+      alert('ক্রম পরিবর্তন করতে সমস্যা হয়েছে: ' + err.message);
+      await loadBanners();
+    } finally {
+      setReorderingId(null);
     }
   };
 
@@ -107,7 +178,7 @@ export const AdminBannersPage: React.FC = () => {
       const url = await uploadImageWithFallback(file, path, setSliderUploadProgress);
       setSliderImage(url);
     } catch (err: any) {
-      alert("Image processing failed: " + err.message);
+      alert('Image processing failed: ' + err.message);
     } finally {
       setSliderUploadProgress(null);
     }
@@ -124,7 +195,7 @@ export const AdminBannersPage: React.FC = () => {
       const url = await uploadImageWithFallback(file, path, setPosterUploadProgress);
       setPosterImage(url);
     } catch (err: any) {
-      alert("Poster processing failed: " + err.message);
+      alert('Poster processing failed: ' + err.message);
     } finally {
       setPosterUploadProgress(null);
     }
@@ -134,7 +205,7 @@ export const AdminBannersPage: React.FC = () => {
   const handleCreateSlider = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sliderImage) {
-      alert("Please upload a slide image first.");
+      alert('Please upload a slide image first.');
       return;
     }
 
@@ -146,7 +217,8 @@ export const AdminBannersPage: React.FC = () => {
         ctaLink: sliderLink.trim() || '/shop',
         isActive: true,
         order: sliderBanners.length + 1,
-        placement: 'slider'
+        placement: 'slider',
+        enableHoverZoom: sliderHoverZoom
       });
 
       await recordAuditLog({
@@ -155,15 +227,17 @@ export const AdminBannersPage: React.FC = () => {
         action: 'CREATE_HOMEPAGE_BANNER',
         targetType: 'BANNER',
         targetId: 'slider',
-        details: { title: sliderTitle, placement: 'slider' }
+        details: { title: sliderTitle, placement: 'slider', enableHoverZoom: sliderHoverZoom }
       });
 
       setSliderTitle('');
       setSliderImage('');
       setSliderLink('/shop');
+      setSliderHoverZoom(false);
+      fastCacheInvalidate('banners_');
       await loadBanners();
     } catch (err: any) {
-      alert("Failed to save slide: " + err.message);
+      alert('Failed to save slide: ' + err.message);
     } finally {
       setSubmittingSlider(false);
     }
@@ -173,13 +247,12 @@ export const AdminBannersPage: React.FC = () => {
   const handleCreatePoster = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!posterImage) {
-      alert("Please upload a poster image first.");
+      alert('Please upload a poster image first.');
       return;
     }
 
     setSubmittingPoster(true);
     try {
-      // If a poster already exists in this slot, remove or replace it
       const existingInSlot = banners.find(b => b.placement === posterSlot);
       if (existingInSlot) {
         await deleteBanner(existingInSlot.id);
@@ -191,7 +264,8 @@ export const AdminBannersPage: React.FC = () => {
         ctaLink: posterLink.trim() || '/shop',
         isActive: true,
         order: posterSlot === 'side_top' ? 1 : posterSlot === 'side_bottom_left' ? 2 : 3,
-        placement: posterSlot
+        placement: posterSlot,
+        enableHoverZoom: posterHoverZoom
       });
 
       await recordAuditLog({
@@ -200,15 +274,17 @@ export const AdminBannersPage: React.FC = () => {
         action: 'CREATE_HOMEPAGE_BANNER',
         targetType: 'BANNER',
         targetId: posterSlot,
-        details: { title: posterTitle, placement: posterSlot }
+        details: { title: posterTitle, placement: posterSlot, enableHoverZoom: posterHoverZoom }
       });
 
       setPosterTitle('');
       setPosterImage('');
       setPosterLink('/shop');
+      setPosterHoverZoom(false);
+      fastCacheInvalidate('banners_');
       await loadBanners();
     } catch (err: any) {
-      alert("Failed to save poster: " + err.message);
+      alert('Failed to save poster: ' + err.message);
     } finally {
       setSubmittingPoster(false);
     }
@@ -226,9 +302,10 @@ export const AdminBannersPage: React.FC = () => {
           targetType: 'BANNER',
           targetId: id
         });
+        fastCacheInvalidate('banners_');
         setBanners(banners.filter(b => b.id !== id));
       } catch (e: any) {
-        alert("Failed to delete banner: " + e.message);
+        alert('Failed to delete banner: ' + e.message);
       }
     }
   };
@@ -248,22 +325,22 @@ export const AdminBannersPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Top Header */}
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-          <ImageIcon className="w-6 h-6 text-blue-600" />
-          <span>Hero Banners & Side Posters</span>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
+          <Layers className="w-6 h-6 text-blue-600" />
+          <span>Homepage Hero Banners & Posters</span>
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Manage the Main Hero Carousel slider (left) and the Promotional Side Posters (right) independently.
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Control the homepage top visual experience: Left Hero Slider with auto-rotation, order management, hover zoom controls, and Right side promo posters.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-4">
+      {/* Tabs Switcher */}
+      <div className="flex border-b border-slate-200">
         <button
           onClick={() => setActiveTab('slider')}
-          className={`pb-3 px-2 font-bold text-xs flex items-center gap-2 border-b-2 transition-all ${
+          className={`py-3 px-5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all ${
             activeTab === 'slider'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -275,7 +352,7 @@ export const AdminBannersPage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('posters')}
-          className={`pb-3 px-2 font-bold text-xs flex items-center gap-2 border-b-2 transition-all ${
+          className={`py-3 px-5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all ${
             activeTab === 'posters'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -400,21 +477,56 @@ export const AdminBannersPage: React.FC = () => {
                 />
               </div>
 
+              {/* Hover Zoom Toggle Option */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sliderHoverZoom}
+                    onChange={(e) => setSliderHoverZoom(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                      <ZoomIn className="w-3.5 h-3.5 text-blue-600" />
+                      <span>মাউস হোভার জুম এফেক্ট (Zoom on Hover)</span>
+                      {sliderHoverZoom ? (
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          চালু থাকবে
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          বন্ধ থাকবে
+                        </span>
+                      )}
+                    </span>
+                    <p className="text-[11px] text-slate-500">
+                      টিক দিলে ভিজিটর মাউস নিলে ব্যানারটি অত্যন্ত হালকা জুম হবে। টিক না দিলে স্বাভাবিক স্থির থাকবে।
+                    </p>
+                  </div>
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={submittingSlider || !sliderImage}
                 className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold transition-all shadow-sm active:scale-95 text-xs flex items-center justify-center gap-2"
               >
-                <span>{submittingSlider ? "Saving..." : "Add to Hero Slider"}</span>
+                <span>{submittingSlider ? 'Saving...' : 'Add to Hero Slider'}</span>
               </button>
             </form>
           </div>
 
-          {/* Active Sliders Grid */}
+          {/* Active Sliders Grid & Reorder Controls */}
           <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">
-              Active Hero Slider Banners ({sliderBanners.length})
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-2 border-b border-slate-100">
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                Active Hero Slider Banners ({sliderBanners.length})
+              </h2>
+              <span className="text-[11px] text-slate-500">
+                ★ ১ম ব্যানারটি ওয়েবসাইটে সবার প্রথমে প্রদর্শিত হয়
+              </span>
+            </div>
 
             {loading ? (
               <TableSkeleton rows={3} />
@@ -428,34 +540,133 @@ export const AdminBannersPage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {sliderBanners.map((b, idx) => (
-                  <div key={b.id} className="relative group bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between">
-                    <div className="relative aspect-[16/9] bg-slate-900 overflow-hidden">
-                      <img 
-                        src={b.imageUrl} 
-                        alt={b.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                      />
-                      <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold">
-                        Slide #{idx + 1}
-                      </span>
-                    </div>
+                {sliderBanners.map((b, idx) => {
+                  const isFirst = idx === 0;
+                  return (
+                    <div 
+                      key={b.id} 
+                      className={`relative group rounded-2xl border overflow-hidden shadow-xs flex flex-col justify-between transition-all ${
+                        isFirst 
+                          ? 'bg-amber-50/40 border-amber-300 ring-2 ring-amber-400/30' 
+                          : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      {/* Image container */}
+                      <div className="relative aspect-[16/9] bg-slate-900 overflow-hidden">
+                        <img 
+                          src={b.imageUrl} 
+                          alt={b.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                        />
 
-                    <div className="p-3.5 flex items-center justify-between bg-white border-t border-slate-100">
-                      <div className="min-w-0 pr-2">
-                        <p className="text-xs font-bold text-slate-900 truncate">{b.title}</p>
-                        <p className="text-[10px] text-blue-600 font-mono truncate">{b.ctaLink || '/shop'}</p>
+                        {/* Order Badge on Top-Left */}
+                        <div className="absolute top-2 left-2 flex items-center gap-1">
+                          {isFirst ? (
+                            <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-white text-[10px] font-bold shadow-md flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-white" />
+                              <span>Slide #1 (১ম কভার ব্যানার)</span>
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold">
+                              Slide #{idx + 1}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Reorder Buttons on Top-Right */}
+                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                          {!isFirst && (
+                            <button
+                              type="button"
+                              disabled={reorderingId !== null}
+                              onClick={() => handleSetFirst(b.id)}
+                              className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-[10px] font-bold shadow-md flex items-center gap-1 transition-all active:scale-95"
+                              title="এই ব্যানারটিকে সবার প্রথমে ১ম ব্যানার হিসেবে সেট করুন"
+                            >
+                              <Star className="w-3 h-3 fill-white" />
+                              <span>১ম বানান</span>
+                            </button>
+                          )}
+
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              disabled={reorderingId !== null}
+                              onClick={() => handleMoveOrder(b.id, 'up')}
+                              className="p-1 rounded-lg bg-black/60 hover:bg-black/90 disabled:opacity-50 text-white transition-all shadow-md active:scale-95"
+                              title="এক ধাপ উপরে নিন"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          {idx < sliderBanners.length - 1 && (
+                            <button
+                              type="button"
+                              disabled={reorderingId !== null}
+                              onClick={() => handleMoveOrder(b.id, 'down')}
+                              className="p-1 rounded-lg bg-black/60 hover:bg-black/90 disabled:opacity-50 text-white transition-all shadow-md active:scale-95"
+                              title="এক ধাপ নিচে নিন"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleDeleteBanner(b.id, b.title)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
-                        title="Delete Slide"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                      {/* Card Content & Quick Controls */}
+                      <div className="p-3 bg-white border-t border-slate-100 space-y-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 pr-1">
+                            <p className="text-xs font-bold text-slate-900 truncate">{b.title}</p>
+                            <p className="text-[10px] text-blue-600 font-mono truncate">{b.ctaLink || '/shop'}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteBanner(b.id, b.title)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                            title="Delete Slide"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Quick Hover Zoom Toggle Button */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <span className="text-[11px] text-slate-600 font-medium flex items-center gap-1">
+                            <ZoomIn className="w-3 h-3 text-slate-400" />
+                            <span>হোভার জুম:</span>
+                          </span>
+
+                          <button
+                            type="button"
+                            disabled={updatingZoomId === b.id}
+                            onClick={() => handleToggleZoom(b.id, b.enableHoverZoom)}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
+                              b.enableHoverZoom
+                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+                            }`}
+                            title="হোভার জুম চালু বা বন্ধ করতে ক্লিক করুন"
+                          >
+                            {updatingZoomId === b.id ? (
+                              <span>Updating...</span>
+                            ) : b.enableHoverZoom ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                <span>চালু (হালকা জুম)</span>
+                              </>
+                            ) : (
+                              <>
+                                <X className="w-3 h-3 text-slate-400" />
+                                <span>বন্ধ (স্থির)</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -639,12 +850,42 @@ export const AdminBannersPage: React.FC = () => {
                 />
               </div>
 
+              {/* Hover Zoom Toggle Option */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={posterHoverZoom}
+                    onChange={(e) => setPosterHoverZoom(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                      <ZoomIn className="w-3.5 h-3.5 text-blue-600" />
+                      <span>পোস্টারে হোভার জুম এফেক্ট (Zoom on Hover)</span>
+                      {posterHoverZoom ? (
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          চালু থাকবে
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          বন্ধ থাকবে
+                        </span>
+                      )}
+                    </span>
+                    <p className="text-[11px] text-slate-500">
+                      টিক দিলে মাউস নিলে পোস্টারটি হালকা জুম হবে, টিক না দিলে স্বাভাবিক থাকবে।
+                    </p>
+                  </div>
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={submittingPoster || !posterImage}
                 className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold transition-all shadow-sm active:scale-95 text-xs flex items-center justify-center gap-2"
               >
-                <span>{submittingPoster ? "Saving..." : "Save Poster to Selected Slot"}</span>
+                <span>{submittingPoster ? 'Saving...' : 'Save Poster to Selected Slot'}</span>
               </button>
             </form>
           </div>
@@ -669,13 +910,29 @@ export const AdminBannersPage: React.FC = () => {
                       <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-xs">
                         Top Poster (Wide)
                       </div>
-                      <button
-                        onClick={() => handleDeleteBanner(topPoster.id, topPoster.title)}
-                        className="absolute top-2 right-2 p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
-                        title="Delete Top Poster"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={updatingZoomId === topPoster.id}
+                          onClick={() => handleToggleZoom(topPoster.id, topPoster.enableHoverZoom)}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold shadow-xs flex items-center gap-1 ${
+                            topPoster.enableHoverZoom
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-black/60 text-white hover:bg-black/80'
+                          }`}
+                          title="হোভার জুম চালু/বন্ধ"
+                        >
+                          <ZoomIn className="w-3 h-3" />
+                          <span>{topPoster.enableHoverZoom ? 'জুম অন' : 'জুম অফ'}</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBanner(topPoster.id, topPoster.title)}
+                          className="p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
+                          title="Delete Top Poster"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <div className="text-center p-4 text-slate-400">
@@ -695,13 +952,29 @@ export const AdminBannersPage: React.FC = () => {
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-xs">
                           Bottom-Left
                         </div>
-                        <button
-                          onClick={() => handleDeleteBanner(blPoster.id, blPoster.title)}
-                          className="absolute top-2 right-2 p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
-                          title="Delete Poster"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={updatingZoomId === blPoster.id}
+                            onClick={() => handleToggleZoom(blPoster.id, blPoster.enableHoverZoom)}
+                            className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold shadow-xs flex items-center gap-1 ${
+                              blPoster.enableHoverZoom
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-black/60 text-white hover:bg-black/80'
+                            }`}
+                            title="হোভার জুম চালু/বন্ধ"
+                          >
+                            <ZoomIn className="w-2.5 h-2.5" />
+                            <span>{blPoster.enableHoverZoom ? 'অন' : 'অফ'}</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBanner(blPoster.id, blPoster.title)}
+                            className="p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
+                            title="Delete Poster"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </>
                     ) : (
                       <div className="text-center p-3 text-slate-400">
@@ -719,13 +992,29 @@ export const AdminBannersPage: React.FC = () => {
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-xs">
                           Bottom-Right
                         </div>
-                        <button
-                          onClick={() => handleDeleteBanner(brPoster.id, brPoster.title)}
-                          className="absolute top-2 right-2 p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
-                          title="Delete Poster"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={updatingZoomId === brPoster.id}
+                            onClick={() => handleToggleZoom(brPoster.id, brPoster.enableHoverZoom)}
+                            className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold shadow-xs flex items-center gap-1 ${
+                              brPoster.enableHoverZoom
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-black/60 text-white hover:bg-black/80'
+                            }`}
+                            title="হোভার জুম চালু/বন্ধ"
+                          >
+                            <ZoomIn className="w-2.5 h-2.5" />
+                            <span>{brPoster.enableHoverZoom ? 'অন' : 'অফ'}</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBanner(brPoster.id, brPoster.title)}
+                            className="p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
+                            title="Delete Poster"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </>
                     ) : (
                       <div className="text-center p-3 text-slate-400">
@@ -763,13 +1052,39 @@ export const AdminBannersPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => handleDeleteBanner(p.id, p.title)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
-                        title="Delete Poster"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          disabled={updatingZoomId === p.id}
+                          onClick={() => handleToggleZoom(p.id, p.enableHoverZoom)}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
+                            p.enableHoverZoom
+                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+                          }`}
+                          title="হোভার জুম অন/অফ"
+                        >
+                          {p.enableHoverZoom ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span>জুম অন</span>
+                            </>
+                          ) : (
+                            <>
+                              <X className="w-3 h-3 text-slate-400" />
+                              <span>জুম অফ</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteBanner(p.id, p.title)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                          title="Delete Poster"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
