@@ -559,25 +559,33 @@ export const Header: React.FC = () => {
                 </button>
               )}
 
-              {/* 3. Account Circular Icon with Dropdown (Dan Pase / Far Right) */}
+              {/* 3. Account Capsule Button with Dropdown (Dan Pase / Far Right) */}
               <div className="relative" ref={userRef}>
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="w-10 h-10 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50 flex items-center justify-center transition-all duration-300 overflow-hidden cursor-pointer active:scale-95 group"
+                  className="h-10 pl-1 pr-2.5 rounded-full border border-slate-200 hover:border-[#7a00ea] text-slate-700 hover:text-[#7a00ea] hover:bg-purple-50/50 flex items-center gap-1.5 transition-all duration-300 cursor-pointer active:scale-95 group bg-white shadow-2xs"
                   title="My Account"
                 >
-                  {user?.photoURL && !avatarError ? (
-                    <img 
-                      src={user.photoURL} 
-                      alt={user.displayName || "User"} 
-                      referrerPolicy="no-referrer"
-                      onError={() => setAvatarError(true)}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                  ) : (
-                    <UserIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-115" />
-                  )}
+                  <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-purple-50 flex items-center justify-center">
+                    {user?.photoURL && !avatarError ? (
+                      <img 
+                        src={user.photoURL} 
+                        alt={user.displayName || "User"} 
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarError(true)}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <UserIcon className="w-4 h-4 text-slate-600 transition-transform duration-300 group-hover:scale-115" />
+                    )}
+                  </div>
+                  <ChevronDown 
+                    className={`w-3.5 h-3.5 text-slate-500 group-hover:text-[#7a00ea] transition-transform duration-200 ${
+                      userDropdownOpen ? 'rotate-180 text-[#7a00ea]' : ''
+                    }`} 
+                    strokeWidth={2.5}
+                  />
                 </button>
 
                 {userDropdownOpen && (
