@@ -373,7 +373,7 @@ export const HomePage: React.FC = () => {
                           alt={slide.title || 'Vyrqonix Banner'}
                           loading={index === 0 ? "eager" : "lazy"}
                           decoding="async"
-                          className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${slide.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                          className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${slide.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                         />
                       </a>
                     ) : (
@@ -383,7 +383,7 @@ export const HomePage: React.FC = () => {
                           alt={slide.title || 'Vyrqonix Banner'}
                           loading={index === 0 ? "eager" : "lazy"}
                           decoding="async"
-                          className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${slide.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                          className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${slide.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                         />
                       </Link>
                     )}
@@ -485,7 +485,7 @@ export const HomePage: React.FC = () => {
                       alt={sideTopPoster.title || 'Special Promotion'}
                       loading="eager"
                       decoding="async"
-                      className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideTopPoster.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                      className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideTopPoster.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                     />
                   </a>
                 ) : (
@@ -495,7 +495,7 @@ export const HomePage: React.FC = () => {
                       alt={sideTopPoster.title || 'Special Promotion'}
                       loading="eager"
                       decoding="async"
-                      className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideTopPoster.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                      className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideTopPoster.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                     />
                   </Link>
                 )}
@@ -515,7 +515,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomLeftPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                       />
                     </a>
                   ) : (
@@ -525,7 +525,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomLeftPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomLeftPoster?.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                       />
                     </Link>
                   )}
@@ -542,7 +542,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomRightPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                       />
                     </a>
                   ) : (
@@ -552,7 +552,7 @@ export const HomePage: React.FC = () => {
                         alt={sideBottomRightPoster.title || 'Deal'}
                         loading="eager"
                         decoding="async"
-                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.018]' : 'scale-100'}`}
+                        className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${sideBottomRightPoster?.enableHoverZoom ? 'group-hover:scale-[1.045]' : 'scale-100'}`}
                       />
                     </Link>
                   )}
