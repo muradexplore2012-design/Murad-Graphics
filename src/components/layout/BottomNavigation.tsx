@@ -136,21 +136,63 @@ export const BottomNavigation: React.FC = () => {
   const isDownloadsActive = pathname.startsWith('/account/downloads') || pathname === '/downloads';
   const isAccountActive = (pathname.startsWith('/account') && !isDownloadsActive) || pathname === '/login';
 
+  // Active column index (0: Home, 1: Shop, 2: Wishlist, 3: Downloads, 4: Account)
+  let activeIndex = -1;
+  if (isHomeActive) activeIndex = 0;
+  else if (isShopActive) activeIndex = 1;
+  else if (isWishlistActive) activeIndex = 2;
+  else if (isDownloadsActive) activeIndex = 3;
+  else if (isAccountActive) activeIndex = 4;
+
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] rounded-t-3xl pb-[max(0.4rem,env(safe-area-inset-bottom))]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] rounded-t-3xl pb-[max(0.4rem,env(safe-area-inset-bottom))] overflow-hidden"
     >
-      <div className="grid grid-cols-5 items-center max-w-md mx-auto px-1 h-16">
+      <div className="relative max-w-md mx-auto h-16">
+
+        {/* Animated Spotlight Highlight Beam (Glides smoothly across tabs) */}
+        <div 
+          className="absolute inset-y-0 left-0 w-1/5 pointer-events-none transition-all duration-350 ease-[cubic-bezier(0.34,1.25,0.64,1)] z-0"
+          style={{
+            transform: activeIndex >= 0 ? `translateX(${activeIndex * 100}%)` : 'translateY(100%)',
+            opacity: activeIndex >= 0 ? 1 : 0,
+          }}
+        >
+          {/* Top Glowing Laser / Neon Indicator Bar */}
+          <div className="mx-auto w-10 sm:w-11 h-[3px] rounded-b-full bg-[#7a00ea] shadow-[0_0_12px_#7a00ea,0_0_5px_#7a00ea,0_2px_4px_rgba(122,0,234,0.4)]" />
+
+          {/* Downward Spotlight Cone / Beam */}
+          <div 
+            className="absolute inset-0 top-[2px] pointer-events-none"
+            style={{
+              clipPath: 'polygon(18% 0%, 82% 0%, 98% 100%, 2% 100%)',
+              background: 'linear-gradient(180deg, rgba(122, 0, 234, 0.28) 0%, rgba(122, 0, 234, 0.12) 42%, rgba(122, 0, 234, 0.02) 80%, rgba(122, 0, 234, 0) 100%)',
+            }}
+          />
+
+          {/* Soft Central Aura around active icon */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse 65% 50% at 50% 36%, rgba(122, 0, 234, 0.22) 0%, rgba(122, 0, 234, 0) 75%)',
+            }}
+          />
+        </div>
+
+        {/* 5 Navigation Buttons */}
+        <div className="relative z-10 grid grid-cols-5 items-center h-full">
         
         {/* 1. Home */}
         <Link
           to="/"
-          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
+          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full ${
             isHomeActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <div className="relative flex items-center justify-center w-6 h-6">
+          <div className={`relative flex items-center justify-center w-6 h-6 transition-all duration-300 ${
+            isHomeActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(122,0,234,0.35)]' : ''
+          }`}>
             <HomeIcon active={isHomeActive} className="w-5 h-5 transition-transform" />
           </div>
           <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
@@ -163,11 +205,13 @@ export const BottomNavigation: React.FC = () => {
         {/* 2. Shop */}
         <Link
           to="/shop"
-          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
+          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full ${
             isShopActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <div className="relative flex items-center justify-center w-6 h-6">
+          <div className={`relative flex items-center justify-center w-6 h-6 transition-all duration-300 ${
+            isShopActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(122,0,234,0.35)]' : ''
+          }`}>
             <ShopIcon active={isShopActive} className="w-5 h-5 transition-transform" />
           </div>
           <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors ${
@@ -181,11 +225,13 @@ export const BottomNavigation: React.FC = () => {
         {user ? (
           <Link
             to="/wishlist"
-            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative ${
+            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full ${
               isWishlistActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <div className="relative flex items-center justify-center w-6 h-6">
+            <div className={`relative flex items-center justify-center w-6 h-6 transition-all duration-300 ${
+              isWishlistActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(122,0,234,0.35)]' : ''
+            }`}>
               <WishlistIcon active={isWishlistActive} className="w-5 h-5 transition-transform" />
 
               {/* Wishlist Badge */}
@@ -205,11 +251,13 @@ export const BottomNavigation: React.FC = () => {
           <button
             type="button"
             onClick={() => setAuthModalOpen(true)}
-            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative w-full ${
+            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative w-full h-full ${
               isWishlistActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <div className="relative flex items-center justify-center w-6 h-6">
+            <div className={`relative flex items-center justify-center w-6 h-6 transition-all duration-300 ${
+              isWishlistActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(122,0,234,0.35)]' : ''
+            }`}>
               <WishlistIcon active={isWishlistActive} className="w-5 h-5 transition-transform" />
 
               {/* Wishlist Badge */}
@@ -230,11 +278,13 @@ export const BottomNavigation: React.FC = () => {
         {/* 4. Downloads Library */}
         <Link
           to="/account/downloads"
-          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
+          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full ${
             isDownloadsActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <div className="relative flex items-center justify-center w-6 h-6">
+          <div className={`relative flex items-center justify-center w-6 h-6 transition-all duration-300 ${
+            isDownloadsActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(122,0,234,0.35)]' : ''
+          }`}>
             <DownloadIcon active={isDownloadsActive} className="w-5 h-5 transition-transform" />
           </div>
           <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors truncate max-w-full text-center ${
@@ -247,11 +297,13 @@ export const BottomNavigation: React.FC = () => {
         {/* 5. Account */}
         <Link
           to={user ? "/account" : "/login"}
-          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer ${
+          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full ${
             isAccountActive ? 'text-[#7a00ea]' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <div className="relative flex items-center justify-center w-6 h-6">
+          <div className={`relative flex items-center justify-center w-6 h-6 transition-all duration-300 ${
+            isAccountActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(122,0,234,0.35)]' : ''
+          }`}>
             {user?.photoURL && !avatarError ? (
               <img
                 key={user.photoURL}
@@ -276,6 +328,7 @@ export const BottomNavigation: React.FC = () => {
           </span>
         </Link>
 
+        </div>
       </div>
 
       <LoginRequiredModal
