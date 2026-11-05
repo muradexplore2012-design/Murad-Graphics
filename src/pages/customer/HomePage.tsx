@@ -25,73 +25,6 @@ import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 import { CategoryIcon } from '../../components/ui/CategoryIcon';
 import { useSEO } from '../../hooks/useSEO';
 
-// Demo sample banners if admin has not uploaded any banners yet
-const SAMPLE_SLIDERS: Banner[] = [
-  {
-    id: 'demo-slider-1',
-    title: 'Vyrqonix Premium Digital Marketplace',
-    imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80',
-    ctaLink: '/shop',
-    placement: 'slider',
-    isActive: true,
-    order: 1,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'demo-slider-2',
-    title: 'Website Themes & Graphic Assets',
-    imageUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1600&q=80',
-    ctaLink: '/shop',
-    placement: 'slider',
-    isActive: true,
-    order: 2,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'demo-slider-3',
-    title: 'Professional Graphic Design Templates & Mockups',
-    imageUrl: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1600&q=80',
-    ctaLink: '/shop',
-    placement: 'slider',
-    isActive: true,
-    order: 3,
-    createdAt: new Date().toISOString()
-  }
-];
-
-const SAMPLE_SIDE_TOP: Banner = {
-  id: 'demo-side-top',
-  title: 'LinkedIn Premium Up To 90% Discount',
-  imageUrl: 'https://images.unsplash.com/photo-1611944212129-29977ae1398c?auto=format&fit=crop&w=1000&q=80',
-  ctaLink: '/shop',
-  placement: 'side_top',
-  isActive: true,
-  order: 1,
-  createdAt: new Date().toISOString()
-};
-
-const SAMPLE_SIDE_BOTTOM_LEFT: Banner = {
-  id: 'demo-side-bl',
-  title: 'Windows 11 Professional',
-  imageUrl: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=600&q=80',
-  ctaLink: '/shop',
-  placement: 'side_bottom_left',
-  isActive: true,
-  order: 2,
-  createdAt: new Date().toISOString()
-};
-
-const SAMPLE_SIDE_BOTTOM_RIGHT: Banner = {
-  id: 'demo-side-br',
-  title: 'ChatGPT Plus Be Faster',
-  imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80',
-  ctaLink: '/shop',
-  placement: 'side_bottom_right',
-  isActive: true,
-  order: 3,
-  createdAt: new Date().toISOString()
-};
-
 export const HomePage: React.FC = () => {
   useSEO({
     title: 'Vyrqonix | Graphic Resources, Software & Game - Free Download',
@@ -115,31 +48,34 @@ export const HomePage: React.FC = () => {
   });
   const [sliderBanners, setSliderBanners] = useState<Banner[]>(() => {
     try {
-      const saved = sessionStorage.getItem('mg_cache_home_sliders');
-      if (saved) return JSON.parse(saved);
+      const saved = localStorage.getItem('mg_cache_home_sliders') || sessionStorage.getItem('mg_cache_home_sliders');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
     } catch {}
-    return SAMPLE_SLIDERS;
+    return [];
   });
   const [sideTopPoster, setSideTopPoster] = useState<Banner | null>(() => {
     try {
-      const saved = sessionStorage.getItem('mg_cache_home_top_poster');
+      const saved = localStorage.getItem('mg_cache_home_top_poster') || sessionStorage.getItem('mg_cache_home_top_poster');
       if (saved) return JSON.parse(saved);
     } catch {}
-    return SAMPLE_SIDE_TOP;
+    return null;
   });
   const [sideBottomLeftPoster, setSideBottomLeftPoster] = useState<Banner | null>(() => {
     try {
-      const saved = sessionStorage.getItem('mg_cache_home_bl_poster');
+      const saved = localStorage.getItem('mg_cache_home_bl_poster') || sessionStorage.getItem('mg_cache_home_bl_poster');
       if (saved) return JSON.parse(saved);
     } catch {}
-    return SAMPLE_SIDE_BOTTOM_LEFT;
+    return null;
   });
   const [sideBottomRightPoster, setSideBottomRightPoster] = useState<Banner | null>(() => {
     try {
-      const saved = sessionStorage.getItem('mg_cache_home_br_poster');
+      const saved = localStorage.getItem('mg_cache_home_br_poster') || sessionStorage.getItem('mg_cache_home_br_poster');
       if (saved) return JSON.parse(saved);
     } catch {}
-    return SAMPLE_SIDE_BOTTOM_RIGHT;
+    return null;
   });
   const [allProductsCardImage, setAllProductsCardImage] = useState<string>(() => {
     try {
@@ -178,20 +114,12 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchData = async () => {
+
+    // 1. FAST BANNER LOADING: Fetch banners immediately without waiting for products
+    const loadBannersImmediate = async () => {
       try {
-        const [activeProducts, cats, bannerList, siteSet] = await Promise.all([
-          getProducts({ onlyActive: true }),
-          getCategories(true),
-          getBanners(true),
-          getSiteSettings().catch(() => null)
-        ]);
-
+        const bannerList = await getBanners(true);
         if (!isMounted) return;
-
-        if (siteSet?.allProductsImage) {
-          setAllProductsCardImage(siteSet.allProductsImage);
-        }
 
         const sliders: Banner[] = [];
         let topPoster: Banner | null = null;
@@ -209,55 +137,92 @@ export const HomePage: React.FC = () => {
           } else if (b.placement === 'poster') {
             generalPosters.push(b);
           } else {
-            // Default or placement === 'slider'
             sliders.push(b);
           }
         });
 
-        // Distribute general posters into empty slots if any
         if (!topPoster && generalPosters.length > 0) topPoster = generalPosters[0];
         if (!blPoster && generalPosters.length > 1) blPoster = generalPosters[1];
         if (!brPoster && generalPosters.length > 2) brPoster = generalPosters[2];
 
-        // Sort all products: featured first, then newest
+        setSliderBanners(sliders);
+        setSideTopPoster(topPoster);
+        setSideBottomLeftPoster(blPoster);
+        setSideBottomRightPoster(brPoster);
+
+        try {
+          localStorage.setItem('mg_cache_home_sliders', JSON.stringify(sliders));
+          sessionStorage.setItem('mg_cache_home_sliders', JSON.stringify(sliders));
+          if (topPoster) {
+            localStorage.setItem('mg_cache_home_top_poster', JSON.stringify(topPoster));
+            sessionStorage.setItem('mg_cache_home_top_poster', JSON.stringify(topPoster));
+          }
+          if (blPoster) {
+            localStorage.setItem('mg_cache_home_bl_poster', JSON.stringify(blPoster));
+            sessionStorage.setItem('mg_cache_home_bl_poster', JSON.stringify(blPoster));
+          }
+          if (brPoster) {
+            localStorage.setItem('mg_cache_home_br_poster', JSON.stringify(brPoster));
+            sessionStorage.setItem('mg_cache_home_br_poster', JSON.stringify(brPoster));
+          }
+        } catch {}
+      } catch (err) {
+        console.error("Error loading banners fast:", err);
+      }
+    };
+
+    // 2. Run instant banner loading
+    loadBannersImmediate();
+
+    // 3. Fetch products and categories catalog
+    const fetchCatalog = async () => {
+      try {
+        const [activeProducts, cats, siteSet] = await Promise.all([
+          getProducts({ onlyActive: true }),
+          getCategories(true),
+          getSiteSettings().catch(() => null)
+        ]);
+
+        if (!isMounted) return;
+
+        if (siteSet?.allProductsImage) {
+          setAllProductsCardImage(siteSet.allProductsImage);
+        }
+
         const sortedProducts = [...activeProducts].sort((a, b) => {
           if (a.isFeatured && !b.isFeatured) return -1;
           if (!a.isFeatured && b.isFeatured) return 1;
           return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
         });
 
-        const finalSliders = sliders.length > 0 ? sliders : SAMPLE_SLIDERS;
-        const finalTop = topPoster || SAMPLE_SIDE_TOP;
-        const finalBl = blPoster || SAMPLE_SIDE_BOTTOM_LEFT;
-        const finalBr = brPoster || SAMPLE_SIDE_BOTTOM_RIGHT;
-
         setAllProducts(sortedProducts);
         setCategories(cats);
-        setSliderBanners(finalSliders);
-        setSideTopPoster(finalTop);
-        setSideBottomLeftPoster(finalBl);
-        setSideBottomRightPoster(finalBr);
 
-        // Cache for ultra-fast instant refresh
         try {
           sessionStorage.setItem('mg_cache_home_products', JSON.stringify(sortedProducts));
           localStorage.setItem('mg_cache_home_products', JSON.stringify(sortedProducts));
           sessionStorage.setItem('mg_client_categories_cache', JSON.stringify(cats));
           localStorage.setItem('mg_client_categories_cache', JSON.stringify(cats));
-          sessionStorage.setItem('mg_cache_home_sliders', JSON.stringify(finalSliders));
-          sessionStorage.setItem('mg_cache_home_top_poster', JSON.stringify(finalTop));
-          sessionStorage.setItem('mg_cache_home_bl_poster', JSON.stringify(finalBl));
-          sessionStorage.setItem('mg_cache_home_br_poster', JSON.stringify(finalBr));
         } catch {}
       } catch (e) {
-        console.error("Error loading homepage data:", e);
+        console.error("Error loading homepage catalog:", e);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
-    fetchData();
-    return () => { isMounted = false; };
+    fetchCatalog();
+
+    // 4. Live sync when banners are updated from admin panel
+    const handleBannersSync = () => {
+      loadBannersImmediate();
+    };
+    window.addEventListener('mg_banners_updated', handleBannersSync);
+
+    return () => { 
+      isMounted = false; 
+      window.removeEventListener('mg_banners_updated', handleBannersSync);
+    };
   }, []);
 
   // Automatic hero slide interval if multiple sliders exist (ONLY left hero slider slides!)
@@ -353,6 +318,13 @@ export const HomePage: React.FC = () => {
               className="relative w-full aspect-[1024/440] min-h-[145px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 bg-slate-950 group"
             >
               
+              {/* Empty / Loading Skeleton */}
+              {sliderBanners.length === 0 && (
+                <div className="w-full h-full bg-slate-900/90 animate-pulse flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-slate-800/80 animate-pulse" />
+                </div>
+              )}
+
               {/* Slider Slides with Smooth Fade/Slide */}
               {sliderBanners.map((slide, index) => {
                 const isActive = index === currentSlide;
@@ -476,7 +448,7 @@ export const HomePage: React.FC = () => {
             <div className="md:contents lg:absolute lg:inset-0 lg:flex lg:flex-col lg:gap-3.5">
             
             {/* Top Poster (Wide banner - sleek & compact to align height) */}
-            {sideTopPoster && (
+            {sideTopPoster ? (
               <div className="w-full flex-[1.15] min-h-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
                 {sideTopPoster.ctaLink?.startsWith('http') ? (
                   <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
@@ -500,13 +472,15 @@ export const HomePage: React.FC = () => {
                   </Link>
                 )}
               </div>
+            ) : (
+              <div className="w-full flex-[1.15] min-h-0 rounded-2xl sm:rounded-3xl bg-slate-900/90 animate-pulse border border-slate-800" />
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
             <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-3 flex-[0.85] min-h-0`}>
               
               {/* Bottom Left Poster */}
-              {sideBottomLeftPoster && (
+              {sideBottomLeftPoster ? (
                 <div className="w-full h-full rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
                   {sideBottomLeftPoster.ctaLink?.startsWith('http') ? (
                     <a href={sideBottomLeftPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
@@ -530,10 +504,12 @@ export const HomePage: React.FC = () => {
                     </Link>
                   )}
                 </div>
+              ) : (
+                <div className="w-full h-full rounded-xl sm:rounded-2xl lg:rounded-3xl bg-slate-900/90 animate-pulse border border-slate-800" />
               )}
 
               {/* Bottom Right Poster */}
-              {sideBottomRightPoster && (
+              {sideBottomRightPoster ? (
                 <div className="w-full h-full rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
                   {sideBottomRightPoster.ctaLink?.startsWith('http') ? (
                     <a href={sideBottomRightPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
@@ -557,6 +533,8 @@ export const HomePage: React.FC = () => {
                     </Link>
                   )}
                 </div>
+              ) : (
+                <div className="w-full h-full rounded-xl sm:rounded-2xl lg:rounded-3xl bg-slate-900/90 animate-pulse border border-slate-800" />
               )}
 
             </div>

@@ -1076,23 +1076,40 @@ export const getBanners = async (onlyActive = true): Promise<Banner[]> => {
   return promise;
 };
 
+export const clearBannerCaches = () => {
+  fastCacheInvalidate('banners_');
+  try {
+    localStorage.removeItem('mg_cache_home_sliders');
+    localStorage.removeItem('mg_cache_home_top_poster');
+    localStorage.removeItem('mg_cache_home_bl_poster');
+    localStorage.removeItem('mg_cache_home_br_poster');
+    sessionStorage.removeItem('mg_cache_home_sliders');
+    sessionStorage.removeItem('mg_cache_home_top_poster');
+    sessionStorage.removeItem('mg_cache_home_bl_poster');
+    sessionStorage.removeItem('mg_cache_home_br_poster');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('mg_banners_updated'));
+    }
+  } catch {}
+};
+
 export const createBanner = async (banner: Omit<Banner, "id" | "createdAt">): Promise<string> => {
   const docRef = await addDoc(collection(db, "banners"), {
     ...banner,
     createdAt: new Date().toISOString()
   });
-  fastCacheInvalidate('banners_');
+  clearBannerCaches();
   return docRef.id;
 };
 
 export const updateBanner = async (id: string, updates: Partial<Banner>): Promise<void> => {
   await updateDoc(doc(db, "banners", id), updates);
-  fastCacheInvalidate('banners_');
+  clearBannerCaches();
 };
 
 export const deleteBanner = async (id: string): Promise<void> => {
   await deleteDoc(doc(db, "banners", id));
-  fastCacheInvalidate('banners_');
+  clearBannerCaches();
 };
 
 // ==================== COUPONS ====================
