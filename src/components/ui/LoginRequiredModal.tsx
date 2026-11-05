@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, Heart, LogIn, ArrowRight, X, Lock } from 'lucide-react';
+import { ShoppingBag, Heart, LogIn, ArrowRight, X, Lock, Download } from 'lucide-react';
 
 interface LoginRequiredModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type?: 'cart' | 'wishlist' | 'general';
+  type?: 'cart' | 'wishlist' | 'downloads' | 'general';
   redirectPath?: string;
   onCancelNavigateTo?: string;
 }
@@ -32,7 +32,13 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
 
   if (!isOpen) return null;
 
-  const resolvedRedirect = redirectPath || (type === 'wishlist' ? '/wishlist' : '/cart');
+  const resolvedRedirect =
+    redirectPath ||
+    (type === 'wishlist'
+      ? '/wishlist'
+      : type === 'downloads'
+      ? '/account/downloads'
+      : '/cart');
 
   const handleLogin = () => {
     onClose();
@@ -48,6 +54,7 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
 
   const isCart = type === 'cart';
   const isWishlist = type === 'wishlist';
+  const isDownloads = type === 'downloads';
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -79,6 +86,8 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
             <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-rose-500 fill-rose-100" />
           ) : isCart ? (
             <ShoppingBag className="w-8 h-8 sm:w-10 sm:h-10 text-[#7a00ea]" />
+          ) : isDownloads ? (
+            <Download className="w-8 h-8 sm:w-10 sm:h-10 text-[#7a00ea]" />
           ) : (
             <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-[#7a00ea]" />
           )}
@@ -97,6 +106,8 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
         <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
           {isWishlist 
             ? 'উইশলিস্ট দেখতে আগে লগইন করুন' 
+            : isDownloads
+            ? 'ডাউনলোড লাইব্রেরি দেখতে আগে লগইন করুন'
             : isCart 
             ? 'কার্ট দেখতে আগে লগইন করুন' 
             : 'অনুগ্রহ করে প্রথমে লগইন করুন'}
@@ -106,6 +117,8 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
         <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed max-w-xs mx-auto">
           {isWishlist
             ? 'আপনার পছন্দের সেভ করা ডিজাইন ফাইল ও সফটওয়্যার তালিকা দেখতে অনুগ্রহ করে আপনার একাউন্টে লগইন করুন।'
+            : isDownloads
+            ? 'আপনার ক্রয়কৃত সব ডিজিটাল ডিজাইন ফাইল, সফটওয়্যার ও অর্ডার তালিকা দেখতে অনুগ্রহ করে একাউন্টে লগইন করুন।'
             : isCart
             ? 'আপনার সিলেক্ট করা ডিজিটাল ফাইল দেখতে এবং অর্ডার সম্পন্ন করতে প্রথমে ওয়েবসাইটে লগইন করতে হবে।'
             : 'এই পেজের সুবিধা পেতে প্রথমে আপনার একাউন্টে লগইন করুন।'}

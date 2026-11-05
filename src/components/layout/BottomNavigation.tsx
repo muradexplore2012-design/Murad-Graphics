@@ -122,6 +122,7 @@ export const BottomNavigation: React.FC = () => {
   const { user } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalType, setAuthModalType] = useState<'wishlist' | 'downloads'>('wishlist');
 
   useEffect(() => {
     setAvatarError(false);
@@ -269,7 +270,10 @@ export const BottomNavigation: React.FC = () => {
         ) : (
           <button
             type="button"
-            onClick={() => setAuthModalOpen(true)}
+            onClick={() => {
+              setAuthModalType('wishlist');
+              setAuthModalOpen(true);
+            }}
             className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative w-full h-full group ${
               isWishlistActive ? 'text-[#7a00ea]' : 'text-slate-400 hover:text-slate-700'
             }`}
@@ -295,23 +299,47 @@ export const BottomNavigation: React.FC = () => {
         )}
 
         {/* 4. Downloads Library */}
-        <Link
-          to="/account/downloads"
-          className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full group ${
-            isDownloadsActive ? 'text-[#7a00ea]' : 'text-slate-400 hover:text-slate-700'
-          }`}
-        >
-          <div className={`relative flex items-center justify-center w-6 h-6 transition-transform duration-300 ${
-            isDownloadsActive ? 'scale-110' : 'group-hover:scale-105'
-          }`}>
-            <DownloadIcon active={isDownloadsActive} className="w-5 h-5 transition-colors" />
-          </div>
-          <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors truncate max-w-full text-center ${
-            isDownloadsActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-400 group-hover:text-slate-600'
-          }`}>
-            Downloads
-          </span>
-        </Link>
+        {user ? (
+          <Link
+            to="/account/downloads"
+            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative h-full group ${
+              isDownloadsActive ? 'text-[#7a00ea]' : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <div className={`relative flex items-center justify-center w-6 h-6 transition-transform duration-300 ${
+              isDownloadsActive ? 'scale-110' : 'group-hover:scale-105'
+            }`}>
+              <DownloadIcon active={isDownloadsActive} className="w-5 h-5 transition-colors" />
+            </div>
+            <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors truncate max-w-full text-center ${
+              isDownloadsActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-400 group-hover:text-slate-600'
+            }`}>
+              Downloads
+            </span>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setAuthModalType('downloads');
+              setAuthModalOpen(true);
+            }}
+            className={`flex flex-col items-center justify-center pb-1 transition-all select-none active:scale-95 cursor-pointer relative w-full h-full group ${
+              isDownloadsActive ? 'text-[#7a00ea]' : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <div className={`relative flex items-center justify-center w-6 h-6 transition-transform duration-300 ${
+              isDownloadsActive ? 'scale-110' : 'group-hover:scale-105'
+            }`}>
+              <DownloadIcon active={isDownloadsActive} className="w-5 h-5 transition-colors" />
+            </div>
+            <span className={`text-[10px] sm:text-[11px] mt-1 leading-tight transition-colors truncate max-w-full text-center ${
+              isDownloadsActive ? 'font-bold text-[#7a00ea]' : 'font-medium text-slate-400 group-hover:text-slate-600'
+            }`}>
+              Downloads
+            </span>
+          </button>
+        )}
 
         {/* 5. Account */}
         <Link
@@ -353,7 +381,8 @@ export const BottomNavigation: React.FC = () => {
       <LoginRequiredModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        type="wishlist"
+        type={authModalType}
+        redirectPath={authModalType === 'wishlist' ? '/wishlist' : '/account/downloads'}
       />
     </nav>
   );

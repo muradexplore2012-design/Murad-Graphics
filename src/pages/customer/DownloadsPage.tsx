@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUserEntitlements, recordDownloadEvent, getProductById, getUserOrders, deleteUserEntitlement } from '../../services/api';
 import { DownloadEntitlement, Product } from '../../types';
 import { Download, FileText, KeyRound, Copy, Check, X, FolderDown, Trash2 } from 'lucide-react';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { LoginRequiredModal } from '../../components/ui/LoginRequiredModal';
 
 export const DownloadsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [entitlements, setEntitlements] = useState<DownloadEntitlement[]>(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -258,14 +260,38 @@ export const DownloadsPage: React.FC = () => {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-[#7a00ea] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!user) {
     return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-800">Please Sign In</h2>
-        <p className="text-xs text-slate-500 mt-2">Sign in to access your digital downloads library.</p>
-        <Link to="/login" className="mt-4 inline-block px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold">
-          Login Now
-        </Link>
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-slate-50/50">
+        <LoginRequiredModal
+          isOpen={true}
+          onClose={() => navigate(-1)}
+          type="downloads"
+          redirectPath="/account/downloads"
+          onCancelNavigateTo="/"
+        />
+        <div className="max-w-md mx-auto text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-purple-100 text-[#7a00ea] flex items-center justify-center shadow-inner">
+            <Download className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900">ডাউনলোড লাইব্রেরি দেখতে আগে লগইন করুন</h2>
+          <p className="text-xs text-slate-500">আপনার ক্রয়কৃত ডিজিটাল ডিজাইন ফাইল ও সফটওয়্যার এক্সেস করতে অনুগ্রহ করে একাউন্টে লগইন করুন।</p>
+          <button
+            type="button"
+            onClick={() => navigate('/login?redirect=/account/downloads')}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#7a00ea] text-white rounded-2xl text-xs font-bold shadow-md hover:bg-[#6c00d4] transition-all cursor-pointer"
+          >
+            লগইন করুন (Log In Now)
+          </button>
+        </div>
       </div>
     );
   }
