@@ -472,11 +472,12 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* ================= TABLET & DESKTOP: SIDE PROMO POSTERS (Fixed Promos, Does Not Slide) ================= */}
-          <div className="hidden md:grid md:grid-cols-2 lg:flex lg:col-span-4 lg:flex-col gap-3 sm:gap-4 md:mt-1 lg:mt-0 h-full">
+          <div className="hidden md:grid md:grid-cols-2 lg:block lg:col-span-4 relative h-full">
+            <div className="md:contents lg:absolute lg:inset-0 lg:flex lg:flex-col lg:gap-3.5">
             
-            {/* Top Poster (Wide banner) */}
+            {/* Top Poster (Wide banner - sleek & compact to align height) */}
             {sideTopPoster && (
-              <div className="w-full flex-[1.18] min-h-[135px] lg:min-h-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
+              <div className="w-full flex-[0.85] min-h-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
                 {sideTopPoster.ctaLink?.startsWith('http') ? (
                   <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                     <img
@@ -502,7 +503,7 @@ export const HomePage: React.FC = () => {
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
-            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-4 flex-1 min-h-[110px] lg:min-h-0`}>
+            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-3 flex-[1.15] min-h-0`}>
               
               {/* Bottom Left Poster */}
               {sideBottomLeftPoster && (
@@ -560,6 +561,7 @@ export const HomePage: React.FC = () => {
 
             </div>
 
+            </div>
           </div>
 
         </div>

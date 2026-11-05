@@ -26,7 +26,10 @@ import {
   Star,
   ZoomIn,
   Check,
-  X
+  X,
+  Pencil,
+  Save,
+  RotateCcw
 } from 'lucide-react';
 import { TableSkeleton } from '../../components/ui/Skeletons';
 
@@ -36,7 +39,7 @@ export const AdminBannersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'slider' | 'posters'>('slider');
 
-  // Slider Banner Form State
+  // Slider Banner Upload Form State
   const [sliderTitle, setSliderTitle] = useState('');
   const [sliderLink, setSliderLink] = useState('/shop');
   const [sliderImage, setSliderImage] = useState('');
@@ -44,7 +47,7 @@ export const AdminBannersPage: React.FC = () => {
   const [sliderUploadProgress, setSliderUploadProgress] = useState<number | null>(null);
   const [submittingSlider, setSubmittingSlider] = useState(false);
 
-  // Side Poster Form State
+  // Side Poster Upload Form State
   const [posterTitle, setPosterTitle] = useState('');
   const [posterLink, setPosterLink] = useState('/shop');
   const [posterImage, setPosterImage] = useState('');
@@ -53,9 +56,20 @@ export const AdminBannersPage: React.FC = () => {
   const [posterUploadProgress, setPosterUploadProgress] = useState<number | null>(null);
   const [submittingPoster, setSubmittingPoster] = useState(false);
 
-  // Reorder & Zoom Action State
+  // Action States
   const [updatingZoomId, setUpdatingZoomId] = useState<string | null>(null);
   const [reorderingId, setReorderingId] = useState<string | null>(null);
+
+  // Edit Modal State
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editLink, setEditLink] = useState('');
+  const [editImage, setEditImage] = useState('');
+  const [editHoverZoom, setEditHoverZoom] = useState(false);
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editOrder, setEditOrder] = useState<number>(1);
+  const [editUploadProgress, setEditUploadProgress] = useState<number | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const loadBanners = async () => {
     setLoading(true);
@@ -84,7 +98,7 @@ export const AdminBannersPage: React.FC = () => {
   const blPoster = banners.find(b => b.placement === 'side_bottom_left');
   const brPoster = banners.find(b => b.placement === 'side_bottom_right');
 
-  // Toggle Hover Zoom on an existing banner (slider or poster)
+  // Toggle Hover Zoom on an existing banner (1-click action)
   const handleToggleZoom = async (id: string, currentZoom: boolean | undefined) => {
     setUpdatingZoomId(id);
     try {
@@ -99,17 +113,17 @@ export const AdminBannersPage: React.FC = () => {
     }
   };
 
-  // Set selected banner as #1 (Cover slide)
-  const handleSetFirst = async (id: string) => {
-    const targetIndex = sliderBanners.findIndex(b => b.id === id);
-    if (targetIndex <= 0) return; // already first or not found
+  // Move banner to any position (e.g. move banner #3 to #2 or #1)
+  const handleSetPosition = async (id: string, targetPosition: number) => {
+    const currentIndex = sliderBanners.findIndex(b => b.id === id);
+    if (currentIndex === -1) return;
+    const targetIndex = targetPosition - 1;
+    if (targetIndex < 0 || targetIndex >= sliderBanners.length || targetIndex === currentIndex) return;
 
     setReorderingId(id);
-    const reordered = [
-      sliderBanners[targetIndex],
-      ...sliderBanners.slice(0, targetIndex),
-      ...sliderBanners.slice(targetIndex + 1)
-    ];
+    const reordered = [...sliderBanners];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
 
     // Optimistic UI update
     setBanners(prev => {
@@ -125,45 +139,121 @@ export const AdminBannersPage: React.FC = () => {
       fastCacheInvalidate('banners_');
       await loadBanners();
     } catch (err: any) {
-      alert('১ম ব্যানার হিসেবে সেট করতে সমস্যা হয়েছে: ' + err.message);
+      alert('ব্যানারের পজিশন পরিবর্তন করতে সমস্যা হয়েছে: ' + err.message);
       await loadBanners();
     } finally {
       setReorderingId(null);
     }
   };
 
+  // Quick 1-click set as #1 cover banner
+  const handleSetFirst = async (id: string) => {
+    await handleSetPosition(id, 1);
+  };
+
   // Move slide up or down by 1 step
   const handleMoveOrder = async (id: string, direction: 'up' | 'down') => {
     const index = sliderBanners.findIndex(b => b.id === id);
     if (index === -1) return;
-    const targetIdx = direction === 'up' ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= sliderBanners.length) return;
+    const targetIdx = direction === 'up' ? index : index + 2;
+    await handleSetPosition(id, targetIdx);
+  };
 
-    setReorderingId(id);
-    const reordered = [...sliderBanners];
-    const temp = reordered[index];
-    reordered[index] = reordered[targetIdx];
-    reordered[targetIdx] = temp;
+  // Open Edit Modal
+  const handleOpenEdit = (banner: Banner) => {
+    setEditingBanner(banner);
+    setEditTitle(banner.title || '');
+    setEditLink(banner.ctaLink || '/shop');
+    setEditImage(banner.imageUrl || '');
+    setEditHoverZoom(!!banner.enableHoverZoom);
+    setEditIsActive(banner.isActive !== false);
+    const currentIdx = sliderBanners.findIndex(b => b.id === banner.id);
+    setEditOrder(currentIdx !== -1 ? currentIdx + 1 : (banner.order || 1));
+  };
 
-    // Optimistic UI update
-    setBanners(prev => {
-      const nonSliders = prev.filter(b => b.placement && b.placement !== 'slider');
-      const updatedSliders = reordered.map((b, idx) => ({ ...b, order: idx + 1 }));
-      return [...updatedSliders, ...nonSliders];
-    });
+  // Edit image file upload
+  const handleEditFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     try {
-      await Promise.all([
-        updateBanner(reordered[index].id, { order: index + 1 }),
-        updateBanner(reordered[targetIdx].id, { order: targetIdx + 1 })
-      ]);
+      setEditUploadProgress(20);
+      const path = `banners/edit_${Date.now()}_${file.name}`;
+      const url = await uploadImageWithFallback(file, path, setEditUploadProgress);
+      setEditImage(url);
+    } catch (err: any) {
+      alert('ছবি আপলোড করতে ব্যর্থ হয়েছে: ' + err.message);
+    } finally {
+      setEditUploadProgress(null);
+    }
+  };
+
+  // Save changes from Edit Modal
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBanner) return;
+
+    setSavingEdit(true);
+    try {
+      const isSlider = !editingBanner.placement || editingBanner.placement === 'slider';
+
+      if (isSlider) {
+        const currentIdx = sliderBanners.findIndex(b => b.id === editingBanner.id);
+        const targetIdx = editOrder - 1;
+
+        if (currentIdx !== -1 && targetIdx !== currentIdx && targetIdx >= 0 && targetIdx < sliderBanners.length) {
+          const reordered = [...sliderBanners];
+          const [moved] = reordered.splice(currentIdx, 1);
+          reordered.splice(targetIdx, 0, moved);
+
+          await Promise.all(
+            reordered.map((b, idx) => updateBanner(b.id, { 
+              order: idx + 1,
+              ...(b.id === editingBanner.id ? {
+                title: editTitle.trim(),
+                ctaLink: editLink.trim(),
+                imageUrl: editImage,
+                enableHoverZoom: editHoverZoom,
+                isActive: editIsActive
+              } : {})
+            }))
+          );
+        } else {
+          await updateBanner(editingBanner.id, {
+            title: editTitle.trim(),
+            ctaLink: editLink.trim(),
+            imageUrl: editImage,
+            enableHoverZoom: editHoverZoom,
+            isActive: editIsActive,
+            order: editOrder
+          });
+        }
+      } else {
+        await updateBanner(editingBanner.id, {
+          title: editTitle.trim(),
+          ctaLink: editLink.trim(),
+          imageUrl: editImage,
+          enableHoverZoom: editHoverZoom,
+          isActive: editIsActive
+        });
+      }
+
       fastCacheInvalidate('banners_');
+      await recordAuditLog({
+        adminUid: user?.uid || '',
+        adminEmail: user?.email || '',
+        action: 'UPDATE_HOMEPAGE_BANNER',
+        targetType: 'BANNER',
+        targetId: editingBanner.id,
+        details: { title: editTitle, enableHoverZoom: editHoverZoom, order: editOrder }
+      });
+
+      setEditingBanner(null);
       await loadBanners();
     } catch (err: any) {
-      alert('ক্রম পরিবর্তন করতে সমস্যা হয়েছে: ' + err.message);
-      await loadBanners();
+      alert('ব্যানার আপডেট করতে সমস্যা হয়েছে: ' + err.message);
     } finally {
-      setReorderingId(null);
+      setSavingEdit(false);
     }
   };
 
@@ -332,7 +422,7 @@ export const AdminBannersPage: React.FC = () => {
           <span>Homepage Hero Banners & Posters</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Control the homepage top visual experience: Left Hero Slider with auto-rotation, order management, hover zoom controls, and Right side promo posters.
+          ব্যানার আপলোড, যেকোনো পজিশনে সরানো (১ম, ২য়, ৩য়...), হোভার জুম নিয়ন্ত্রণ এবং ব্যানার সেটিং এডিট করার পূর্ণ সুবিধা।
         </p>
       </div>
 
@@ -524,7 +614,7 @@ export const AdminBannersPage: React.FC = () => {
                 Active Hero Slider Banners ({sliderBanners.length})
               </h2>
               <span className="text-[11px] text-slate-500">
-                ★ ১ম ব্যানারটি ওয়েবসাইটে সবার প্রথমে প্রদর্শিত হয়
+                ★ যেকোনো ব্যানার ২য়, ৩য় বা ১ম পজিশনে সেট করুন ও এডিট করুন
               </span>
             </div>
 
@@ -573,94 +663,125 @@ export const AdminBannersPage: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Reorder Buttons on Top-Right */}
+                        {/* Top-Right Quick Action Buttons */}
                         <div className="absolute top-2 right-2 flex items-center gap-1">
-                          {!isFirst && (
-                            <button
-                              type="button"
-                              disabled={reorderingId !== null}
-                              onClick={() => handleSetFirst(b.id)}
-                              className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-[10px] font-bold shadow-md flex items-center gap-1 transition-all active:scale-95"
-                              title="এই ব্যানারটিকে সবার প্রথমে ১ম ব্যানার হিসেবে সেট করুন"
-                            >
-                              <Star className="w-3 h-3 fill-white" />
-                              <span>১ম বানান</span>
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(b)}
+                            className="p-1.5 rounded-lg bg-blue-600/90 hover:bg-blue-600 text-white transition-all shadow-md active:scale-95 flex items-center gap-1 text-[10px] font-bold"
+                            title="ব্যানার এডিট করুন"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            <span>এডিট</span>
+                          </button>
 
-                          {idx > 0 && (
-                            <button
-                              type="button"
-                              disabled={reorderingId !== null}
-                              onClick={() => handleMoveOrder(b.id, 'up')}
-                              className="p-1 rounded-lg bg-black/60 hover:bg-black/90 disabled:opacity-50 text-white transition-all shadow-md active:scale-95"
-                              title="এক ধাপ উপরে নিন"
-                            >
-                              <ArrowUp className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-
-                          {idx < sliderBanners.length - 1 && (
-                            <button
-                              type="button"
-                              disabled={reorderingId !== null}
-                              onClick={() => handleMoveOrder(b.id, 'down')}
-                              className="p-1 rounded-lg bg-black/60 hover:bg-black/90 disabled:opacity-50 text-white transition-all shadow-md active:scale-95"
-                              title="এক ধাপ নিচে নিন"
-                            >
-                              <ArrowDown className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBanner(b.id, b.title)}
+                            className="p-1.5 rounded-lg bg-rose-600/90 hover:bg-rose-600 text-white transition-all shadow-md active:scale-95"
+                            title="ব্যানার ডিলিট করুন"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
                       </div>
 
-                      {/* Card Content & Quick Controls */}
+                      {/* Card Content & Reorder / Edit Controls */}
                       <div className="p-3 bg-white border-t border-slate-100 space-y-2.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 pr-1">
-                            <p className="text-xs font-bold text-slate-900 truncate">{b.title}</p>
-                            <p className="text-[10px] text-blue-600 font-mono truncate">{b.ctaLink || '/shop'}</p>
-                          </div>
-                          <button
-                            onClick={() => handleDeleteBanner(b.id, b.title)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
-                            title="Delete Slide"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 truncate">{b.title}</p>
+                          <p className="text-[10px] text-blue-600 font-mono truncate">{b.ctaLink || '/shop'}</p>
                         </div>
 
-                        {/* Quick Hover Zoom Toggle Button */}
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-[11px] text-slate-600 font-medium flex items-center gap-1">
-                            <ZoomIn className="w-3 h-3 text-slate-400" />
-                            <span>হোভার জুম:</span>
-                          </span>
+                        {/* Position Selector & Step Nudge Buttons */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 bg-slate-50/70 p-2 rounded-xl">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-[11px] font-bold text-slate-700 whitespace-nowrap">পজিশন:</span>
+                            <select
+                              value={idx + 1}
+                              disabled={reorderingId !== null}
+                              onChange={(e) => handleSetPosition(b.id, Number(e.target.value))}
+                              className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs"
+                              title="যেকোনো পজিশন নির্বাচন করুন (১, ২, ৩...)"
+                            >
+                              {sliderBanners.map((_, pIdx) => (
+                                <option key={pIdx + 1} value={pIdx + 1}>
+                                  {pIdx === 0 ? '১ম ব্যানার (Cover)' : `${pIdx + 1} নাম্বার ব্যানার`}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
+                          <div className="flex items-center gap-1 shrink-0">
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                disabled={reorderingId !== null}
+                                onClick={() => handleMoveOrder(b.id, 'up')}
+                                className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 shadow-xs transition-all active:scale-95"
+                                title="এক ধাপ আগে নিন (Move Up)"
+                              >
+                                <ArrowUp className="w-3 h-3" />
+                              </button>
+                            )}
+
+                            {idx < sliderBanners.length - 1 && (
+                              <button
+                                type="button"
+                                disabled={reorderingId !== null}
+                                onClick={() => handleMoveOrder(b.id, 'down')}
+                                className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 shadow-xs transition-all active:scale-95"
+                                title="এক ধাপ পরে নিন (Move Down)"
+                              >
+                                <ArrowDown className="w-3 h-3" />
+                              </button>
+                            )}
+
+                            {!isFirst && (
+                              <button
+                                type="button"
+                                disabled={reorderingId !== null}
+                                onClick={() => handleSetFirst(b.id)}
+                                className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold shadow-xs flex items-center gap-0.5 transition-all active:scale-95"
+                                title="সবার প্রথমে ১ম ব্যানার বানান"
+                              >
+                                <Star className="w-2.5 h-2.5 fill-white" />
+                                <span>১ম</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Quick Hover Zoom Toggle & Full Edit Button */}
+                        <div className="flex items-center justify-between gap-1 pt-1">
                           <button
                             type="button"
                             disabled={updatingZoomId === b.id}
                             onClick={() => handleToggleZoom(b.id, b.enableHoverZoom)}
-                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
+                            className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
                               b.enableHoverZoom
                                 ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
                             }`}
                             title="হোভার জুম চালু বা বন্ধ করতে ক্লিক করুন"
                           >
+                            <ZoomIn className="w-3 h-3" />
                             {updatingZoomId === b.id ? (
-                              <span>Updating...</span>
+                              <span>Saving...</span>
                             ) : b.enableHoverZoom ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-600" />
-                                <span>চালু (হালকা জুম)</span>
-                              </>
+                              <span>জুম চালু (হালকা)</span>
                             ) : (
-                              <>
-                                <X className="w-3 h-3 text-slate-400" />
-                                <span>বন্ধ (স্থির)</span>
-                              </>
+                              <span>জুম বন্ধ (স্থির)</span>
                             )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(b)}
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-700 text-[10px] font-bold border border-slate-200 transition-all flex items-center gap-1"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            <span>এডিট সেটিং</span>
                           </button>
                         </div>
                       </div>
@@ -897,7 +1018,7 @@ export const AdminBannersPage: React.FC = () => {
                 Current Side Posters Layout
               </h2>
               <p className="text-xs text-slate-500">
-                Here is how the right side of your homepage looks currently. You can remove any poster to revert to the default or replace it with a new one.
+                Here is how the right side of your homepage looks currently. You can edit settings, toggle zoom, or replace any poster.
               </p>
 
               {/* Visual Layout Mockup */}
@@ -913,9 +1034,18 @@ export const AdminBannersPage: React.FC = () => {
                       <div className="absolute top-2 right-2 flex items-center gap-1.5">
                         <button
                           type="button"
+                          onClick={() => handleOpenEdit(topPoster)}
+                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-xs text-[10px] font-bold flex items-center gap-1"
+                          title="Edit Top Poster"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          <span>এডিট</span>
+                        </button>
+                        <button
+                          type="button"
                           disabled={updatingZoomId === topPoster.id}
                           onClick={() => handleToggleZoom(topPoster.id, topPoster.enableHoverZoom)}
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold shadow-xs flex items-center gap-1 ${
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold shadow-xs flex items-center gap-1 ${
                             topPoster.enableHoverZoom
                               ? 'bg-emerald-600 text-white'
                               : 'bg-black/60 text-white hover:bg-black/80'
@@ -952,7 +1082,15 @@ export const AdminBannersPage: React.FC = () => {
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-xs">
                           Bottom-Left
                         </div>
-                        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(blPoster)}
+                            className="p-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-xs"
+                            title="এডিট"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
                           <button
                             type="button"
                             disabled={updatingZoomId === blPoster.id}
@@ -969,7 +1107,7 @@ export const AdminBannersPage: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteBanner(blPoster.id, blPoster.title)}
-                            className="p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
+                            className="p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md shadow-xs"
                             title="Delete Poster"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -992,7 +1130,15 @@ export const AdminBannersPage: React.FC = () => {
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-xs">
                           Bottom-Right
                         </div>
-                        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(brPoster)}
+                            className="p-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-xs"
+                            title="এডিট"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
                           <button
                             type="button"
                             disabled={updatingZoomId === brPoster.id}
@@ -1009,7 +1155,7 @@ export const AdminBannersPage: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteBanner(brPoster.id, brPoster.title)}
-                            className="p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-xs"
+                            className="p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md shadow-xs"
                             title="Delete Poster"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -1042,7 +1188,7 @@ export const AdminBannersPage: React.FC = () => {
                   {posterBanners.map((p) => (
                     <div key={p.id} className="flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50 gap-4">
                       <div className="flex items-center gap-3 min-w-0">
-                        <img src={p.imageUrl} alt={p.title} className="w-16 h-12 rounded-lg object-cover border border-slate-200" />
+                        <img src={p.imageUrl} alt={p.title} className="w-16 h-12 rounded-lg object-cover border border-slate-200 shrink-0" />
                         <div className="min-w-0">
                           <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 inline-block mb-0.5">
                             {getSlotLabel(p.placement)}
@@ -1053,6 +1199,16 @@ export const AdminBannersPage: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(p)}
+                          className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition-all flex items-center gap-1 shadow-xs"
+                          title="পোস্টার এডিট করুন"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          <span>এডিট</span>
+                        </button>
+
                         <button
                           type="button"
                           disabled={updatingZoomId === p.id}
@@ -1079,7 +1235,7 @@ export const AdminBannersPage: React.FC = () => {
 
                         <button
                           onClick={() => handleDeleteBanner(p.id, p.title)}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
                           title="Delete Poster"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1090,6 +1246,193 @@ export const AdminBannersPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= EDIT BANNER MODAL ================= */}
+      {editingBanner && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    ব্যানার সেটিং এডিট করুন (Edit Banner)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    {!editingBanner.placement || editingBanner.placement === 'slider'
+                      ? 'Hero Slider Banner'
+                      : getSlotLabel(editingBanner.placement)}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditingBanner(null)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+              {/* Image preview & replacement */}
+              <div>
+                <label className="font-semibold block mb-1 text-slate-800">ব্যানারের ছবি (Banner Image)</label>
+                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 mb-2">
+                  <img src={editImage} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    id="edit-file-upload"
+                    accept="image/*"
+                    onChange={handleEditFileUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="edit-file-upload"
+                    className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition-all border border-blue-200"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>নতুন ছবি আপলোড করুন</span>
+                  </label>
+                  {editUploadProgress !== null && (
+                    <span className="text-[11px] font-bold text-blue-600">
+                      Uploading {editUploadProgress}%...
+                    </span>
+                  )}
+                </div>
+
+                <input
+                  type="text"
+                  placeholder="Or paste direct image URL"
+                  value={editImage}
+                  onChange={(e) => setEditImage(e.target.value)}
+                  className="w-full mt-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                />
+              </div>
+
+              {/* Title input */}
+              <div>
+                <label className="font-semibold block mb-1 text-slate-800">টাইটেল / নাম (Title)</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                  placeholder="ব্যানারের নাম লিখুন"
+                />
+              </div>
+
+              {/* Link input */}
+              <div>
+                <label className="font-semibold block mb-1 text-slate-800">ক্লিক লিংক (Destination Link)</label>
+                <input
+                  type="text"
+                  value={editLink}
+                  onChange={(e) => setEditLink(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                  placeholder="/shop, /product/..., or https://..."
+                />
+              </div>
+
+              {/* If Slider, Order Position Dropdown */}
+              {(!editingBanner.placement || editingBanner.placement === 'slider') && (
+                <div>
+                  <label className="font-semibold block mb-1 text-slate-800">
+                    ব্যানারের পজিশন / ক্রম নম্বর (Slide Position)
+                  </label>
+                  <select
+                    value={editOrder}
+                    onChange={(e) => setEditOrder(Number(e.target.value))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
+                  >
+                    {sliderBanners.map((_, pIdx) => (
+                      <option key={pIdx + 1} value={pIdx + 1}>
+                        {pIdx === 0 ? '১ম ব্যানার (⭐ Cover Banner)' : `${pIdx + 1} নাম্বার ব্যানার`}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    পজিশন পরিবর্তন করলে অন্যান্য ব্যানারগুলো স্বয়ংক্রিয়ভাবে আগে বা পরে সরে যাবে।
+                  </p>
+                </div>
+              )}
+
+              {/* Hover Zoom Toggle Checkbox */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editHoverZoom}
+                    onChange={(e) => setEditHoverZoom(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                  />
+                  <div>
+                    <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                      <ZoomIn className="w-3.5 h-3.5 text-blue-600" />
+                      <span>মাউস হোভার জুম এফেক্ট (Zoom on Hover)</span>
+                      {editHoverZoom ? (
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          চালু
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          বন্ধ
+                        </span>
+                      )}
+                    </span>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      টিক দিলে মাউস রাখলে ব্যানারটি হালকা জুম হবে, টিক না দিলে সম্পূর্ণ স্থির থাকবে।
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Active Toggle */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <p className="font-bold text-slate-800 text-xs">ব্যানার স্ট্যাটাস (Active)</p>
+                    <p className="text-[11px] text-slate-500">ব্যানারটি ওয়েবসাইটে লাইভ চালু রাখবেন কি?</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={editIsActive}
+                    onChange={(e) => setEditIsActive(e.target.checked)}
+                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                  />
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingBanner(null)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold transition-all text-xs"
+                >
+                  বাতিল
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit || !editImage}
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold transition-all text-xs flex items-center gap-1.5 shadow-sm active:scale-95"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{savingEdit ? 'সংরক্ষণ হচ্ছে...' : 'পরিবর্তন সংরক্ষণ করুন'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
