@@ -477,7 +477,7 @@ export const HomePage: React.FC = () => {
             
             {/* Top Poster (Wide banner - sleek & compact to align height) */}
             {sideTopPoster && (
-              <div className="w-full flex-[0.85] min-h-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
+              <div className="w-full flex-[1.15] min-h-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm group relative bg-slate-950">
                 {sideTopPoster.ctaLink?.startsWith('http') ? (
                   <a href={sideTopPoster.ctaLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                     <img
@@ -503,7 +503,7 @@ export const HomePage: React.FC = () => {
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
-            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-3 flex-[1.15] min-h-0`}>
+            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-3 flex-[0.85] min-h-0`}>
               
               {/* Bottom Left Poster */}
               {sideBottomLeftPoster && (
