@@ -1045,10 +1045,12 @@ export const recordDownloadEvent = async (entitlementId: string, productId: stri
 };
 
 // ==================== BANNERS ====================
-export const getBanners = async (onlyActive = true): Promise<Banner[]> => {
+export const getBanners = async (onlyActive = true, forceRefresh = false): Promise<Banner[]> => {
   const cacheKey = onlyActive ? 'banners_active' : 'banners_all';
-  const cached = fastCacheGet<Banner[]>(cacheKey, 120_000);
-  if (cached) return cached;
+  if (!forceRefresh) {
+    const cached = fastCacheGet<Banner[]>(cacheKey, 8_000);
+    if (cached) return cached;
+  }
 
   if (inFlightPromises.has(cacheKey)) {
     return inFlightPromises.get(cacheKey)!;
@@ -1087,6 +1089,7 @@ export const clearBannerCaches = () => {
     sessionStorage.removeItem('mg_cache_home_top_poster');
     sessionStorage.removeItem('mg_cache_home_bl_poster');
     sessionStorage.removeItem('mg_cache_home_br_poster');
+    try { localStorage.setItem('mg_banners_last_updated', Date.now().toString()); } catch {}
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('mg_banners_updated'));
     }

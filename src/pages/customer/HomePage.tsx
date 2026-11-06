@@ -116,9 +116,9 @@ export const HomePage: React.FC = () => {
     let isMounted = true;
 
     // 1. FAST BANNER LOADING: Fetch banners immediately without waiting for products
-    const loadBannersImmediate = async () => {
+    const loadBannersImmediate = async (forceRefresh = false) => {
       try {
-        const bannerList = await getBanners(true);
+        const bannerList = await getBanners(true, forceRefresh);
         if (!isMounted) return;
 
         const sliders: Banner[] = [];
@@ -156,14 +156,23 @@ export const HomePage: React.FC = () => {
           if (topPoster) {
             localStorage.setItem('mg_cache_home_top_poster', JSON.stringify(topPoster));
             sessionStorage.setItem('mg_cache_home_top_poster', JSON.stringify(topPoster));
+          } else {
+            localStorage.removeItem('mg_cache_home_top_poster');
+            sessionStorage.removeItem('mg_cache_home_top_poster');
           }
           if (blPoster) {
             localStorage.setItem('mg_cache_home_bl_poster', JSON.stringify(blPoster));
             sessionStorage.setItem('mg_cache_home_bl_poster', JSON.stringify(blPoster));
+          } else {
+            localStorage.removeItem('mg_cache_home_bl_poster');
+            sessionStorage.removeItem('mg_cache_home_bl_poster');
           }
           if (brPoster) {
             localStorage.setItem('mg_cache_home_br_poster', JSON.stringify(brPoster));
             sessionStorage.setItem('mg_cache_home_br_poster', JSON.stringify(brPoster));
+          } else {
+            localStorage.removeItem('mg_cache_home_br_poster');
+            sessionStorage.removeItem('mg_cache_home_br_poster');
           }
         } catch {}
       } catch (err) {
@@ -215,13 +224,20 @@ export const HomePage: React.FC = () => {
 
     // 4. Live sync when banners are updated from admin panel
     const handleBannersSync = () => {
-      loadBannersImmediate();
+      loadBannersImmediate(true);
     };
     window.addEventListener('mg_banners_updated', handleBannersSync);
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'mg_banners_last_updated' || e.key?.startsWith('mg_cache_home_')) {
+        loadBannersImmediate(true);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
 
     return () => { 
       isMounted = false; 
       window.removeEventListener('mg_banners_updated', handleBannersSync);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -473,11 +489,11 @@ export const HomePage: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="w-full flex-[1.15] min-h-0 rounded-2xl sm:rounded-3xl bg-slate-900/90 animate-pulse border border-slate-800" />
+              <div className="w-full flex-[1.3] min-h-0 rounded-2xl sm:rounded-3xl bg-slate-900/90 animate-pulse border border-slate-800" />
             )}
 
             {/* Bottom 2 Posters (Side by side) */}
-            <div className={`grid ${sideBottomLeftPoster && sideBottomRightPoster ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 sm:gap-3 flex-[0.85] min-h-0`}>
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 flex-1 min-h-0">
               
               {/* Bottom Left Poster */}
               {sideBottomLeftPoster ? (
