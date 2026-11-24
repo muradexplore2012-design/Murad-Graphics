@@ -17,8 +17,6 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { ProductCardSkeleton } from '../../components/ui/Skeletons';
 import { useSEO } from '../../hooks/useSEO';
 
-const FORMAT_OPTIONS = ['AI', 'EPS', 'PSD', 'SVG', 'PNG', 'PDF', 'ZIP', 'APK', 'EXE'];
-
 export const ShopPage: React.FC = () => {
   useSEO({
     title: 'Shop All Digital Resources, Software & Games | Vyrqonix',
@@ -60,7 +58,6 @@ export const ShopPage: React.FC = () => {
   const priceType = searchParams.get('type') || 'all'; // 'all' | 'free' | 'paid'
   const searchQuery = searchParams.get('search') || '';
   const sortBy = searchParams.get('sort') || 'newest'; // 'newest' | 'price_asc' | 'price_desc' | 'popular'
-  const selectedFormat = searchParams.get('format') || '';
 
   useEffect(() => {
     const loadData = async () => {
@@ -106,11 +103,6 @@ export const ShopPage: React.FC = () => {
       if (priceType === 'free' && !p.isFree) return false;
       if (priceType === 'paid' && p.isFree) return false;
 
-      // Format filter
-      if (selectedFormat && !p.formats.includes(selectedFormat)) {
-        return false;
-      }
-
       // Search query filter
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -131,9 +123,9 @@ export const ShopPage: React.FC = () => {
       if (sortBy === 'popular') return (b.downloadCount || 0) - (a.downloadCount || 0);
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // newest
     });
-  }, [products, selectedCategory, priceType, selectedFormat, searchQuery, sortBy]);
+  }, [products, selectedCategory, priceType, searchQuery, sortBy]);
 
-  const activeFilterCount = (selectedCategory ? 1 : 0) + (priceType !== 'all' ? 1 : 0) + (selectedFormat ? 1 : 0) + (searchQuery ? 1 : 0);
+  const activeFilterCount = (selectedCategory ? 1 : 0) + (priceType !== 'all' ? 1 : 0) + (searchQuery ? 1 : 0);
 
   return (
     <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -250,26 +242,6 @@ export const ShopPage: React.FC = () => {
                   >
                     <span className="truncate">{c.name}</span>
                     {selectedCategory === c.id && <Check className="w-3.5 h-3.5 text-blue-600" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Formats Filter */}
-            <div className="space-y-2.5 pt-4 border-t border-slate-100">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">File Format</label>
-              <div className="flex flex-wrap gap-1.5">
-                {FORMAT_OPTIONS.map((fmt) => (
-                  <button
-                    key={fmt}
-                    onClick={() => updateFilter('format', selectedFormat === fmt ? '' : fmt)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold uppercase transition-all ${
-                      selectedFormat === fmt
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {fmt}
                   </button>
                 ))}
               </div>
@@ -394,26 +366,6 @@ export const ShopPage: React.FC = () => {
                     >
                       <span className="truncate">{c.name}</span>
                       {selectedCategory === c.id && <Check className="w-4 h-4 text-white" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Formats Filter */}
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">File Format</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {FORMAT_OPTIONS.map((fmt) => (
-                    <button
-                      key={fmt}
-                      onClick={() => updateFilter('format', selectedFormat === fmt ? '' : fmt)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold uppercase transition-all ${
-                        selectedFormat === fmt
-                          ? 'bg-[#7a00ea] text-white shadow-sm'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {fmt}
                     </button>
                   ))}
                 </div>
