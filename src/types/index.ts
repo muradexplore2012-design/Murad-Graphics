@@ -39,6 +39,7 @@ export interface Product {
   price: number; // in BDT (৳)
   comparePrice?: number; // discount comparison
   showDiscountBadge?: boolean; // toggle whether to show discount % OFF badge
+  showFreeBadge?: boolean; // toggle whether to show green FREE badge on card
   
   // Media & Previews
   thumbnail: string;

@@ -290,10 +290,10 @@ export const ProductDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="aspect-square w-full bg-slate-200 rounded-3xl" />
-          <div className="space-y-4">
+      <div className="max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-pulse space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <div className="lg:col-span-5 max-w-[460px] w-full aspect-square bg-slate-200 rounded-3xl mx-auto lg:mx-0" />
+          <div className="lg:col-span-7 space-y-4">
             <div className="h-8 bg-slate-200 rounded w-3/4" />
             <div className="h-6 bg-slate-200 rounded w-1/4" />
             <div className="h-32 bg-slate-200 rounded" />
@@ -321,7 +321,7 @@ export const ProductDetailPage: React.FC = () => {
   const allImages = [product.thumbnail, ...(product.previews || [])].filter(Boolean);
 
   return (
-    <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       
       {/* Breadcrumb Navigation (Matching Reference Screenshot) */}
       <nav className="text-xs text-slate-500 flex items-center gap-2">
@@ -332,13 +332,13 @@ export const ProductDetailPage: React.FC = () => {
         <span className="text-slate-800 font-semibold truncate max-w-sm sm:max-w-md">{product.name}</span>
       </nav>
 
-      {/* ================= MAIN PRODUCT DETAIL SECTION (MATCHING SCREENSHOT) ================= */}
+      {/* ================= MAIN PRODUCT DETAIL SECTION ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
         {/* ================= LEFT COLUMN: MAIN PRODUCT POSTER & GALLERY ================= */}
-        <div className="lg:col-span-6 space-y-4 max-w-lg lg:max-w-none mx-auto w-full">
+        <div className="lg:col-span-5 space-y-4 max-w-[460px] lg:max-w-[480px] mx-auto w-full">
           
-          {/* Main Poster Container (Exact 1080:1080 Square 1:1 Aspect Ratio Matching Photo 2) */}
+          {/* Main Poster Container (Exact 1080:1080 Square 1:1 Aspect Ratio) */}
           <div className="relative group rounded-3xl border border-slate-200/90 overflow-hidden bg-slate-900 shadow-sm aspect-square w-full flex items-center justify-center">
             <img
               src={selectedImage}
@@ -357,7 +357,7 @@ export const ProductDetailPage: React.FC = () => {
               <Search className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-slate-700" />
             </button>
 
-            {product.isFree && (
+            {product.isFree && Boolean(product.showFreeBadge) && (
               <span className="absolute top-4 left-4 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow-md tracking-wider z-10">
                 FREE DOWNLOAD
               </span>
@@ -383,7 +383,7 @@ export const ProductDetailPage: React.FC = () => {
         </div>
 
         {/* ================= RIGHT COLUMN: DETAILS, PRICE, ACTIONS & TRUST BADGES ================= */}
-        <div className="lg:col-span-6 space-y-5">
+        <div className="lg:col-span-7 space-y-5">
           
           {/* Product Title & Wishlist */}
           <div className="flex items-start justify-between gap-4">

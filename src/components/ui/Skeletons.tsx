@@ -6,7 +6,10 @@ export const ProductCardSkeleton: React.FC = () => (
     <div className="p-3.5 sm:p-4.5 flex flex-col items-center flex-1 justify-between gap-3">
       <div className="h-4 bg-slate-200 rounded-md w-3/4 mx-auto" />
       <div className="h-6 bg-slate-200 rounded-md w-2/5 mx-auto" />
-      <div className="h-10 bg-slate-200 rounded-full w-full mt-1" />
+      <div className="flex items-center gap-2 w-full mt-1">
+        <div className="h-10 bg-slate-200 rounded-full flex-1" />
+        <div className="h-10 w-10 bg-slate-200 rounded-full shrink-0" />
+      </div>
     </div>
   </div>
 );

@@ -63,6 +63,7 @@ export const AdminProductFormPage: React.FC = () => {
   const [price, setPrice] = useState<number>(0);
   const [comparePrice, setComparePrice] = useState<number>(0);
   const [showDiscountBadge, setShowDiscountBadge] = useState<boolean>(false);
+  const [showFreeBadge, setShowFreeBadge] = useState<boolean>(false);
 
   // Images & Previews (Supports 1, 2, 3 or more photos)
   const [thumbnail, setThumbnail] = useState('');
@@ -108,6 +109,7 @@ export const AdminProductFormPage: React.FC = () => {
           setPrice(prod.price || 0);
           setComparePrice(prod.comparePrice || 0);
           setShowDiscountBadge(prod.showDiscountBadge ?? false);
+          setShowFreeBadge(prod.showFreeBadge ?? false);
           setThumbnail(prod.thumbnail || '');
           setPreviews(prod.previews || []);
           const allInitialPhotos = [prod.thumbnail, ...(prod.previews || [])].filter(Boolean) as string[];
@@ -276,6 +278,7 @@ export const AdminProductFormPage: React.FC = () => {
         price: isFree ? 0 : Number(price),
         comparePrice: isFree ? 0 : Number(comparePrice || 0),
         showDiscountBadge: Boolean(showDiscountBadge),
+        showFreeBadge: Boolean(showFreeBadge),
         thumbnail: photos[0] || thumbnail || '',
         previews: photos.length > 1 ? photos.slice(1) : (photos.length === 1 ? [] : previews),
         deliveryMethod,
@@ -550,6 +553,51 @@ export const AdminProductFormPage: React.FC = () => {
                       টিক চিহ্ন দিলে কার্ডের উপর "50% OFF" স্টিকার শো করবে। আনচেক রাখলে প্রোডাক্ট কার্ডে কোনো অফার ব্যাজ দেখাবে না।
                     </p>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Show Free Badge Toggle for Free Products */}
+          {isFree && (
+            <div className="pt-2">
+              <div 
+                onClick={() => setShowFreeBadge(!showFreeBadge)}
+                className={`flex items-start sm:items-center gap-3.5 p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                  showFreeBadge 
+                    ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-2 ring-emerald-500/20' 
+                    : 'border-slate-200 bg-slate-50/70 hover:bg-slate-100/70'
+                }`}
+              >
+                {/* Custom Checkbox with Green Stroke and Green Fill */}
+                <div
+                  className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
+                    showFreeBadge
+                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                      : 'border-slate-300 bg-white hover:border-slate-400'
+                  }`}
+                >
+                  {showFreeBadge && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`font-bold text-xs sm:text-sm ${showFreeBadge ? 'text-emerald-950' : 'text-slate-800'}`}>
+                      Show Green "FREE" Badge on Product Card
+                    </span>
+                    {showFreeBadge ? (
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-emerald-600 text-white font-extrabold uppercase tracking-wider shadow-xs border border-emerald-700">
+                        ACTIVE
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-slate-200 text-slate-600 font-bold uppercase tracking-wider border border-slate-300">
+                        HIDDEN
+                      </span>
+                    )}
+                  </div>
+                  <p className={`text-[11px] font-normal mt-1 leading-relaxed ${showFreeBadge ? 'text-emerald-800' : 'text-slate-500'}`}>
+                    টিক চিহ্ন দিলে কার্ডের উপর সবুজ "FREE" স্টিকার শো করবে। আনচেক রাখলে কোনো ব্যাজ দেখাবে না (পোস্টার ছবিতে নিজস্ব ডিজাইন থাকলে আনচেক রাখুন)।
+                  </p>
                 </div>
               </div>
             </div>
