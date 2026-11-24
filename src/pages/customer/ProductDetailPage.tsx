@@ -323,15 +323,6 @@ export const ProductDetailPage: React.FC = () => {
   return (
     <div className="max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-8 sm:space-y-12">
       
-      {/* Breadcrumb Navigation (Hidden on mobile) */}
-      <nav className="hidden sm:flex text-xs text-slate-500 items-center gap-2">
-        <Link to="/" className="hover:text-purple-600 transition-colors">Home</Link>
-        <span>/</span>
-        <Link to="/shop" className="hover:text-purple-600 transition-colors">All Products</Link>
-        <span>/</span>
-        <span className="text-slate-800 font-semibold truncate max-w-sm sm:max-w-md">{product.name}</span>
-      </nav>
-
       {/* ================= MAIN PRODUCT DETAIL SECTION ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
