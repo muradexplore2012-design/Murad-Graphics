@@ -517,37 +517,39 @@ export const ProductDetailPage: React.FC = () => {
             )}
           </div>
 
-          {/* Trust Badges Box (Matching Screenshot: 100% Genuine | Digital Delivery | Priority Support) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-4 h-4 text-purple-600 stroke-[2.5]" />
+          {/* Value Proposition Trust Badges Bar (Matching Home Page: 100% Genuine | Fast Delivery | Live Support) */}
+          <div className="grid grid-cols-3 py-3 sm:py-3.5 px-1 sm:px-4 rounded-2xl bg-white border border-purple-100/70 shadow-xs divide-x divide-slate-100">
+            
+            {/* 100% Genuine */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center sm:text-left min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
-              <div>
-                <h5 className="font-bold text-xs text-slate-900 leading-tight">100% Genuine</h5>
-                <p className="text-[10px] text-slate-500 mt-0.5">Fully Authentic Product</p>
-              </div>
+              <span className="font-bold text-[10px] sm:text-xs text-slate-800 truncate sm:whitespace-nowrap">
+                100% Genuine
+              </span>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                <Mail className="w-4 h-4 text-purple-600 stroke-[2.5]" />
+            {/* Fast Delivery */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center sm:text-left min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
+                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
-              <div>
-                <h5 className="font-bold text-xs text-slate-900 leading-tight">Digital Delivery</h5>
-                <p className="text-[10px] text-slate-500 mt-0.5">Instant Email Delivery</p>
-              </div>
+              <span className="font-bold text-[10px] sm:text-xs text-slate-800 truncate sm:whitespace-nowrap">
+                Fast Delivery
+              </span>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                <MessageSquare className="w-4 h-4 text-purple-600 stroke-[2.5]" />
+            {/* Live Support */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center sm:text-left min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-[#7a00ea] flex items-center justify-center shrink-0">
+                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
-              <div>
-                <h5 className="font-bold text-xs text-slate-900 leading-tight">Priority Support</h5>
-                <p className="text-[10px] text-slate-500 mt-0.5">Remote Live Assistance</p>
-              </div>
+              <span className="font-bold text-[10px] sm:text-xs text-slate-800 truncate sm:whitespace-nowrap">
+                Live Support
+              </span>
             </div>
+
           </div>
 
         </div>
