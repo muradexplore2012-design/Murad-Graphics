@@ -52,16 +52,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Free Badge (Only shown if toggled ON in Admin Panel) */}
         {product.isFree && Boolean(product.showFreeBadge) ? (
-          <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 pointer-events-none z-10">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black bg-[#00c853] text-white shadow-md uppercase tracking-wider">
-              <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 pointer-events-none z-10">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-md text-[9px] sm:text-[10px] font-black bg-[#00c853] text-white shadow-sm uppercase tracking-wide leading-none">
+              <Gift className="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[2.5]" />
               <span>FREE</span>
             </span>
           </div>
         ) : !product.isFree ? (
-          <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 pointer-events-none z-10">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black bg-[#ef4444] text-white shadow-md tracking-tight">
-              <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 pointer-events-none z-10">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-md text-[9px] sm:text-[10px] font-black bg-[#ef4444] text-white shadow-sm tracking-tight leading-none">
+              <ShoppingCart className="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[2.5]" />
               <span>৳{product.price}</span>
             </span>
           </div>

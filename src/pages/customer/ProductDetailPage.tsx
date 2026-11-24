@@ -358,7 +358,7 @@ export const ProductDetailPage: React.FC = () => {
             </button>
 
             {product.isFree && Boolean(product.showFreeBadge) && (
-              <span className="absolute top-4 left-4 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow-md tracking-wider z-10">
+              <span className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 px-2 py-0.5 sm:px-3 sm:py-1 rounded-md sm:rounded-lg bg-emerald-600 text-white font-black text-[10px] sm:text-xs shadow-sm tracking-wide z-10">
                 FREE DOWNLOAD
               </span>
             )}
