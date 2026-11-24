@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
@@ -101,24 +101,6 @@ export const HomePage: React.FC = () => {
   const [canScrollCategoriesLeft, setCanScrollCategoriesLeft] = useState(false);
   const [canScrollCategoriesRight, setCanScrollCategoriesRight] = useState(false);
   const [hasCategoriesOverflow, setHasCategoriesOverflow] = useState(false);
-
-  // Subtle & tight category scroll fade mask (strictly within category cards height, subtle 24px edge)
-  const categoryScrollMaskStyle = useMemo<React.CSSProperties>(() => {
-    if (!hasCategoriesOverflow) return {};
-    if (canScrollCategoriesLeft && canScrollCategoriesRight) {
-      const mask = 'linear-gradient(to right, transparent 0%, black 20px, black calc(100% - 24px), transparent 100%)';
-      return { WebkitMaskImage: mask, maskImage: mask };
-    }
-    if (canScrollCategoriesRight) {
-      const mask = 'linear-gradient(to right, black 0%, black calc(100% - 24px), transparent 100%)';
-      return { WebkitMaskImage: mask, maskImage: mask };
-    }
-    if (canScrollCategoriesLeft) {
-      const mask = 'linear-gradient(to right, transparent 0%, black 20px, black 100%)';
-      return { WebkitMaskImage: mask, maskImage: mask };
-    }
-    return {};
-  }, [hasCategoriesOverflow, canScrollCategoriesLeft, canScrollCategoriesRight]);
 
   useEffect(() => {
     const handleSettingsUpdate = (e: any) => {
@@ -593,22 +575,21 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div className="relative group">
-            {/* Left Scroll Arrow (Only Arrow, No Fill, Stroke matching Primary Purple) */}
+            {/* Left Scroll Arrow */}
             {hasCategoriesOverflow && canScrollCategoriesLeft && (
               <button
                 type="button"
                 onClick={() => scrollCategories('left')}
-                className="hidden sm:flex absolute left-0 sm:-left-2 lg:-left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center text-purple-600 hover:text-purple-700 bg-transparent transition-all duration-200 hover:scale-125 active:scale-95 cursor-pointer drop-shadow-[0_2px_8px_rgba(147,51,234,0.35)]"
+                className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/95 hover:bg-purple-600 text-white border border-white/30 backdrop-blur-md items-center justify-center shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                 aria-label="Previous Category"
               >
-                <ChevronLeft className="w-8 h-8 sm:w-9 sm:h-9 stroke-[2.8]" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
             )}
 
-            {/* Scrollable Categories Row with tight smooth edge mask (strictly card height) */}
+            {/* Scrollable Categories Row */}
             <div
               ref={categoriesScrollRef}
-              style={categoryScrollMaskStyle}
               className="flex items-center gap-2.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth px-0.5 py-1 sm:py-2.5 touch-pan-x overscroll-x-contain"
             >
               {/* All Products First Card */}
@@ -658,15 +639,15 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
 
-            {/* Right Scroll Arrow (Only Arrow, No Fill, Stroke matching Primary Purple) */}
+            {/* Right Scroll Arrow */}
             {hasCategoriesOverflow && canScrollCategoriesRight && (
               <button
                 type="button"
                 onClick={() => scrollCategories('right')}
-                className="hidden sm:flex absolute right-0 sm:-right-2 lg:-right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center text-purple-600 hover:text-purple-700 bg-transparent transition-all duration-200 hover:scale-125 active:scale-95 cursor-pointer drop-shadow-[0_2px_8px_rgba(147,51,234,0.35)]"
+                className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/95 hover:bg-purple-600 text-white border border-white/30 backdrop-blur-md items-center justify-center shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                 aria-label="Next Category"
               >
-                <ChevronRight className="w-8 h-8 sm:w-9 sm:h-9 stroke-[2.8]" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             )}
           </div>
