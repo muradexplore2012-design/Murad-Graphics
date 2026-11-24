@@ -168,7 +168,7 @@ export function App() {
                   <Route path="shop" element={<ShopPage />} />
                   <Route path="category/:slug" element={<CategoryPage />} />
                   <Route path="product/:slug" element={<ProductDetailPage />} />
-                  <Route path="cart" element={<CartPage />} />
+                  <Route path="cart" element={<Navigate to="/wishlist" replace />} />
                   <Route path="checkout" element={<CheckoutPage />} />
                   <Route path="account" element={<AccountPage />} />
                   <Route path="account/orders/:id" element={<OrderDetailPage />} />

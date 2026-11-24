@@ -459,53 +459,18 @@ export const ProductDetailPage: React.FC = () => {
                 <span>{downloading ? "Processing..." : (product.customButtonText || (product.productType === 'game' ? 'Download Free Game' : product.productType === 'software' ? 'Download Free Software' : product.productType === 'template' ? 'Download Free Template' : 'Download Free Resource'))}</span>
               </button>
             ) : (
-              <div className="flex flex-wrap xs:flex-nowrap items-center gap-2 sm:gap-3 w-full">
-                {/* Quantity Stepper: [-] 1 [+] */}
-                <div className="flex items-center border border-slate-200 rounded-xl bg-white shadow-xs overflow-hidden h-11 sm:h-12 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-8 sm:w-10 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-sm sm:text-base transition-colors"
-                    aria-label="Decrease quantity"
-                  >
-                    -
-                  </button>
-                  <span className="w-7 sm:w-10 text-center font-bold text-xs sm:text-sm text-slate-900 select-none">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-8 sm:w-10 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-sm sm:text-base transition-colors"
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
-                </div>
-
-                {/* Add to Cart Button (Purple) */}
+              <div className="w-full">
+                {/* Instant Buy Now Button (Purple, Full Width) */}
                 <button
-                  onClick={() => addToCart(product)}
-                  disabled={inCart}
-                  className={`flex-1 min-w-[105px] h-11 sm:h-12 px-2.5 sm:px-6 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95 cursor-pointer whitespace-nowrap ${
-                    inCart 
-                      ? 'bg-slate-200 text-slate-500 cursor-not-allowed' 
-                      : 'bg-[#7a00ea] hover:bg-[#6c00d4] text-white shadow-purple-600/20'
-                  }`}
-                >
-                  <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                  <span className="truncate">{inCart ? 'Item in Cart' : 'Add to Cart'}</span>
-                </button>
-
-                {/* Buy Now Button (Black) */}
-                <button
+                  type="button"
                   onClick={() => {
                     addToCart(product);
                     navigate('/checkout');
                   }}
-                  className="flex-1 min-w-[90px] h-11 sm:h-12 px-3 sm:px-6 rounded-xl bg-black hover:bg-slate-900 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center active:scale-95 cursor-pointer whitespace-nowrap"
+                  className="w-full h-12 sm:h-13 px-6 rounded-2xl bg-[#7a00ea] hover:bg-[#6c00d4] text-white font-black text-sm sm:text-base shadow-lg shadow-purple-600/25 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
                 >
-                  <span className="truncate">Buy Now</span>
+                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 stroke-[2.2]" />
+                  <span>Buy Now — ৳{product.price.toLocaleString()}</span>
                 </button>
               </div>
             )}
