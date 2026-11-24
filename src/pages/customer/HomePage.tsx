@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
@@ -101,6 +101,24 @@ export const HomePage: React.FC = () => {
   const [canScrollCategoriesLeft, setCanScrollCategoriesLeft] = useState(false);
   const [canScrollCategoriesRight, setCanScrollCategoriesRight] = useState(false);
   const [hasCategoriesOverflow, setHasCategoriesOverflow] = useState(false);
+
+  // Subtle & tight category scroll fade mask (strictly within category cards height, subtle 24px edge)
+  const categoryScrollMaskStyle = useMemo<React.CSSProperties>(() => {
+    if (!hasCategoriesOverflow) return {};
+    if (canScrollCategoriesLeft && canScrollCategoriesRight) {
+      const mask = 'linear-gradient(to right, transparent 0%, black 20px, black calc(100% - 24px), transparent 100%)';
+      return { WebkitMaskImage: mask, maskImage: mask };
+    }
+    if (canScrollCategoriesRight) {
+      const mask = 'linear-gradient(to right, black 0%, black calc(100% - 24px), transparent 100%)';
+      return { WebkitMaskImage: mask, maskImage: mask };
+    }
+    if (canScrollCategoriesLeft) {
+      const mask = 'linear-gradient(to right, transparent 0%, black 20px, black 100%)';
+      return { WebkitMaskImage: mask, maskImage: mask };
+    }
+    return {};
+  }, [hasCategoriesOverflow, canScrollCategoriesLeft, canScrollCategoriesRight]);
 
   useEffect(() => {
     const handleSettingsUpdate = (e: any) => {
@@ -575,14 +593,6 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div className="relative group">
-            {/* Left Smooth Fade Gradient Overlay */}
-            {hasCategoriesOverflow && canScrollCategoriesLeft && (
-              <div
-                className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-24 md:w-28 bg-gradient-to-r from-white via-white/85 to-transparent z-10 transition-opacity duration-300"
-                aria-hidden="true"
-              />
-            )}
-
             {/* Left Scroll Arrow (Only Arrow, No Fill, Stroke matching Primary Purple) */}
             {hasCategoriesOverflow && canScrollCategoriesLeft && (
               <button
@@ -595,9 +605,10 @@ export const HomePage: React.FC = () => {
               </button>
             )}
 
-            {/* Scrollable Categories Row */}
+            {/* Scrollable Categories Row with tight smooth edge mask (strictly card height) */}
             <div
               ref={categoriesScrollRef}
+              style={categoryScrollMaskStyle}
               className="flex items-center gap-2.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth px-0.5 py-1 sm:py-2.5 touch-pan-x overscroll-x-contain"
             >
               {/* All Products First Card */}
@@ -646,14 +657,6 @@ export const HomePage: React.FC = () => {
                 </Link>
               ))}
             </div>
-
-            {/* Right Smooth Fade Gradient Overlay */}
-            {hasCategoriesOverflow && canScrollCategoriesRight && (
-              <div
-                className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-24 md:w-28 bg-gradient-to-l from-white via-white/85 to-transparent z-10 transition-opacity duration-300"
-                aria-hidden="true"
-              />
-            )}
 
             {/* Right Scroll Arrow (Only Arrow, No Fill, Stroke matching Primary Purple) */}
             {hasCategoriesOverflow && canScrollCategoriesRight && (
